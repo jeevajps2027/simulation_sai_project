@@ -1,0 +1,10 @@
+asgiref==3.7.2
+Django==4.2.7
+future==0.18.3
+iso8601==2.1.0
+keyboard==0.13.5
+pyserial==3.5
+PyYAML==6.0.1
+serial==0.0.97
+sqlparse==0.4.4
+tk==0.1.0

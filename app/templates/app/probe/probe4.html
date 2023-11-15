@@ -1,0 +1,94 @@
+{% extends 'app/layouts/main.html' %}
+{% block title %}
+ Probe-4 Page
+{% endblock title %}
+{% block content %}
+<center style="color: white; text-shadow: 2px 2px 4px #000000;">
+    <h1>PROBE CALIBRATION </h1></center>
+{% include 'app/inc/nav.html' %}
+<div class="container">
+    <div class="card">
+        <div class="card-image"></div>
+            <section class="container-a"><b>Probe Count</b></section>
+            <section class="container-b"><b>Coefficient</b></section>
+            <section class="container-c"><b>Probe Correction</b></section>
+            <section class="container-d"><b>High Ref.Value</b></section>
+            <section class="container-e"><b>Low Ref.Value</b></section>
+            <section class="container-f"><b>Reading</b></section>
+        </div>
+    <div class="card">
+        <input type="radio" name="size" id="Probe-22">
+        <label for="Probe-22"><b>Probe-22</b></label>
+        <section class="container-a">""</section>
+        <section class="container-b">""</section>
+        <section class="container-c">""</section>
+        <section class="container-d">""</section>
+        <section class="container-e">""</section>
+        <section class="container-f">""</section>
+    </div>
+    <div class="card">
+        <input type="radio" name="size" id="Probe-23">
+        <label for="Probe-23"><b>Probe-23</b></label>
+        <section class="container-a">""</section>
+        <section class="container-b">""</section>
+        <section class="container-c">""</section>
+        <section class="container-d">""</section>
+        <section class="container-e">""</section>
+        <section class="container-f">""</section>
+    </div>
+    <div class="card">
+        <input type="radio" name="size" id="Probe-24">
+        <label for="Probe-24"><b>Probe-24</b></label>
+        <section class="container-a">""</section>
+        <section class="container-b">""</section>
+        <section class="container-c">""</section>
+        <section class="container-d">""</section>
+        <section class="container-e">""</section>
+        <section class="container-f">""</section>
+    </div>
+    <div class="card">
+        <input type="radio" name="size" id="Probe-25">
+        <label for="Probe-25"><b>Probe-25</b></label>
+        <section class="container-a">""</section>
+        <section class="container-b">""</section>
+        <section class="container-c">""</section>
+        <section class="container-d">""</section>
+        <section class="container-e">""</section>
+        <section class="container-f">""</section>
+    </div>
+    <div class="card">
+        <input type="radio" name="size" id="Probe-26">
+        <label for="Probe-26"><b>Probe-26</b></label>
+        <section class="container-a">""</section>
+        <section class="container-b">""</section>
+        <section class="container-c">""</section>
+        <section class="container-d">""</section>
+        <section class="container-e">""</section>
+        <section class="container-f">""</section>
+    </div>
+    <div class="card">
+        <input type="radio" name="size" id="Probe-27">
+        <label for="Probe-27"><b>Probe-27</b></label>
+        <section class="container-a">""</section>
+        <section class="container-b">""</section>
+        <section class="container-c">""</section>
+        <section class="container-d">""</section>
+        <section class="container-e">""</section>
+        <section class="container-f">""</section>
+    </div>
+    <div class="card">
+        <input type="radio" name="size" id="Probe-28">
+        <label for="Probe-28"><b>Probe-28</b></label>
+        <section class="container-a">""</section>
+        <section class="container-b">""</section>
+        <section class="container-c">""</section>
+        <section class="container-d">""</section>
+        <section class="container-e">""</section>
+        <section class="container-f">""</section>
+    </div>
+</div>
+<button type="button" class="btn btn-danger float-start mx-1 my-3" style="width:250px;border-radius: 15px"><b>Low Reference</b></button>
+<button type="button" class="btn btn-danger float-start mx-2 my-3" style="width:250px; border-radius: 15px"><b>High Reference</b></button>
+<button type="button" class="btn btn-danger float-end mx-5 my-3" style="width:100px;border-radius: 25px"><a style="text-decoration: none;
+    color:white;" href="{% url 'index' %}"><b>Cancel</b></a></button>
+{% endblock %}

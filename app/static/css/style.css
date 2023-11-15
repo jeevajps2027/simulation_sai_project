@@ -1,0 +1,124 @@
+.login{
+    width:800px;
+    height: 250px;
+    margin-top: -250px;
+    margin-left: 150px;
+    background:red;
+    box-shadow:5px 5px 15px 1px black;
+}
+
+.loginform{
+    flex-basis: 50%;
+    
+    font-family: Georgia, serif;
+
+}
+.loginform h1{
+    text-align: center;
+    color:black;
+}
+.tbox{
+    border-radius: 3px;
+    outline: none;
+
+}
+body{
+    background-color: #1a7d9e;
+}
+.container{
+    display: flex;
+    margin-top: 50px;
+    box-sizing: border-box;
+    padding: 0;
+    background-color: white;
+}
+
+.container-a{
+    height: 40px;
+    display: flex;
+    margin-top: 12px;
+    box-sizing: border-box;
+    padding: 0;
+    background-color: lightgray;
+    
+}
+
+.container-b{
+    height: 40px;
+    display: flex;
+    margin-top: 12px;
+    box-sizing: border-box;
+    padding: 0;
+    background-color: lightgray;
+}
+
+.container-c{
+    height: 40px;
+    display: flex;
+    margin-top: 12px;
+    box-sizing: border-box;
+    padding: 0;
+    background-color: lightpink;
+    font-size: 15px;
+}
+
+.container-d{
+    height: 40px;
+    display: flex;
+    margin-top: 12px;
+    box-sizing: border-box;
+    padding: 0;
+    background-color: lightgray;
+}
+
+.container-e{
+    height: 40px;
+    display: flex;
+    margin-top: 12px;
+    box-sizing: border-box;
+    padding: 0;
+    background-color: lightgray;
+}
+
+.container-f{
+    height: 40px;
+    display: flex;
+    margin-top: 12px;
+    box-sizing: border-box;
+    padding: 0;
+    background-color: lightpink;
+}
+
+.card{
+    background-color:beige;
+    width: 180px;
+    height: 400px;
+    margin: 10px;
+}
+
+.card-image{
+    margin-top: 62px;
+}
+
+input[type="radio"]:checked + label{
+    background-color: red;
+    color: black;
+}
+
+input[type="radio"]:checked + label:before{
+    background-color: red;
+    color: black;
+}
+
+label:before{
+    background-color: orange;
+}
+
+label{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+    height: 50px;
+    background-color: orange;
+}

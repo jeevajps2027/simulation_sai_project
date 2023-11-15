@@ -1,0 +1,41 @@
+<div class="btn-group" style="background-color:#e6d8ad;" role="group" aria-label="Basic outlined example">
+  <a style="text-decoration:none;color:black;" href="{% url 'probe1' %}">
+  <button type="button" class="btn btn-outline-dark" data-index="1"><b>Probe 1-7</b></button></a>
+  <a style="text-decoration: none;color: black;" href="{% url 'probe2' %}">
+  <button type="button" class="btn btn-outline-dark" data-index="2"><b>Probe 8-14</b></button></a>
+  <a style="text-decoration: none;color: black;" href="{% url 'probe3' %}">
+  <button type="button" class="btn btn-outline-dark" data-index="3"><b>Probe 15-21</b></button></a>
+  <a style="text-decoration: none;color: black;" href="{% url 'probe4' %}">
+  <button type="button" class="btn btn-outline-dark" data-index="4"><b>Probe 22-28</b></button></a>
+  <a style="text-decoration: none;color: black;" href="{% url 'probe5' %}">
+  <button type="button" class="btn btn-outline-dark" data-index="5"><b>Probe 29-35</b></button></a>
+  <a style="text-decoration: none;color: black;" href="{% url 'probe6' %}">
+  <button type="button" class="btn btn-outline-dark" data-index="6"><b>Probe 36-42</b></button></a>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+<script>
+  // Check if there is a stored active button index
+  var activeButtonIndex = localStorage.getItem('activeButtonIndex');
+  if (activeButtonIndex !== null) {
+    activateButton(activeButtonIndex);
+  }
+
+  // Add click event listener to buttons
+  $('.btn-group button').click(function () {
+    var buttonIndex = $(this).data('index');
+    activateButton(buttonIndex);
+  });
+
+  function activateButton(buttonIndex) {
+    // Reset all buttons to the default color
+    $('.btn-group button').css('background-color', '');
+
+    // Set the background color for the clicked button
+    var clickedButton = $('.btn-group button[data-index="' + buttonIndex + '"]');
+    clickedButton.css('background-color', 'orangered'); 
+
+    // Store the active button index in localStorage
+    localStorage.setItem('activeButtonIndex', buttonIndex);
+  }
+</script>

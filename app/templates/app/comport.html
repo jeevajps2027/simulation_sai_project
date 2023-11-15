@@ -1,0 +1,94 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Serial Data Display</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+</head>
+
+<body style="background-color:#1a7d9e;">
+    <center style="margin-top: 30px;   color: white; text-shadow: 2px 2px 4px #000000;">
+        <h1><b>COMPORT SETTINGS</b></h1>
+    </center>
+    <form method="post">
+        {% csrf_token %}
+        <div id="frame1" style="border: 2px solid black; padding: 50px; margin-left: 380px;width: 480px;background-color:lightpink;">
+            <label for="com_port"><b>COMPORT-NO</b> </label>
+            <select id="com_port" name="com_port" style="width: 200px; ">
+                {% for port in com_ports %}
+                    <option value="{{ port }}">{{ port }}</option>
+                {% endfor %}
+            </select>
+            <br>
+    
+            <label for="baud_rate"><b>BAUD RATE</b> </label>
+            <select id="baud_rate" name="baud_rate" style="width: 200px;margin-top: 10px; margin-left: 15px;">
+                {% for rate in baud_rates %}
+                    <option value="{{ rate }}">{{ rate }}</option>
+                {% endfor %}
+            </select>
+            <br>
+    
+            <label for="parity"><b>PARITY</b> </label>
+            <select id="parity" name="parity"  style="width: 200px; margin-left: 47px;margin-top: 10px;" >
+                <option value="None"selected>None</option>
+                <option value="Even">Even</option>
+                <option value="odd">odd</option>
+                <option value="Mark">Mark</option>
+                <option value="Space">Space</option>
+            </select>
+            <br>
+
+            <label for="stopbit"><b>STOPBIT</b> </label>
+            <select id="stopbit" name="stopbit" style="width: 200px;margin-top: 10px; margin-left: 38px;">
+                <option value="1" selected>1</option>
+                <option value="1.5">1.5</option>
+                <option value="2">2</option>
+            </select>
+            <br>
+
+            <label for="databit"><b>DATABIT</b> </label>
+            <select id="databit" name="databit" style="width: 200px;margin-top: 10px; margin-left: 37px;">
+                <option value="4">4</option>
+                <option value="5">5</option>
+                <option value="6">6</option>
+                <option value="7">7</option>
+                <option value="8" selected>8</option>
+            </select>
+            <br>
+            <br>
+    <textarea id="serial-data-display" cols="50" rows="10" readonly>{{ serial_data }}</textarea>
+    <a href="{% url 'index' %}" style="text-decoration: none;">
+        <button type="button" id="cancel-button"  style="background-color: red; color: white;margin-top: 10px;height: 30px; width: 200px;"><b>BACK</b></button>
+        </a>
+        <button type="submit" id="start-button" style="background-color: green; color: white;margin-top: 10px;height: 30px; width: 200px;"><b>OK</b></button>
+        
+    </div>
+</form>
+
+    <script>
+        function updateSerialData() {
+            // Make an AJAX request to your Django view
+            $.ajax({
+                url: '/comport/',  
+                type: 'GET',
+                dataType: 'json',
+                success: function(data) {
+                    // Update the content of the serial datja element
+                    $('#serial-data-display').html(data.serial_data);
+    
+                    // Scroll the textarea to the bottom to view the last line
+                    $('#serial-data-display').scrollTop($('#serial-data-display')[0].scrollHeight);
+                },
+                error: function(error) {
+                    console.error('Error updating serial data:', error);
+                }
+            });
+        }
+    
+        // Update the serial data every 1 second (adjust the interval as needed)
+        setInterval(updateSerialData, 0.5); // Update every second (1000 ms)
+    </script>
+</body>
+</html>

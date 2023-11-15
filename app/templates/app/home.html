@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>login page</title>
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+    <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.css">
+    <script>
+        function togglePasswordVisibility() {
+        var passwordInput = document.querySelector('.password-input');
+        
+        if (passwordInput.type === 'password') {
+            passwordInput.type = 'text';
+        } else {
+            passwordInput.type = 'password';
+        }
+    }
+        // JavaScript function to display an alert message when the form is submitted
+        function displayAlert() {
+            var username = document.getElementById('username').value;
+            var password = document.getElementById('password').value;
+    
+            if (username === 'admin' && password === 'admin') {
+                // Redirect to the index page if credentials are correct
+                window.location.href = "{% url 'index' %}";
+            } else {
+                // Display an alert message if the credentials are incorrect
+                var errorMessage = 'Invalid username or password. Please try again.';
+                alert(errorMessage);
+    
+                // Automatically hide the alert message after 3 seconds (3000 milliseconds)
+                setTimeout(function() {
+                    alert(errorMessage);
+                }, 0.5);
+            }
+        }
+    </script>
+
+</head>
+<body>
+    <style>
+        body{
+            background-image: url('static/images/6.jpg');
+            background-size: cover;
+            background-repeat: no-repeat;
+            background-attachment: fixed;
+
+        }
+    </style>
+        <div class="login" style="width: 420px;height: 260px; margin-left: 822px;">
+            <div class="loginform" style="margin-top: 330px;">
+                <h1>Login</h1> 
+                <form method="post" onsubmit="displayAlert(); return false;">
+                    {% csrf_token %}
+                    <div class="tbox">
+                        <i class="fa fa-user mx-3"></i><input type="text" name="user" id="username" placeholder="username">
+                    </div><br>
+                    <div class="tbox"> 
+                        <div class="password-input-container">
+                            <i class="fa fa-lock mx-3"></i>
+                            <input type="password" name="password" id="password" placeholder="Password" class="password-input">
+                            <button type="button" class="toggle-password" onclick="togglePasswordVisibility()">👁</button>
+                        </div>
+                    </div>
+                    <br>
+                    
+                    <button class="btn btn-success float-end mx-5" type="submit">Login</button>
+                </form>
+            </div>
+        </div>
+</body>
+</html>

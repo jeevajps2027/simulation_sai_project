@@ -1,0 +1,152 @@
+{% extends 'app/layouts/main.html' %}
+{% block title %}
+Probe-1 Page
+{% endblock title %}
+{% block content %}
+<pre id="selected-probe" style="color: white; text-shadow: 2px 2px 4px #000000;
+margin-left: 400px;font-size:30px;">
+Selected Probe
+</pre>
+{% include 'app/inc/nav.html' %}
+<div class="container"style="background-color: white;">
+    <div class="card">
+        <div class="card-image"></div>
+        <section class="container-a"><b>Probe Count</b></section>
+        <section class="container-b"><b>Coefficient</b></section>
+        <section class="container-c"><b>Probe Correction</b></section>
+        <section class="container-d"><b>High Ref.Value</b></section>
+        <section class="container-e"><b>Low Ref.Value</b></section>
+        <section class="container-f"><b>Reading</b></section>
+    </div>
+
+    <div class="card">
+        <input type="radio" name="size" id="Probe-8">
+        <label for="Probe-8"><b>Probe-8</b></label>
+        <textarea id="probe-H" readonly style="max-height: 100px;"></textarea>
+        <section class="container-b"></section>
+        <section class="container-c"></section>
+        <input type="text" class="container-d">
+        <input type="text" class="container-e">
+        <section class="container-f"></section>
+    </div>
+    <div class="card">
+        <input type="radio" name="size" id="Probe-9">
+        <label for="Probe-9"><b>Probe-9</b></label>
+        <textarea id="probe-I" readonly style="max-height: 100px;"></textarea>
+        <section class="container-b"></section>
+        <section class="container-c"></section>
+        <input type="text" class="container-d">
+        <input type="text" class="container-e">
+        <section class="container-f"></section>
+    </div>
+    <div class="card">
+        <input type="radio" name="size" id="Probe-10">
+        <label for="Probe-10"><b>Probe-10</b></label>
+        <textarea id="probe-J" readonly style="max-height: 100px;"></textarea>
+        <section class="container-b"></section>
+        <section class="container-c"></section>
+        <input type="text" class="container-d">
+        <input type="text" class="container-e">
+        <section class="container-f"></section>
+    </div>
+    <div class="card">
+        <input type="radio" name="size" id="Probe-11">
+        <label for="Probe-11"><b>Probe-11</b></label>
+        <textarea id="probe-K" readonly style="max-height: 100px;"></textarea>
+        <section class="container-b"></section>
+        <section class="container-c"></section>
+        <input type="text" class="container-d">
+        <input type="text" class="container-e">
+        <section class="container-f"></section>
+    </div>
+    <div class="card">
+        <input type="radio" name="size" id="Probe-12">
+        <label for="Probe-12"><b>Probe-12</b></label>
+        <textarea id="probe-L" readonly style="max-height: 100px;"></textarea>
+        <section class="container-b"></section>
+        <section class="container-c"></section>
+        <input type="text" class="container-d">
+        <input type="text" class="container-e">
+        <section class="container-f"></section>
+    </div>
+    <div class="card">
+        <input type="radio" name="size" id="Probe-13">
+        <label for="Probe-13"><b>Probe-13</b></label>
+        <textarea id="probe-M" readonly style="max-height: 100px;"></textarea>
+        <section class="container-b"></section>
+        <section class="container-c"></section>
+        <input type="text" class="container-d">
+        <input type="text" class="container-e">
+        <section class="container-f"></section>
+    </div>
+    <div class="card">
+        <input type="radio" name="size" id="Probe-14">
+        <label for="Probe-14"><b>Probe-14</b></label>
+        <textarea id="probe-N" readonly style="max-height: 100px;"></textarea>
+        <section class="container-b"></section>
+        <section class="container-c"></section>
+        <input type="text" class="container-d">
+        <input type="text" class="container-e">
+        <section class="container-f"></section>
+    </div>
+
+    <!-- Repeat the above structure for channels H to K -->
+
+</div>
+<button type="button" style="background-color: green; color: white;margin-top: 20px;height: 50px; width: 250px;margin-left: 80px;"><b>Low Reference</b></button>
+<button type="button" style="background-color: green; color: white;margin-top: 20px;height: 50px; width: 250px;margin-left: 80px;"><b>High Reference</b></button>
+
+<a href="{% url 'index' %}" style="text-decoration: none;">
+    <button type="button" id="cancel-button"  style="background-color: red; color: white;margin-top: 20px;height: 30px; width: 200px;margin-left: 400px;"><b>BACK</b></button>
+</a>
+<script>
+    function updateSerialData() {
+        // Make an AJAX request to your Django view
+        $.ajax({
+            url: '/probe2/',  // Replace with the correct URL
+            type: 'GET',
+            dataType: 'json',
+            success: function(data) {
+                var serialData = data.serial_data;
+
+                // Update the textarea with data from data_to_display
+                $('#probe-H').text(serialData['H']);
+                $('#probe-I').text(serialData['I']);
+                $('#probe-J').text(serialData['J']);
+                $('#probe-K').text(serialData['K']);
+                $('#probe-L').text(serialData['L']);
+                $('#probe-M').text(serialData['M']);
+                $('#probe-N').text(serialData['N']);
+                // Add similar lines for other probes
+
+                // Scroll the textarea to view the last line
+                $('.card textarea').each(function() {
+                    $(this).scrollTop($(this)[0].scrollHeight);
+                });
+            },
+            error: function(error) {
+                console.error('Error updating serial data:', error);
+            }
+        });
+    }
+
+    // Update the serial data every 1 second (adjust the interval as needed)
+    setInterval(updateSerialData, 0.5); // Update every second (1000 ms)
+    // Add an event listener to radio buttons to change the color of the selected probe
+    $('input[type="radio"]').on('change', function() {
+        // Reset color for all probes
+        $('.card').css('background-color', '');
+
+        // Change the color of the selected probe
+        if ($(this).prop('checked')) {
+            var selectedProbe = $(this).attr('id');
+            $('#' + selectedProbe).closest('.card').css('background-color', 'red'); // Change to your desired color
+            
+            // Display the selected probe in the <pre> tag
+            $('#selected-probe').text('Selected Probe: ' + selectedProbe);
+        }
+    });
+</script>
+
+{% endblock %}
+
