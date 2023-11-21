@@ -7,7 +7,6 @@ from django.contrib.auth import authenticate,login
 import serial.tools.list_ports
 import threading
 import serial
-import keyboard
 import time
 from django.views.decorators.csrf import csrf_exempt
 from django.core.cache import cache
@@ -31,11 +30,17 @@ class ProbeView(View):
             # Create a dictionary to store data for each channel
             channel_data = {}
 
+
+            channel_id_1 = ['A', 'B', 'C', 'D', 'E', 'F', 'G'] # it contain only 7 channels
+            channel_id_2 = ['H', 'I', 'J', 'K'] # it contain 4 channels
+
             for channel_id, part in zip(parts[0::2], parts[1::2]):
+                if channel_id in channel_id_1:
+                    channel_name = channel_id
                 part = part.replace('+','')
                 channel_data[channel_id] = part
 
-            context = {'serial_data': channel_data}
+            context = {'serial_data': channel_data, 'channel_name': channel_name}
 
             return render(request, self.template_name, context)
         except Exception as err:
@@ -119,15 +124,11 @@ def comport(request):
 def index(request):
     return render(request,'app/index.html')
 
-
-
-
 def probe1(request):
-    print(f"REQIUEST DATA IS: {request}")
-    try:
-        with serial_data_lock:
-            data_to_display = serial_data
+    with serial_data_lock:
+        data_to_display = serial_data
 
+    if request.META.get('HTTP_X_REQUESTED_WITH') == 'XMLHttpRequest':
         # Split the serial data into 11 channels (A-K) using regular expressions
         parts = re.split(r'([A-K])', data_to_display)
         parts = [part for part in parts if part.strip()]  # Remove empty strings
@@ -137,11 +138,12 @@ def probe1(request):
         for channel_id, part in zip(parts[0::2], parts[1::2]):
             part = part.replace('+','')
             channel_data[channel_id] = part
-    
-        return render(request, 'app/probe/probe1.html', {'serial_data': channel_data})
-    except Exception as err:
-        print(f"Failed message is : {err}")
-        print(f"Failed reason is : {traceback.format_exc()}")
+
+        # Return the channel data as JSON response
+        return JsonResponse({'serial_data': channel_data})
+
+    return render(request, 'app/probe/probe1.html', {'serial_data': data_to_display})
+
 
 
 def probe2(request):

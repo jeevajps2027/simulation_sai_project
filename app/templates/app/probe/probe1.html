@@ -3,14 +3,11 @@
 Probe-1 Page
 {% endblock title %}
 {% block content %}
-
-<pre id="selected-probe" style="color: white; text-shadow: 2px 2px 4px #000000;
-margin-left: 400px;font-size:30px;">
-Selected Probe
-</pre>
+<center style="color: white; text-shadow: 2px 2px 4px #000000;">
+    <h1>PROBE CALIBRATION</h1>
+</center>
 {% include 'app/inc/nav.html' %}
-
-<div class="container" style="background-color: white;margin-top: 10px;">
+<div class="container">
     <div class="card">
         <div class="card-image"></div>
         <section class="container-a"><b>Probe Count</b></section>
@@ -22,89 +19,84 @@ Selected Probe
     </div>
 
     <div class="card">
-        <input type="radio" name="size" id="Probe-1">
+        <input type="radio" name="size" id="Probe-1" onclick="setCurrentProbe('Probe-1')">
         <label for="Probe-1"><b>Probe-1</b></label>
-        <textarea id="probe-A" readonly style="max-height: 100px;"></textarea>
-        <section class="container-b"></section>
-        <section class="container-c"></section>
-        <input type="text" class="container-d">
-        <input type="text" class="container-e">
-        <section class="container-f"></section>
+        <textarea id="probe-A"  style="max-height: 100px;"></textarea>
+        <input type="text" class="container-b" id="container-b-1">
+        <section class="container-c">0.0001</section>
+        <input type="text" class="container-d" id="container-d-1">
+        <input type="text" class="container-e" id="container-e-1" oninput="checkProbeAndEnterValue('Probe-1', this.value)">
+        <input type="text" class="container-f" id="container-f-1">
     </div>
     <div class="card">
-        <input type="radio" name="size" id="Probe-2">
+        <input type="radio" name="size" id="Probe-2" onclick="setCurrentProbe('Probe-2')">
         <label for="Probe-2"><b>Probe-2</b></label>
-        <textarea id="probe-B" readonly style="max-height: 100px;"></textarea>
-        <section class="container-b"></section>
-        <section class="container-c"></section>
-        <input type="text" class="container-d">
-        <input type="text" class="container-e">
-        <section class="container-f"></section>
+        <textarea id="probe-B" style="max-height: 100px;"></textarea>
+        <input type="text" class="container-b" id="container-b-2">
+        <section class="container-c">0.0001</section>
+        <input type="text" class="container-d" id="container-d-2">
+        <input type="text" class="container-e" id="container-e-2" oninput="checkProbeAndEnterValue('Probe-2', this.value)">
+        <input type="text" class="container-f" id="container-f-2">
     </div>
     <div class="card">
-        <input type="radio" name="size" id="Probe-3">
+        <input type="radio" name="size" id="Probe-3" onclick="setCurrentProbe('Probe-3')">
         <label for="Probe-3"><b>Probe-3</b></label>
-        <textarea id="probe-C" readonly style="max-height: 100px;"></textarea>
-        <section class="container-b"></section>
-        <section class="container-c"></section>
-        <input type="text" class="container-d">
-        <input type="text" class="container-e">
-        <section class="container-f"></section>
+        <textarea id="probe-C" style="max-height: 100px;"></textarea>
+        <input type="text" class="container-b" id="container-b-3">
+        <section class="container-c">""</section>
+        <input type="text" class="container-d" id="container-d-3">
+        <input type="text" class="container-e" id="container-e-3" oninput="checkProbeAndEnterValue('Probe-3', this.value)">
+        <input type="text" class="container-f" id="container-f-3">
     </div>
     <div class="card">
-        <input type="radio" name="size" id="Probe-4">
+        <input type="radio" name="size" id="Probe-4" onclick="setCurrentProbe('Probe-4')">
         <label for="Probe-4"><b>Probe-4</b></label>
-        <textarea id="probe-D" readonly style="max-height: 100px;"></textarea>
-        <section class="container-b"></section>
-        <section class="container-c"></section>
-        <input type="text" class="container-d">
-        <input type="text" class="container-e">
-        <section class="container-f"></section>
+        <textarea id="probe-D" style="max-height: 100px;"></textarea>
+        <input type="text" class="container-b" id="container-b-4">
+        <section class="container-c">""</section>
+        <input type="text" class="container-d" id="container-d-4">
+        <input type="text" class="container-e" id="container-e-4" oninput="checkProbeAndEnterValue('Probe-4', this.value)">
+        <input type="text" class="container-f" id="container-f-4">
     </div>
     <div class="card">
-        <input type="radio" name="size" id="Probe-5">
+        <input type="radio" name="size" id="Probe-5" onclick="setCurrentProbe('Probe-5')">
         <label for="Probe-5"><b>Probe-5</b></label>
-        <textarea id="probe-E" readonly style="max-height: 100px;"></textarea>
-        <section class="container-b"></section>
-        <section class="container-c"></section>
-        <input type="text" class="container-d">
-        <input type="text" class="container-e">
-        <section class="container-f"></section>
+        <textarea id="probe-E" style="max-height: 100px;"></textarea>
+        <input type="text" class="container-b" id="container-b-5">
+        <section class="container-c">""</section>
+        <input type="text" class="container-d" id="container-d-5">
+        <input type="text" class="container-e" id="container-e-5" oninput="checkProbeAndEnterValue('Probe-5', this.value)">
+        <input type="text" class="container-f" id="container-f-5">
     </div>
     <div class="card">
-        <input type="radio" name="size" id="Probe-6">
+        <input type="radio" name="size" id="Probe-6" onclick="setCurrentProbe('Probe-6')">
         <label for="Probe-6"><b>Probe-6</b></label>
-        <textarea id="probe-F" readonly style="max-height: 100px;"></textarea>
-        <section class="container-b"></section>
-        <section class="container-c"></section>
-        <input type="text" class="container-d">
-        <input type="text" class="container-e">
-        <section class="container-f"></section>
+        <textarea id="probe-F" style="max-height: 100px;"></textarea>
+        <input type="text" class="container-b" id="container-b-6">
+        <section class="container-c">""</section>
+        <input type="text" class="container-d" id="container-d-6">
+        <input type="text" class="container-e" id="container-e-6" oninput="checkProbeAndEnterValue('Probe-6', this.value)">
+        <input type="text" class="container-f" id="container-f-6">
     </div>
     <div class="card">
-        <input type="radio" name="size" id="Probe-7">
+        <input type="radio" name="size" id="Probe-7" onclick="setCurrentProbe('Probe-7')">
         <label for="Probe-7"><b>Probe-7</b></label>
-        <textarea id="probe-G" readonly style="max-height: 100px;"></textarea>
-        <section class="container-b"></section>
-        <section class="container-c"></section>
-        <input type="text" class="container-d">
-        <input type="text" class="container-e">
-        <section class="container-f"></section>
+        <textarea id="probe-G" style="max-height: 100px;"></textarea>
+        <input type="text" class="container-b" id="container-b-7">
+        <section class="container-c">""</section>
+        <input type="text" class="container-d" id="container-d-7">
+        <input type="text" class="container-e" id="container-e-7" oninput="checkProbeAndEnterValue('Probe-7', this.value)">
+        <input type="text" class="container-f" id="container-f-7">
     </div>
 
     <!-- Repeat the above structure for channels H to K -->
 
 </div>
-
-<pre id="calibration-info" style="color: white; text-shadow: 2px 2px 4px #000000; margin-top: 5px; margin-left: 250px; font-size: 20px;">
-    Load probe at middle and do LOW Calibration for selected probe
-</pre>
-
-<button type="button" style="background-color: green; color: white;margin-top: 10px;height: 50px; width: 250px;margin-left: 80px;"onclick="performCalibration('low')"><b>Low Reference</b></button>
-<button type="button" style="background-color: green; color: white;margin-top: 10px;height: 50px; width: 250px;margin-left: 80px;" onclick="performCalibration('high')"><b>High Reference</b></button>
+<button onclick="captureLowReference()" type="button" style="background-color: green; color: white;margin-top: 20px;height: 50px; width: 250px;margin-left: 80px;"><b>Low Reference</b></button>
+<button onclick="captureHighReference()" type="button" style="background-color: green; color: white;margin-top: 20px;height: 50px; width: 250px;margin-left: 80px;"><b>High Reference</b></button>
 
 <a href="{% url 'index' %}" style="text-decoration: none;">
-    <button type="button" id="cancel-button"  style="background-color: red; color: white;margin-top: 10px;height: 30px; width: 200px;margin-left: 400px;"><b>BACK</b></button>
+    <button type="button" id="cancel-button"  style="background-color: red; color: white;margin-top: 20px;height: 30px; width: 200px;margin-left: 400px;"><b>BACK</b></button>
 </a>
 <script>
     function updateSerialData() {
@@ -136,43 +128,13 @@ Selected Probe
             }
         });
     }
-    setInterval(updateSerialData, 0.5); 
-
-    var probeIds = ['Probe-1', 'Probe-2', 'Probe-3', 'Probe-4', 'Probe-5', 'Probe-6', 'Probe-7'];
-    var currentProbeIndex = 0;
-
-
-    function performCalibration(calibrationType) {
-        // Change the text in the <pre> tag based on calibration type
-        if (calibrationType === 'low') {
-            $('#calibration-info').text('LOW Calibration completed. Do HIGH Calibration for selected probe');
-        } else if (calibrationType === 'high') {
-            moveToNextProbe();
-        }
-    }
-
-    function moveToNextProbe() {
-        // Move to the next probe
-        currentProbeIndex = (currentProbeIndex + 1) % probeIds.length;
-
-        // Display default values in the <pre> tag
-        var defaultInfo = 'Default values for ' + probeIds[currentProbeIndex];
-        $('#calibration-info').text(defaultInfo);
-
-        // Reset color for all probes
-        $('.card').css('background-color', '');
-
-        // Check the radio button for the next probe
-        $('#' + probeIds[currentProbeIndex]).prop('checked', true);
-        $('#' + probeIds[currentProbeIndex]).closest('.card').css('background-color', 'red'); // Change to your desired color
-    }
 
     // Update the serial data every 1 second (adjust the interval as needed)
-    setInterval(updateSerialData, 1000); 
+    setInterval(updateSerialData, 0.5); // Update every second (1000 ms)
 
-    
 
-    $('input[type="radio"]').on('change', function() {
+     // Add an event listener to radio buttons to change the color of the selected probe
+     $('input[type="radio"]').on('change', function() {
         // Reset color for all probes
         $('.card').css('background-color', '');
 
@@ -185,6 +147,108 @@ Selected Probe
             $('#selected-probe').text('Selected Probe: ' + selectedProbe);
         }
     });
+
+
+    //probe selection javascript code
+    var currentProbe = null;
+
+        function setCurrentProbe(probeId) {
+            currentProbe = probeId;
+        }
+
+        function checkProbeAndEnterValue(probeId, enteredValue) {
+            if (!currentProbe) {
+                alert("Please select a probe before entering values.");
+                clearEnteredValue();
+            } else if (probeId !== currentProbe) {
+                alert("Please enter values only for the selected probe.");
+                clearEnteredValue();
+            }
+        }
+
+        function clearEnteredValue() {
+            var inputFields = document.querySelectorAll('.card input[type="text"]');
+            inputFields.forEach(function(field) {
+                field.value = "";
+            });
+        }
+
+        
+        
+        let a = [];
+        let b = [];
+        let c = [];
+        let a1 = [];
+        let b1 = [];
+        let c1 = [];
+
+        function captureLowReference() {
+            const probeValues = ['A', 'B', 'C', 'D', 'E', 'F', 'G'];
+            a = [];
+            a1 = [];
+
+            for (let i = 0; i < 7; i++) {
+                const element = document.getElementById(`container-e-${i + 1}`);
+                if (element) {
+                    const aValue = parseFloat(element.value);
+                    a.push(!isNaN(aValue) ? aValue : NaN);
+                }
+
+                const probeElement = document.getElementById(`probe-${probeValues[i]}`);
+                if (probeElement) {
+                    const a1Value = parseFloat(probeElement.value);
+                    a1.push(!isNaN(a1Value) ? a1Value : NaN);
+                }
+            }
+            console.log('Captured low reference values:', a, a1);
+            
+        }
+
+        function captureHighReference() {
+            const probeValues = ['A', 'B', 'C', 'D', 'E', 'F', 'G'];
+            b = [];
+            b1 = [];
+            c = [];
+            c1 = [];
+
+            for (let i = 0; i < 7; i++) {
+                const element = document.getElementById(`container-d-${i + 1}`);
+                if (element) {
+                    const bValue = parseFloat(element.value);
+                    b.push(!isNaN(bValue) ? bValue : NaN);
+                }
+
+                const probeElement = document.getElementById(`probe-${probeValues[i]}`);
+                if (probeElement) {
+                    const b1Value = parseFloat(probeElement.value);
+                    b1.push(!isNaN(b1Value) ? b1Value : NaN);
+                }
+
+                if (!isNaN(b[i]) && !isNaN(b1[i]) && !isNaN(a[i]) && !isNaN(a1[i])) {
+                    const cValue = b[i] - a[i];
+                    const c1Value = b1[i] - a1[i];
+                    c.push(cValue);
+                    c1.push(c1Value);
+
+                    if (c1Value !== 0) {
+                        const d = cValue / c1Value;
+                        const e = d / 1000;
+
+                        const containerBElement = document.getElementById(`container-b-${i + 1}`);
+                        const containerFElement = document.getElementById(`container-f-${i + 1}`);
+                        if (containerBElement && containerFElement) {
+                            containerBElement.value = e.toFixed(12);
+                        
+                        }
+                    }
+                }
+            }
+
+            console.log('Captured high reference values:', b, b1, c, c1);
+            
+        }
+
+
 </script>
 
 {% endblock %}
