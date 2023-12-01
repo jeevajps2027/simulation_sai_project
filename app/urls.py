@@ -1,8 +1,8 @@
 from django.conf import settings
 from django.urls import path,include
 from django.conf.urls.static import static
-from . import views
-from .views import ProbeView
+from app import views
+
 
 
 
@@ -11,7 +11,6 @@ urlpatterns = [
     path('',views.home,name="home"),
     path('comport/',views.comport, name='comport'),
     path('index/',views.index,name="index"),
-    path('probe/<int:channel_name>/', ProbeView.as_view(), name="probe"),
     path('probe1/',views.probe1,name="probe1"),
     path('probe2/',views.probe2,name="probe2"),
     path('probe3/',views.probe3,name="probe3"),

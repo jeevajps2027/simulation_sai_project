@@ -3,11 +3,12 @@
 Probe-1 Page
 {% endblock title %}
 {% block content %}
-<center style="color: white; text-shadow: 2px 2px 4px #000000;">
-    <h1>PROBE CALIBRATION</h1>
-</center>
+<pre id="selected-probe" style="color: white; text-shadow: 2px 2px 4px #000000;
+margin-left: 400px;font-size:30px;">
+Selected Probe
+</pre>
 {% include 'app/inc/nav.html' %}
-<div class="container">
+<div class="container" style="margin-top: 10px;">
     <div class="card">
         <div class="card-image"></div>
         <section class="container-a"><b>Probe Count</b></section>
@@ -21,9 +22,9 @@ Probe-1 Page
     <div class="card">
         <input type="radio" name="size" id="Probe-1" onclick="setCurrentProbe('Probe-1')">
         <label for="Probe-1"><b>Probe-1</b></label>
-        <textarea id="probe-A"  style="max-height: 100px;"></textarea>
-        <input type="text" class="container-b" id="container-b-1">
-        <section class="container-c">0.0001</section>
+        <textarea id="probe-A"  style="max-height: 100px;" ></textarea>
+        <input type="text" class="container-b" id="container-b-1" >
+        <section class="container-c">1.0000</section>
         <input type="text" class="container-d" id="container-d-1">
         <input type="text" class="container-e" id="container-e-1" oninput="checkProbeAndEnterValue('Probe-1', this.value)">
         <input type="text" class="container-f" id="container-f-1">
@@ -33,7 +34,7 @@ Probe-1 Page
         <label for="Probe-2"><b>Probe-2</b></label>
         <textarea id="probe-B" style="max-height: 100px;"></textarea>
         <input type="text" class="container-b" id="container-b-2">
-        <section class="container-c">0.0001</section>
+        <section class="container-c">1.0000</section>
         <input type="text" class="container-d" id="container-d-2">
         <input type="text" class="container-e" id="container-e-2" oninput="checkProbeAndEnterValue('Probe-2', this.value)">
         <input type="text" class="container-f" id="container-f-2">
@@ -43,7 +44,7 @@ Probe-1 Page
         <label for="Probe-3"><b>Probe-3</b></label>
         <textarea id="probe-C" style="max-height: 100px;"></textarea>
         <input type="text" class="container-b" id="container-b-3">
-        <section class="container-c">""</section>
+        <section class="container-c">1.0000</section>
         <input type="text" class="container-d" id="container-d-3">
         <input type="text" class="container-e" id="container-e-3" oninput="checkProbeAndEnterValue('Probe-3', this.value)">
         <input type="text" class="container-f" id="container-f-3">
@@ -53,7 +54,7 @@ Probe-1 Page
         <label for="Probe-4"><b>Probe-4</b></label>
         <textarea id="probe-D" style="max-height: 100px;"></textarea>
         <input type="text" class="container-b" id="container-b-4">
-        <section class="container-c">""</section>
+        <section class="container-c">1.0000</section>
         <input type="text" class="container-d" id="container-d-4">
         <input type="text" class="container-e" id="container-e-4" oninput="checkProbeAndEnterValue('Probe-4', this.value)">
         <input type="text" class="container-f" id="container-f-4">
@@ -63,7 +64,7 @@ Probe-1 Page
         <label for="Probe-5"><b>Probe-5</b></label>
         <textarea id="probe-E" style="max-height: 100px;"></textarea>
         <input type="text" class="container-b" id="container-b-5">
-        <section class="container-c">""</section>
+        <section class="container-c">1.0000</section>
         <input type="text" class="container-d" id="container-d-5">
         <input type="text" class="container-e" id="container-e-5" oninput="checkProbeAndEnterValue('Probe-5', this.value)">
         <input type="text" class="container-f" id="container-f-5">
@@ -73,7 +74,7 @@ Probe-1 Page
         <label for="Probe-6"><b>Probe-6</b></label>
         <textarea id="probe-F" style="max-height: 100px;"></textarea>
         <input type="text" class="container-b" id="container-b-6">
-        <section class="container-c">""</section>
+        <section class="container-c">1.0000</section>
         <input type="text" class="container-d" id="container-d-6">
         <input type="text" class="container-e" id="container-e-6" oninput="checkProbeAndEnterValue('Probe-6', this.value)">
         <input type="text" class="container-f" id="container-f-6">
@@ -83,20 +84,21 @@ Probe-1 Page
         <label for="Probe-7"><b>Probe-7</b></label>
         <textarea id="probe-G" style="max-height: 100px;"></textarea>
         <input type="text" class="container-b" id="container-b-7">
-        <section class="container-c">""</section>
+        <section class="container-c">1.0000</section>
         <input type="text" class="container-d" id="container-d-7">
         <input type="text" class="container-e" id="container-e-7" oninput="checkProbeAndEnterValue('Probe-7', this.value)">
         <input type="text" class="container-f" id="container-f-7">
     </div>
-
-    <!-- Repeat the above structure for channels H to K -->
-
 </div>
-<button onclick="captureLowReference()" type="button" style="background-color: green; color: white;margin-top: 20px;height: 50px; width: 250px;margin-left: 80px;"><b>Low Reference</b></button>
-<button onclick="captureHighReference()" type="button" style="background-color: green; color: white;margin-top: 20px;height: 50px; width: 250px;margin-left: 80px;"><b>High Reference</b></button>
+
+<pre id="calibration-info" style="color: white; text-shadow: 2px 2px 4px #000000; margin-top: 5px; margin-left: 250px; font-size: 20px;">
+</pre>
+
+<button onclick="captureLowReference()" id="lowReferenceBtn"type="button" style="background-color: green; color: white;margin-top: 5px;height: 50px; width: 250px;margin-left: 80px;"><b>Low Reference</b></button>
+<button onclick="captureHighReference()" id="highReferenceBtn" type="button" style="background-color: green; color: white;margin-top: 5px;height: 50px; width: 250px;margin-left: 80px;"><b>High Reference</b></button>
 
 <a href="{% url 'index' %}" style="text-decoration: none;">
-    <button type="button" id="cancel-button"  style="background-color: red; color: white;margin-top: 20px;height: 30px; width: 200px;margin-left: 400px;"><b>BACK</b></button>
+    <button type="button" id="cancel-button"  style="background-color: red; color: white;margin-top: 5px;height: 30px; width: 200px;margin-left: 400px;"><b>BACK</b></button>
 </a>
 <script>
     function updateSerialData() {
@@ -128,27 +130,35 @@ Probe-1 Page
             }
         });
     }
-
     // Update the serial data every 1 second (adjust the interval as needed)
     setInterval(updateSerialData, 0.5); // Update every second (1000 ms)
+  
+
 
 
      // Add an event listener to radio buttons to change the color of the selected probe
      $('input[type="radio"]').on('change', function() {
-        // Reset color for all probes
-        $('.card').css('background-color', '');
+    // Reset color for all probes
+    $('.card').css('background-color', '');
 
-        // Change the color of the selected probe
-        if ($(this).prop('checked')) {
-            var selectedProbe = $(this).attr('id');
-            $('#' + selectedProbe).closest('.card').css('background-color', 'red'); // Change to your desired color
-            
-            // Display the selected probe in the <pre> tag
-            $('#selected-probe').text('Selected Probe: ' + selectedProbe);
-        }
-    });
+    document.getElementById("highReferenceBtn").disabled = true;
+    document.getElementById("highReferenceBtn").style.opacity = '0.6'; // Reduce opacity
+    document.getElementById("lowReferenceBtn").disabled = false;
+    document.getElementById("lowReferenceBtn").style.opacity = '1'; // Reset opacity
 
+    // Change the color of the selected probe
+    if ($(this).prop('checked')) {
+        var selectedProbe = $(this).attr('id');
+        $('#' + selectedProbe).closest('.card').css('background-color', 'red'); // Change to your desired color
 
+     
+        // Display the selected probe in the <pre> tag
+        $('#selected-probe').text('Selected Probe: ' + selectedProbe);
+        $('#calibration-info').text('Load probe at middle and do LOW Calibration for selected probe');
+    }
+});
+
+  
     //probe selection javascript code
     var currentProbe = null;
 
@@ -173,16 +183,26 @@ Probe-1 Page
             });
         }
 
+
+
         
-        
+   
         let a = [];
         let b = [];
         let c = [];
         let a1 = [];
         let b1 = [];
         let c1 = [];
+        let d =[];
+        let e =[];
 
         function captureLowReference() {
+            document.getElementById('calibration-info').innerText = "LOW Calibration completed. Do HIGH Calibration for selected probe";
+            document.getElementById("highReferenceBtn").disabled = false;
+            document.getElementById("highReferenceBtn").style.opacity = '1';
+            document.getElementById("lowReferenceBtn").disabled = true;
+            document.getElementById("lowReferenceBtn").style.opacity = '0.6';
+            
             const probeValues = ['A', 'B', 'C', 'D', 'E', 'F', 'G'];
             a = [];
             a1 = [];
@@ -201,54 +221,115 @@ Probe-1 Page
                 }
             }
             console.log('Captured low reference values:', a, a1);
-            
+
+             
         }
 
         function captureHighReference() {
-            const probeValues = ['A', 'B', 'C', 'D', 'E', 'F', 'G'];
-            b = [];
-            b1 = [];
-            c = [];
-            c1 = [];
+        document.getElementById('calibration-info').innerText = "HIGH Calibration completed for selected probes";
+        const probeValues = ['A', 'B', 'C', 'D', 'E', 'F', 'G'];
+        b = [];
+        b1 = [];
+        c = [];
+        c1 = [];
+        d = [];
+        e = [];
+        
+        for (let i = 0; i < 7; i++) {
+            const element = document.getElementById(`container-d-${i + 1}`);
+            if (element) {
+                const bValue = parseFloat(element.value);
+                b.push(!isNaN(bValue) ? bValue : NaN);
+            }
 
-            for (let i = 0; i < 7; i++) {
-                const element = document.getElementById(`container-d-${i + 1}`);
-                if (element) {
-                    const bValue = parseFloat(element.value);
-                    b.push(!isNaN(bValue) ? bValue : NaN);
-                }
+            const probeElement = document.getElementById(`probe-${probeValues[i]}`);
+            if (probeElement) {
+                const b1Value = parseFloat(probeElement.value);
+                b1.push(!isNaN(b1Value) ? b1Value : NaN);
+            }
 
-                const probeElement = document.getElementById(`probe-${probeValues[i]}`);
-                if (probeElement) {
-                    const b1Value = parseFloat(probeElement.value);
-                    b1.push(!isNaN(b1Value) ? b1Value : NaN);
-                }
 
-                if (!isNaN(b[i]) && !isNaN(b1[i]) && !isNaN(a[i]) && !isNaN(a1[i])) {
-                    const cValue = b[i] - a[i];
-                    const c1Value = b1[i] - a1[i];
-                    c.push(cValue);
-                    c1.push(c1Value);
+            if (!isNaN(b[i]) && !isNaN(b1[i]) && !isNaN(a[i]) && !isNaN(a1[i])) {
+                const cValue = b[i] - a[i];
+                const c1Value = b1[i] - a1[i];
+                c.push(cValue);
+                c1.push(c1Value);
 
-                    if (c1Value !== 0) {
-                        const d = cValue / c1Value;
-                        const e = d / 1000;
+                if (c1Value !== 0) {
+                    const dValue = cValue / c1Value;
+                    const e = dValue / 1000;
 
-                        const containerBElement = document.getElementById(`container-b-${i + 1}`);
-                        const containerFElement = document.getElementById(`container-f-${i + 1}`);
-                        if (containerBElement && containerFElement) {
-                            containerBElement.value = e.toFixed(12);
+                    d.push(dValue) ;
+                    
+                    const containerBElement = document.getElementById(`container-b-${i + 1}`);
+                    
+                    if (containerBElement) {
+                        containerBElement.value = e.toFixed(12);
                         
-                        }
                     }
                 }
             }
-
-            console.log('Captured high reference values:', b, b1, c, c1);
-            
         }
+
+        console.log('Captured high reference values:', b, b1, c, c1, d);
+        return(d);
+        calculateAndUpdateOutput(d);
+    }
+
+
+
+    
+ 
+    function calculateAndUpdateOutput() {
+    const probeValues = ['A', 'B', 'C', 'D', 'E', 'F', 'G'];
+    
+    for (let probeIndex = 1; probeIndex <= 7; probeIndex++) {
+        const containerAElement = document.getElementById(`probe-${probeValues[probeIndex - 1]}`);
+        const containerFElement = document.getElementById(`container-f-${probeIndex}`);
+
+        if (containerAElement && containerFElement) {
+            const serialData = getSerialData();
+
+            // Update containerAElement based on serial data
+            containerAElement.value = serialData[probeValues[probeIndex - 1]];
+
+            // Access the global a1 and d variables
+            const containerA = parseFloat(containerAElement.value);
+            
+            if (!isNaN(containerA)) {
+                const result = (containerA - a1[probeIndex - 1]) * d[probeIndex - 1];
+
+                containerFElement.value = result.toFixed(4);
+            }
+        }
+    }
+}
+
+setInterval(calculateAndUpdateOutput, 0.5);
+
+// Example function to get serial data for all probes
+function getSerialData() {
+    // Replace this with your actual serial data retrieval logic
+    // You already have a function updateSerialData, so you can use the data from there
+    const serialData = {
+        'A': parseFloat($('#probe-A').text()),
+        'B': parseFloat($('#probe-B').text()),
+        'C': parseFloat($('#probe-C').text()),
+        'D': parseFloat($('#probe-D').text()),
+        'E': parseFloat($('#probe-E').text()),
+        'F': parseFloat($('#probe-F').text()),
+        'G': parseFloat($('#probe-G').text())
+    };
+    return serialData;
+}
+
 
 
 </script>
 
 {% endblock %}
+
+
+
+ 
+
