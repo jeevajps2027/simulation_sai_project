@@ -39,18 +39,11 @@
     </script>
 
 </head>
-<body>
-    <style>
-        body{
-            background-image: url('static/images/6.jpg');
-            background-size: cover;
-            background-repeat: no-repeat;
-            background-attachment: fixed;
-
-        }
-    </style>
-        <div class="login" style="width: 420px;height: 260px; margin-left: 822px;">
-            <div class="loginform" style="margin-top: 330px;">
+<body style="background-color: #1a7d9e;">
+    <img src="{% static 'images/sai.jpg' %}" style="height: 170px; width: 150px; margin-top: 170px;
+    margin-left: 500px;border: 7px solid white; "> 
+        <div class="login" >
+            <div class="loginform" >
                 <h1>Login</h1> 
                 <form method="post" onsubmit="displayAlert(); return false;">
                     {% csrf_token %}
@@ -66,9 +59,18 @@
                     </div>
                     <br>
                     
-                    <button class="btn btn-success float-end mx-5" type="submit">Login</button>
+                    <button type="submit" id="cancel-button" style="margin-left: 150px;"><b>Login</b></button>
                 </form>
             </div>
         </div>
+        <h1 class="center-align"><b>Sai Accurate Multigauging Fixtures & Gauges</b></h1>
+        <h1 class="left-align">Web:www.saiaccurate.com<br>E-Mail:sales@saiaccurate.com</h1>
+        <h1 class="right-align">-Accuracy is Our Moto & Passion</h1>
+        <h1 class="right-align-1">Sales : +91 9344438999 / 9344338666<br>Service : +91 9787375999 / 9894353535</h1>
+
+
+
+
+
 </body>
 </html>

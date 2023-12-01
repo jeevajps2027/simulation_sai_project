@@ -1,27 +1,78 @@
 .login{
-    width:800px;
-    height: 250px;
-    margin-top: -250px;
-    margin-left: 150px;
-    background-color: lightblue;
-    box-shadow:5px 5px 15px 1px black;
+    width:400px;
+    height: 230px;
+    margin-top: -300px;
+    margin-left: 850px;
+    background-color:#5bacc7;
+    border: 8px solid white;
+    
+
 }
 
 .loginform{
     flex-basis: 50%;
     
     font-family: Georgia, serif;
+    
 
 }
 .loginform h1{
     text-align: center;
-    color:black;
+    color:white;
+    font-family: Arial, Helvetica, sans-serif;
+    text-shadow: 2px 2px 4px #000000;
 }
 .tbox{
     border-radius: 3px;
     outline: none;
 
 }
+.center-align {
+    text-align: center;
+    margin-top: 100px;
+    color: white;
+    font-size: 55px;
+    text-shadow: 2px 2px 4px #000000;
+}
+
+.left-align {
+    text-align: left;
+    font-size: 25px;
+    font-family: Georgia, serif;
+    margin-top: 90px;
+    margin-left: 20px;
+    color: white;
+}
+.right-align {
+    text-align: right;
+    margin-top: -150px;
+    font-family: apple-system;
+    font-style: italic;
+    font-size: 35px;
+    margin-right: 20px;
+    color: white;
+    text-shadow: 2px 2px 4px #000000;
+}
+.right-align-1{
+    text-align: right;
+    font-size: 23px;
+    font-family: Georgia, serif;
+    margin-top: 50px;
+    margin-right: 20px;
+    color: white;
+}
+
+
+
+
+
+
+
+
+
+
+
+
 body{
     background-color: #1a7d9e;
 }
@@ -121,4 +172,26 @@ label{
     position: relative;
     height: 50px;
     background-color: orange;
+}
+
+
+#lowReferenceBtn, #highReferenceBtn {
+    background-color: green;
+    color: white;
+    margin-top: 5px;
+    height: 50px;
+    width: 250px;
+    margin-left: 80px;
+}
+
+
+#cancel-button {
+    background-color: red;
+    color: white;
+    margin-top: 5px;
+    height: 30px;
+    width: 200px;
+    margin-left: 400px;
+    text-decoration: none; 
+    display: inline-block; 
 }
