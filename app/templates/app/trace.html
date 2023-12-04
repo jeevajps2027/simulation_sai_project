@@ -1,0 +1,56 @@
+{% extends 'app/layouts/main.html' %}
+{% block title %}
+Tracability
+{% endblock title %}
+{% block content %}
+<div class="box-0">
+  <center style="color:black;text-shadow: 2px 2px 4px white;">
+    <h1><b>Tracability</b></h1></center>
+</div>
+
+<div class="box" id="gridBox">
+  <div class="item">
+
+  </div>
+  <div class="item">2</div>
+  <div class="item">3</div>
+
+</div>
+
+<div class="box-1">
+  <div class="inner-box" onclick="enlargeItem(0)"><h4><b>Part</b></h4></div>
+  <div class="inner-box" onclick="enlargeItem(1)"><h4><b>Batch Number</b></h4></div>
+  <div class="inner-box" onclick="enlargeItem(2)"><h4><b>Machine No</b></h4></div>
+  <div class="inner-box" onclick="enlargeItem(3)"><h4><b>Operator</b></h4></div>
+  <div class="inner-box" onclick="enlargeItem(4)"><h4><b>Vendor Code</b></h4></div>
+</div>
+
+  <script>
+   function enlargeItem(index) {
+    // Remove 'enlarged' class from all inner-boxes
+    var innerBoxes = document.querySelectorAll('.box-1 .inner-box');
+    innerBoxes.forEach(function (el) {
+      el.classList.remove('enlarged');
+      el.style.backgroundColor = ''; // Reset background color for all inner-boxes
+    });
+
+    // Add 'enlarged' class and change inner-box color to red for the clicked item
+    var clickedInnerBox = document.querySelectorAll('.box-1 .inner-box')[index];
+    clickedInnerBox.classList.add('enlarged');
+    clickedInnerBox.style.backgroundColor = 'red'; // Change inner-box color to red
+
+    // Your existing code to hide and show items can remain the same
+    var items = document.querySelectorAll('.item');
+    items.forEach(function (el) {
+      el.classList.remove('enlarged');
+      el.style.display = 'none'; // Hide all items
+    });
+
+    var clickedItem = document.querySelectorAll('.item')[index];
+    clickedItem.classList.add('enlarged');
+    clickedItem.style.display = 'block'; // Show the clicked item
+  }
+  </script>
+  
+
+{% endblock content %}

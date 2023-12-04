@@ -17,7 +17,7 @@ urlpatterns = [
     path('probe4/',views.probe4,name="probe4"),
     path('probe5/',views.probe5,name="probe5"),
     path('probe6/',views.probe6,name="probe6"),
-    
+    path('trace/',views.trace,name="trace"),
 
 ]
 
