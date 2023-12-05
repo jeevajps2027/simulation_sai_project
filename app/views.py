@@ -138,7 +138,12 @@ def probe5(request):
     return render(request,'app/probe/probe5.html')
 def probe6(request):
     return render(request,'app/probe/probe6.html')
+def probe12(request):
+    return render(request,'app/probe/probe12.html')
 
 
 def trace(request):
     return render(request,'app/trace.html')
+
+def parameter(request):
+    return render(request,'app/parameter.html')    
