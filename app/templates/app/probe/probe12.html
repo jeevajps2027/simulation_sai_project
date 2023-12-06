@@ -1,54 +1,13 @@
-<div class="item-1" style="overflow-x: auto;overflow-y:auto;">
-    <table border="1">
-      <thead>
-        <tr>
-          <th>Sr.No</th>
-          <th>Part Name</th>
-          <th>Customer Name</th>
-          <th>Part Model</th>
-          <th>Part No</th>
-          <th>check box</th>
-        </tr>
-      </thead>
-      <tbody id="tableBody">
-        
-      </tbody>
-    </table>
-  
-    <button onclick="addRow()">Add Row</button>   
-</div>
-<script>
-    
 
-var currentSrNo = 1; // Initialize the current Sr.No
-
-function addRow() {
-  var tableBody = document.getElementById("tableBody");
-  var row = tableBody.insertRow(-1);
-
-  // Set the row height as needed
-  //row.style.height = "5px"; // Set the height as needed
-
-  // Add Sr.No in the first column
-  var srNoCell = row.insertCell(0);
-  srNoCell.textContent = currentSrNo++;
-
-  for (var i = 1; i < 6; i++) {
-    var cell = row.insertCell(i);
-
-    if (i === 5) {
-      var checkbox = document.createElement("input");
-      checkbox.type = "checkbox";
-      cell.appendChild(checkbox);
-    } else {
-      var input = document.createElement("input");
-      input.type = "text";
-      input.style.width = "120px"; // Set the width as needed
-      input.style.height = "25px"; // Set the height as needed
-      cell.appendChild(input);
-    }
-  }
-}
-
-  </script>
-  
+<html>
+    <body>
+        <form action="" method="POST">
+            {% csrf_token %}
+            <br>
+            <input type="text" name="type" placeholder="ENTER A TEXT">
+            <br>
+            <input type="text" name="name" placeholder="ENTER A TEXT">
+            <input type="submit" value="ADD DATA">
+            <BR>
+    </body>
+</html>

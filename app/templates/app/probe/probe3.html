@@ -3,6 +3,33 @@
  Probe-3 Page
 {% endblock title %}
 {% block content %}
+<style>
+    
+    input[type="radio"]:checked + label{
+        background-color: red;
+        color: black;
+    }
+    
+    input[type="radio"]:checked + label:before{
+        background-color: red;
+        color: black;
+    }
+    
+    label:before{
+        background-color: orange;
+    }
+    
+    label{
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        position: relative;
+        height: 50px;
+        background-color: orange;
+    }
+    
+    
+    </style>
 <center style="color: white; text-shadow: 2px 2px 4px #000000;">
     <h1>PROBE CALIBRATION </h1></center>
 {% include 'app/inc/nav.html' %}

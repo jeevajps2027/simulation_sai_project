@@ -1,4 +1,7 @@
 from django.db import models
 
-class SerialData(models.Model):
-    data = models.CharField(max_length=255)
+
+class Details(models.Model):
+    type = models.CharField(max_length=20,default='',null=False)
+    name = models.CharField(max_length=20,default='',null=False)
+  

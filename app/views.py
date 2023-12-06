@@ -11,6 +11,7 @@ import threading
 import serial
 from django.views.decorators.csrf import csrf_exempt
 from django.core.cache import cache
+from.models import Details
 
 
 
@@ -138,7 +139,16 @@ def probe5(request):
     return render(request,'app/probe/probe5.html')
 def probe6(request):
     return render(request,'app/probe/probe6.html')
+
 def probe12(request):
+    if request.method == 'POST':
+        type = request.POST['type']
+        name = request.POST['name']
+        print(type,name)
+        obj=Details()
+        obj.type=type
+        obj.name=name
+        obj.save()
     return render(request,'app/probe/probe12.html')
 
 
