@@ -95,21 +95,22 @@ def index(request):
 def probe1(request):
     if request.method == 'POST':
         probe_id = request.POST.get('probeId')
-        a_values = request.POST.getlist('a[]')
-        a1_values = request.POST.getlist('a1[]')
-        b_values = request.POST.getlist('b[]')
-        b1_values = request.POST.getlist('b1[]')
-        e_values = request.POST.getlist('e[]')
+        a_values = [float(value) for value in request.POST.getlist('a[]')]
+        a1_values = [float(value) for value in request.POST.getlist('a1[]')]
+        b_values = [float(value) for value in request.POST.getlist('b[]')]
+        b1_values = [float(value) for value in request.POST.getlist('b1[]')]
+        e_values = [float(value) for value in request.POST.getlist('e[]')]
 
-        print('THESE ARE THE DATA YOU WANT TO DISPLAY :',probe_id,a_values,a1_values,b_values,b1_values,e_values)
+        print('THESE ARE THE DATA YOU WANT TO DISPLAY:', probe_id, a_values, a1_values, b_values, b1_values, e_values)
 
-               # Assuming Probe model has fields 'probe_id', 'a_values', 'a1_values', 'b_values', 'b1_values', 'e_values'
-        probe = getvalues.objects.get_or_create(probe_id=probe_id)[0]
-        probe.a_values = a_values
-        probe.a1_values = a1_values
-        probe.b_values = b_values
-        probe.b1_values = b1_values
-        probe.e_values = e_values
+        probe, created = getvalues.objects.get_or_create(probe_id=probe_id)
+
+        probe.a_values = a_values[0] if a_values else None
+        probe.a1_values = a1_values[0] if a1_values else None
+        probe.b_values = b_values[0] if b_values else None
+        probe.b1_values = b1_values[0] if b1_values else None
+        probe.e_values = e_values[0] if e_values else None
+
         probe.save()
 
 
