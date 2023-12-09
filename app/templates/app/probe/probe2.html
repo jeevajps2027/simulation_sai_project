@@ -118,6 +118,7 @@ Selected Probe
     </div>
 </div>
 
+
 <pre id="calibration-info" style="color: white; text-shadow: 2px 2px 4px #000000; margin-top: 5px; margin-left: 250px; font-size: 20px;">
 </pre>
 
@@ -127,6 +128,7 @@ Selected Probe
 <a href="{% url 'index' %}" >
   <button type="button" id="cancel-button"><b>BACK</b></button>
 </a>
+
 <script>
     function updateSerialData() {
         // Make an AJAX request to your Django view
@@ -157,16 +159,15 @@ Selected Probe
             }
         });
     }
-
     // Update the serial data every 1 second (adjust the interval as needed)
     setInterval(updateSerialData, 0.5); // Update every second (1000 ms)
- 
+
     document.getElementById("highReferenceBtn").disabled = true;
     document.getElementById("highReferenceBtn").style.opacity = '0.6';
     document.getElementById("lowReferenceBtn").disabled = true;
     document.getElementById("lowReferenceBtn").style.opacity = '0.6';
 
-  
+
     function checkAndEnterValue(probe, value) {
         var radioId = "radio-" + probe.split('-')[1];
 
@@ -178,6 +179,8 @@ Selected Probe
             // Your existing logic for entering values
         }
     }
+    
+
   
 let currentSelectedCard = null;
 let a = [];
@@ -212,11 +215,12 @@ function setCurrentProbe(probeId) {
 
 
 function captureLowReference() {
-  document.getElementById('calibration-info').innerText = "LOW Calibration completed. Do HIGH Calibration for selected probe";
-  document.getElementById("highReferenceBtn").disabled = false;
-  document.getElementById("highReferenceBtn").style.opacity = '1';
+	document.getElementById('calibration-info').innerText = "LOW Calibration completed. Do HIGH Calibration for selected probe";
+   document.getElementById("highReferenceBtn").disabled = false;
+   document.getElementById("highReferenceBtn").style.opacity = '1';
   document.getElementById("lowReferenceBtn").disabled = true;
-  document.getElementById("lowReferenceBtn").style.opacity = '0.6';
+   document.getElementById("lowReferenceBtn").style.opacity = '0.6';
+
 
     if (currentSelectedCard) {
         a = [];
@@ -231,6 +235,9 @@ function captureLowReference() {
         a1.push(!isNaN(a1Value) ? a1Value : NaN);
 
         console.log('Captured low reference values:', a, a1);
+
+        
+
         // Perform actions with 'a' and 'a1' values as needed...
     } else {
         console.log('No card selected.');
@@ -280,12 +287,34 @@ function captureHighReference() {
         }
 
         console.log('Captured high reference values:', b, b1, d, c, c1, e);
-        // Check console logs for values and debug further if necessary
-        // Perform other actions or calculations with 'd' and 'e' if needed...
-    } else {
-        console.log('No card selected.');
-    }
-    calculateAndDisplayResult();
+            // Get CSRF token from the cookie
+            const csrftoken = getCookie('csrftoken');
+
+            if (currentSelectedCard) {
+            const selectedProbeId = currentSelectedCard.id.split('-')[1]; // Extracting the probe ID from the card ID
+
+        // Only send the selected card ID and captured values to the backend
+        $.ajax({
+            type: 'POST',
+            url: '/probe2/',  // Update with your actual backend endpoint
+            data: {
+                'probeId': 'probe-'+ selectedProbeId,
+                'a':a,
+                'a1':a1,
+                'b': b,
+                'b1': b1,
+                'e': e
+            },
+            beforeSend: function(xhr, settings) {
+                xhr.setRequestHeader("X-CSRFToken", csrftoken);
+            },
+        });
+
+            // Perform actions with 'a' and 'a1' values as needed...
+            } else {
+            console.log('No card selected.');
+}   
+}
 }
 
 function calculateAndDisplayResult() {
@@ -320,10 +349,24 @@ for (let i = 8; i <= 14; i++) {
     });
 }
 
+// Function to get the CSRF token from the cookie
+function getCookie(name) {
+    var cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        var cookies = document.cookie.split(';');
+        for (var i = 0; i < cookies.length; i++) {
+            var cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
 </script>
 
 {% endblock %}
-
 
 
 

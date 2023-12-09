@@ -1,6 +1,6 @@
 from django.contrib import admin
-from.models import Details,getvalues
+from.models import Details,probecalibration
 # Register your models here.
 
 admin.site.register(Details)
-admin.site.register(getvalues)
+admin.site.register(probecalibration)

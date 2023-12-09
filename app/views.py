@@ -11,7 +11,7 @@ import threading
 import serial
 from django.views.decorators.csrf import csrf_exempt
 from django.core.cache import cache
-from.models import Details,getvalues
+from.models import Details,probecalibration
 
 
 
@@ -103,13 +103,13 @@ def probe1(request):
 
         print('THESE ARE THE DATA YOU WANT TO DISPLAY:', probe_id, a_values, a1_values, b_values, b1_values, e_values)
 
-        probe, created = getvalues.objects.get_or_create(probe_id=probe_id)
+        probe, created = probecalibration.objects.get_or_create(probe_id=probe_id)
 
-        probe.a_values = a_values[0] if a_values else None
-        probe.a1_values = a1_values[0] if a1_values else None
-        probe.b_values = b_values[0] if b_values else None
-        probe.b1_values = b1_values[0] if b1_values else None
-        probe.e_values = e_values[0] if e_values else None
+        probe.low_ref = a_values[0] if a_values else None
+        probe.low_count = a1_values[0] if a1_values else None
+        probe.high_ref = b_values[0] if b_values else None
+        probe.high_count = b1_values[0] if b1_values else None
+        probe.coefficent = e_values[0] if e_values else None
 
         probe.save()
 
@@ -135,6 +135,26 @@ def probe1(request):
 
 
 def probe2(request):
+    if request.method == 'POST':
+        probe_id = request.POST.get('probeId')
+        a_values = [float(value) for value in request.POST.getlist('a[]')]
+        a1_values = [float(value) for value in request.POST.getlist('a1[]')]
+        b_values = [float(value) for value in request.POST.getlist('b[]')]
+        b1_values = [float(value) for value in request.POST.getlist('b1[]')]
+        e_values = [float(value) for value in request.POST.getlist('e[]')]
+
+        print('THESE ARE THE DATA YOU WANT TO DISPLAY:', probe_id, a_values, a1_values, b_values, b1_values, e_values)
+
+        probe, created = probecalibration.objects.get_or_create(probe_id=probe_id)
+
+        probe.low_ref = a_values[0] if a_values else None
+        probe.low_count = a1_values[0] if a1_values else None
+        probe.high_ref = b_values[0] if b_values else None
+        probe.high_count = b1_values[0] if b1_values else None
+        probe.coefficent = e_values[0] if e_values else None
+
+        probe.save()
+
     with serial_data_lock:
         data_to_display = serial_data
 
