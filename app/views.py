@@ -11,8 +11,11 @@ import threading
 import serial
 from django.views.decorators.csrf import csrf_exempt
 from django.core.cache import cache
-from.models import Details
+from.models import Details,getvalues
 
+
+
+import json
 
 
 def home(request):
@@ -90,6 +93,26 @@ def index(request):
 
 
 def probe1(request):
+    if request.method == 'POST':
+        probe_id = request.POST.get('probeId')
+        a_values = request.POST.getlist('a[]')
+        a1_values = request.POST.getlist('a1[]')
+        b_values = request.POST.getlist('b[]')
+        b1_values = request.POST.getlist('b1[]')
+        e_values = request.POST.getlist('e[]')
+
+        print('THESE ARE THE DATA YOU WANT TO DISPLAY :',probe_id,a_values,a1_values,b_values,b1_values,e_values)
+
+               # Assuming Probe model has fields 'probe_id', 'a_values', 'a1_values', 'b_values', 'b1_values', 'e_values'
+        probe = getvalues.objects.get_or_create(probe_id=probe_id)[0]
+        probe.a_values = a_values
+        probe.a1_values = a1_values
+        probe.b_values = b_values
+        probe.b1_values = b1_values
+        probe.e_values = e_values
+        probe.save()
+
+
     with serial_data_lock:
         data_to_display = serial_data
 
