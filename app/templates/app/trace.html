@@ -35,7 +35,7 @@ Tracability
     padding-left: 5px;
   }
 
-  .inner-box{
+  .inner-box-1,.inner-box-2,.inner-box-3,.inner-box-4,.inner-box-5{
     width: 230px; 
     height: 50px;
     background-color:lightblue; 
@@ -90,7 +90,7 @@ Tracability
   th, td {
     border: 1px solid black;
     padding: 8px;
-    text-align: left;
+    text-align: center;
   }
 
   .inner-box:hover {
@@ -105,11 +105,12 @@ Tracability
 </div>
 
 <div class="box-1">
-  <div id="part" class="inner-box" onclick="showItem('item-1')"><h4><b>Part</b></h4></div>
-  <div id="batchNumber" class="inner-box" onclick="showItem('item-2')"><h4><b>Batch Number</b></h4></div>
-  <div id="machine" class="inner-box" onclick="showItem('item-3')"><h4><b>Machine</b></h4></div>
-  <div id="operator" class="inner-box" onclick="showItem('item-4')"><h4><b>Operator</b></h4></div>
-  <div id="vendorCode" class="inner-box" onclick="showItem('item-5')"><h4><b>Vendor Code</b></h4></div>
+  <div id="part" class="inner-box-1" onclick="enlargeItem(1),showItem('item-1')"><h4><b>Part</b></h4></div>
+  <div id="batchNumber" class="inner-box-2" onclick="enlargeItem(2),showItem('item-2')"><h4><b>Batch Number</b></h4></div>
+  <div id="machine" class="inner-box-3" onclick="enlargeItem(3),showItem('item-3')"><h4><b>Machine</b></h4></div>
+  <div id="operator" class="inner-box-4" onclick="enlargeItem(4),showItem('item-4')"><h4><b>Operator</b></h4></div>
+  <div id="vendorCode" class="inner-box-5" onclick="enlargeItem(5),showItem('item-5')"><h4><b>Vendor Code</b></h4></div>
+
 </div>
 <div class="box" id="boxContent"style="overflow-x: auto;overflow-y:auto;">
   <div class="item item-1">
@@ -179,12 +180,13 @@ Tracability
         <tr>
           <th style="width: 5%;">Sr.No</th>
           <th style="width: 25%;">Vendor Code</th>
+          <th style="width: 25%;">Email</th>
           <th style="width: 5%;">Check Box</th>
         </tr>
       </thead>
       <tbody id="tableBody-5"></tbody>
     </table><br>
-    <button onclick="addRow('item-5', 3)">Add New</button>
+    <button onclick="addRow('item-5', 4)">Add New</button>
   </div>
 </div>
 
@@ -196,6 +198,18 @@ Tracability
 
 <script>
 
+function enlargeItem(index) {
+  // Remove 'enlarged' class and reset background color for all inner-boxes
+  document.querySelectorAll('.box-1 > div').forEach(function (el) {
+    el.classList.remove('enlarged');
+    el.style.backgroundColor = ''; // Reset background color
+  });
+
+  // Add 'enlarged' class and set background color for the clicked inner-box
+  var clickedInnerBox = document.querySelector(`.box-1 .inner-box-${index}`);
+  clickedInnerBox.classList.add('enlarged');
+  clickedInnerBox.style.backgroundColor = 'red'; // Set background color to red
+}
 window.onload = function() {
       showItem('item-1');
     };

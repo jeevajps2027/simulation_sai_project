@@ -29,6 +29,7 @@ label{
 }
 
 
+
 </style>
 <pre id="selected-probe" style="color: white; text-shadow: 2px 2px 4px #000000;
 margin-left: 400px;font-size:30px;">
@@ -49,72 +50,72 @@ Selected Probe
     <div class="card" id="card-1">
         <input type="radio" name="size" id="radio-1" onclick="setCurrentProbe('Probe-1')">
         <label for="Probe-1"><b>Probe-1</b></label>
-        <textarea id="probe-A"  style="max-height: 100px;" ></textarea>
-        <input type="text" class="container-b" id="container-b-1" >
+        <textarea id="probe-A" style="max-height: 100px;"></textarea>
+        <input type="text" class="container-b" id="container-b-1" oninput="allowOnlyNumbers(this)">
         <section class="container-c">1.0000</section>
-        <input type="text" class="container-d" id="container-d-1">
-        <input type="text" class="container-e" id="container-e-1" oninput="checkAndEnterValue('Probe-1', this.value)">
-        <input type="text" class="container-f" id="container-f-1">
-    </div>
+        <input type="text" class="container-d" id="container-d-1" oninput="allowOnlyNumbers(this)">
+        <input type="text" class="container-e" id="container-e-1" oninput="checkAndEnterValue('Probe-1', this.value),allowOnlyNumbers(this)">
+        <input type="text" readonly class="container-f" id="container-f-1" oninput="allowOnlyNumbers(this)">
+      </div>
     <div class="card" id="card-2">
         <input type="radio" name="size" id="radio-2" onclick="setCurrentProbe('Probe-2')">
         <label for="Probe-2"><b>Probe-2</b></label>
         <textarea id="probe-B" style="max-height: 100px;"></textarea>
-        <input type="text" class="container-b" id="container-b-2">
+        <input type="text" class="container-b" id="container-b-2" oninput="allowOnlyNumbers(this)">
         <section class="container-c">1.0000</section>
-        <input type="text" class="container-d" id="container-d-2">
-        <input type="text" class="container-e" id="container-e-2"oninput="checkAndEnterValue('Probe-2', this.value)" >
-        <input type="text" class="container-f" id="container-f-2">
+        <input type="text" class="container-d" id="container-d-2" oninput="allowOnlyNumbers(this)">
+        <input type="text" class="container-e" id="container-e-2"oninput="checkAndEnterValue('Probe-2', this.value),allowOnlyNumbers(this)">
+        <input type="text"readonly class="container-f" id="container-f-2" oninput="allowOnlyNumbers(this)">
     </div>
     <div class="card" id="card-3">
         <input type="radio" name="size" id="radio-3" onclick="setCurrentProbe('Probe-3')">
         <label for="Probe-3"><b>Probe-3</b></label>
         <textarea id="probe-C" style="max-height: 100px;"></textarea>
-        <input type="text" class="container-b" id="container-b-3">
+        <input type="text" class="container-b" id="container-b-3" oninput="allowOnlyNumbers(this)">
         <section class="container-c">1.0000</section>
-        <input type="text" class="container-d" id="container-d-3">
-        <input type="text" class="container-e" id="container-e-3"oninput="checkAndEnterValue('Probe-3', this.value)" >
-        <input type="text" class="container-f" id="container-f-3">
+        <input type="text" class="container-d" id="container-d-3" oninput="allowOnlyNumbers(this)">
+        <input type="text" class="container-e" id="container-e-3"oninput="checkAndEnterValue('Probe-3', this.value),allowOnlyNumbers(this)" >
+        <input type="text"readonly class="container-f" id="container-f-3" oninput="allowOnlyNumbers(this)">
     </div>
     <div class="card" id="card-4">
         <input type="radio" name="size" id="radio-4" onclick="setCurrentProbe('Probe-4')">
         <label for="Probe-4"><b>Probe-4</b></label>
         <textarea id="probe-D" style="max-height: 100px;"></textarea>
-        <input type="text" class="container-b" id="container-b-4">
+        <input type="text" class="container-b" id="container-b-4" oninput="allowOnlyNumbers(this)">
         <section class="container-c">1.0000</section>
-        <input type="text" class="container-d" id="container-d-4">
-        <input type="text" class="container-e" id="container-e-4" oninput="checkAndEnterValue('Probe-4', this.value)">
-        <input type="text" class="container-f" id="container-f-4">
+        <input type="text" class="container-d" id="container-d-4" oninput="allowOnlyNumbers(this)">
+        <input type="text" class="container-e" id="container-e-4" oninput="checkAndEnterValue('Probe-4', this.value),allowOnlyNumbers(this)">
+        <input type="text" readonly class="container-f" id="container-f-4" oninput="allowOnlyNumbers(this)">
     </div>
     <div class="card" id="card-5">
         <input type="radio" name="size" id="radio-5" onclick="setCurrentProbe('Probe-5')">
         <label for="Probe-5"><b>Probe-5</b></label>
         <textarea id="probe-E" style="max-height: 100px;"></textarea>
-        <input type="text" class="container-b" id="container-b-5">
+        <input type="text" class="container-b" id="container-b-5" oninput="allowOnlyNumbers(this)">
         <section class="container-c">1.0000</section>
-        <input type="text" class="container-d" id="container-d-5">
-        <input type="text" class="container-e" id="container-e-5" oninput="checkAndEnterValue('Probe-5', this.value)">
-        <input type="text" class="container-f" id="container-f-5">
+        <input type="text" class="container-d" id="container-d-5" oninput="allowOnlyNumbers(this)">
+        <input type="text" class="container-e" id="container-e-5" oninput="checkAndEnterValue('Probe-5', this.value),allowOnlyNumbers(this)">
+        <input type="text" readonly class="container-f" id="container-f-5" oninput="allowOnlyNumbers(this)">
     </div>
     <div class="card" id="card-6">
         <input type="radio" name="size" id="radio-6" onclick="setCurrentProbe('Probe-6')">
         <label for="Probe-6"><b>Probe-6</b></label>
         <textarea id="probe-F" style="max-height: 100px;"></textarea>
-        <input type="text" class="container-b" id="container-b-6">
+        <input type="text" class="container-b" id="container-b-6" oninput="allowOnlyNumbers(this)">
         <section class="container-c">1.0000</section>
-        <input type="text" class="container-d" id="container-d-6">
-        <input type="text" class="container-e" id="container-e-6" oninput="checkAndEnterValue('Probe-6', this.value)">
-        <input type="text" class="container-f" id="container-f-6">
+        <input type="text" class="container-d" id="container-d-6" oninput="allowOnlyNumbers(this)">
+        <input type="text" class="container-e" id="container-e-6" oninput="checkAndEnterValue('Probe-6', this.value),allowOnlyNumbers(this)">
+        <input type="text" readonly class="container-f" id="container-f-6" oninput="allowOnlyNumbers(this)">
     </div>
     <div class="card" id="card-7">
         <input type="radio" name="size" id="radio-7" onclick="setCurrentProbe('Probe-7')">
         <label for="Probe-7"><b>Probe-7</b></label>
         <textarea id="probe-G" style="max-height: 100px;"></textarea>
-        <input type="text" class="container-b" id="container-b-7">
+        <input type="text" class="container-b" id="container-b-7" oninput="allowOnlyNumbers(this)">
         <section class="container-c">1.0000</section>
-        <input type="text" class="container-d" id="container-d-7">
-        <input type="text" class="container-e" id="container-e-7"oninput="checkAndEnterValue('Probe-7', this.value)">
-        <input type="text" class="container-f" id="container-f-7">
+        <input type="text" class="container-d" id="container-d-7" oninput="allowOnlyNumbers(this)">
+        <input type="text" class="container-e" id="container-e-7"oninput="checkAndEnterValue('Probe-7', this.value),allowOnlyNumbers(this)">
+        <input type="text" readonly class="container-f" id="container-f-7" oninput="allowOnlyNumbers(this)">
     </div>
 </div>
 
@@ -160,6 +161,11 @@ Selected Probe
     }
     // Update the serial data every 1 second (adjust the interval as needed)
     setInterval(updateSerialData, 0.5); // Update every second (1000 ms)
+
+    function allowOnlyNumbers(inputElement) {
+      // Remove non-numeric characters
+      inputElement.value = inputElement.value.replace(/[^0-9,.,-]/g, '');
+    }
 
     document.getElementById("highReferenceBtn").disabled = true;
     document.getElementById("highReferenceBtn").style.opacity = '0.6';
