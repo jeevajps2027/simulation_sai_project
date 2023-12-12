@@ -244,7 +244,7 @@ function saveData() {
                 rowDataIndex = rowData[tableBodyId].length - 1;
             }
 
-            for (var j = 1; j < row.cells.length - 1; j++) {
+            for (var j = 1; j < row.cells.length; j++) {
                 var input = row.cells[j].querySelector('input');
                 rowData[tableBodyId][rowDataIndex].values[j - 1] = input.value;
             }
@@ -332,4 +332,5 @@ function populateTables() {
     });
 }
 </script>
+
 {% endblock content %}
