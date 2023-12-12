@@ -198,21 +198,20 @@ Tracability
 
 <script>
 
-function enlargeItem(index) {
-  // Remove 'enlarged' class and reset background color for all inner-boxes
-  document.querySelectorAll('.box-1 > div').forEach(function (el) {
-    el.classList.remove('enlarged');
-    el.style.backgroundColor = ''; // Reset background color
-  });
+ function enlargeItem(index) {
+    // Remove 'enlarged' class and reset background color for all inner-boxes
+    document.querySelectorAll('.box-1 > div').forEach(function (el) {
+      el.style.backgroundColor = ''; 
+    });
+    var clickedInnerBox = document.querySelector(`.box-1 .inner-box-${index}`);
+    clickedInnerBox.style.backgroundColor = 'red'; // Set background color to red
+  }
 
-  // Add 'enlarged' class and set background color for the clicked inner-box
-  var clickedInnerBox = document.querySelector(`.box-1 .inner-box-${index}`);
-  clickedInnerBox.classList.add('enlarged');
-  clickedInnerBox.style.backgroundColor = 'red'; // Set background color to red
-}
-window.onload = function() {
-      showItem('item-1');
-    };
+
+
+    window.onload = function() {
+          showItem('item-1');
+        };
 
 
     function showItem(itemClassName) {
@@ -254,6 +253,37 @@ window.onload = function() {
   checkbox.type = 'checkbox';
   checkboxCell.appendChild(checkbox);
 }
+// Function to save values
+function saveValues() {
+      var tables = document.querySelectorAll('.item table tbody');
+      var data = [];
+
+      tables.forEach(function (table, index) {
+        var rows = table.querySelectorAll('tr');
+        var rowData = [];
+
+        rows.forEach(function (row) {
+          var cells = row.querySelectorAll('input');
+          var cellData = [];
+
+          cells.forEach(function (cell) {
+            cellData.push(cell.value);
+          });
+
+          rowData.push(cellData);
+        });
+
+        data.push({ tableIndex: index + 1, rows: rowData });
+      });
+
+      // Here, you can decide how to handle or store the data
+      console.log('Data to be saved:', data);
+      // You may want to send the data to the server or perform other actions
+    }
+
+    // Attach click event handler to the "Save" button
+    document.getElementById('save-btn').addEventListener('click', saveValues);
+
 
 </script>
 {% endblock content %}

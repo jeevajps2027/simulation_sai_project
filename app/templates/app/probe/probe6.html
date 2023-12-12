@@ -1,94 +1,93 @@
-{% extends 'app/layouts/main.html' %}
-{% block title %}
- Probe-6 Page
-{% endblock title %}
-{% block content %}
-<center style="color: white; text-shadow: 2px 2px 4px #000000;">
-    <h1>PROBE CALIBRATION </h1></center>
-{% include 'app/inc/nav.html' %}
-<div class="container">
-    <div class="card">
-        <div class="card-image"></div>
-            <section class="container-a"><b>Probe Count</b></section>
-            <section class="container-b"><b>Coefficient</b></section>
-            <section class="container-c"><b>Probe Correction</b></section>
-            <section class="container-d"><b>High Ref.Value</b></section>
-            <section class="container-e"><b>Low Ref.Value</b></section>
-            <section class="container-f"><b>Reading</b></section>
-        </div>
-    <div class="card">
-        <input type="radio" name="size" id="Probe-36">
-        <label for="Probe-36"><b>Probe-36</b></label>
-        <section class="container-a">""</section>
-        <section class="container-b">""</section>
-        <section class="container-c">""</section>
-        <section class="container-d">""</section>
-        <section class="container-e">""</section>
-        <section class="container-f">""</section>
-    </div>
-    <div class="card">
-        <input type="radio" name="size" id="Probe-37">
-        <label for="Probe-37"><b>Probe-37</b></label>
-        <section class="container-a">""</section>
-        <section class="container-b">""</section>
-        <section class="container-c">""</section>
-        <section class="container-d">""</section>
-        <section class="container-e">""</section>
-        <section class="container-f">""</section>
-    </div>
-    <div class="card">
-        <input type="radio" name="size" id="Probe-38">
-        <label for="Probe-38"><b>Probe-38</b></label>
-        <section class="container-a">""</section>
-        <section class="container-b">""</section>
-        <section class="container-c">""</section>
-        <section class="container-d">""</section>
-        <section class="container-e">""</section>
-        <section class="container-f">""</section>
-    </div>
-    <div class="card">
-        <input type="radio" name="size" id="Probe-39">
-        <label for="Probe-39"><b>Probe-39</b></label>
-        <section class="container-a">""</section>
-        <section class="container-b">""</section>
-        <section class="container-c">""</section>
-        <section class="container-d">""</section>
-        <section class="container-e">""</section>
-        <section class="container-f">""</section>
-    </div>
-    <div class="card">
-        <input type="radio" name="size" id="Probe-40">
-        <label for="Probe-40"><b>Probe-40</b></label>
-        <section class="container-a">""</section>
-        <section class="container-b">""</section>
-        <section class="container-c">""</section>
-        <section class="container-d">""</section>
-        <section class="container-e">""</section>
-        <section class="container-f">""</section>
-    </div>
-    <div class="card">
-        <input type="radio" name="size" id="Probe-41">
-        <label for="Probe-41"><b>Probe-41</b></label>
-        <section class="container-a">""</section>
-        <section class="container-b">""</section>
-        <section class="container-c">""</section>
-        <section class="container-d">""</section>
-        <section class="container-e">""</section>
-        <section class="container-f">""</section>
-    </div>
-    <div class="card">
-        <input type="radio" name="size" id="Probe-42">
-        <label for="Probe-42"><b>Probe-42</b></label>
-        <section class="container-a">""</section>
-        <section class="container-b">""</section>
-        <section class="container-c">""</section>
-        <section class="container-d">""</section>
-        <section class="container-e">""</section>
-        <section class="container-f">""</section>
-    </div>
-</div>
-<button type="button" class="btn btn-danger float-start mx-1 my-3" style="width:250px;border-radius: 15px"><b>Low Reference</b></button>
-<button type="button" class="btn btn-danger float-start mx-2 my-3" style="width:250px; border-radius: 15px"><b>High Reference</b></button>
-<button type="button" class="btn btn-danger float-end mx-5 my-3" style="width:100px;border-radius: 25px"><a style="text-decoration: none;
-    color:white;" href="{% url 'index' %}"><b>Cancel</b></a></button>
-{% endblock %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Save Example</title>
+</head>
+<body>
+
+  <div class="item item-1">
+    <table border="1">
+      <thead>
+        <tr>
+          <th style="width: 5%;">Sr.No</th>
+          <th style="width: 20%;">Part Name</th>
+          <th style="width: 20%;">Customer Name</th>
+          <th style="width: 20%;">Part Model</th>
+          <th style="width: 20%;">Part No</th>
+          <th style="width: 5%;">Check Box</th>
+        </tr>
+      </thead>
+      <tbody class="tableBody-1"></tbody>
+    </table><br>
+    <button onclick="addRow('item-1', 6)">Add New</button>
+  </div>
+
+  <div class="item item-2">
+    <table border="1">
+      <thead>
+        <tr>
+          <th style="width: 5%;">Sr.No</th>
+          <th style="width: 20%;">Batch No</th>
+          <th style="width: 5%;">Check Box</th>
+        </tr>
+      </thead>
+      <tbody class="tableBody-2"></tbody>
+    </table><br>
+    <button onclick="addRow('item-2', 3)">Add New</button>
+  </div>
+
+  <!-- Repeat the structure for other items -->
+
+  <button type="button" id="save-btn"><b>Save</b></button>
+
+  <script>
+    // Function to add a new row to the table
+    function addRow(itemClassName, numColumns) {
+      var tableBody = document.querySelector('#' + itemClassName + ' tbody');
+      var newRow = tableBody.insertRow(tableBody.rows.length);
+
+      // Insert cells with input elements
+      for (var i = 0; i < numColumns; i++) {
+        var cell = newRow.insertCell(i);
+        var input = document.createElement('input');
+        input.type = 'text';
+        cell.appendChild(input);
+      }
+    }
+
+    // Function to save values
+    function saveValues() {
+      var tableBodies = document.querySelectorAll('.tableBody');
+      var data = [];
+
+      tableBodies.forEach(function (tableBody, index) {
+        var rows = tableBody.querySelectorAll('tr');
+        var rowData = [];
+
+        rows.forEach(function (row) {
+          var cells = row.querySelectorAll('input');
+          var cellData = [];
+
+          cells.forEach(function (cell) {
+            cellData.push(cell.value);
+          });
+
+          rowData.push(cellData);
+        });
+
+        data.push({ tableIndex: index + 1, rows: rowData });
+      });
+
+      // Here, you can decide how to handle or store the data
+      console.log('Data to be saved:', data);
+      // You may want to send the data to the server or perform other actions
+    }
+
+    // Attach click event handler to the "Save" button
+    document.getElementById('save-btn').addEventListener('click', saveValues);
+  </script>
+
+</body>
+</html>
