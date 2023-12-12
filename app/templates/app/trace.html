@@ -22,9 +22,9 @@ Tracability
     margin-top: -400px;
     background-color: white;
     border: 2px solid black;
-  }
-  
-  .box-1 {
+}
+
+.box-1 {
     width: 250px;
     height: 400px;
     margin-top:20px;
@@ -35,7 +35,7 @@ Tracability
     padding-left: 5px;
   }
 
-  .inner-box-1,.inner-box-2,.inner-box-3,.inner-box-4,.inner-box-5{
+.inner-box-1, .inner-box-2, .inner-box-3, .inner-box-4, .inner-box-5{
     width: 230px; 
     height: 50px;
     background-color:lightblue; 
@@ -48,7 +48,6 @@ Tracability
     font-family: Arial, Helvetica, sans-serif;
   }
 
-
 .item-1, .item-2, .item-3, .item-4, .item-5{
     border: 1px solid #ccc;
     padding: 20px;
@@ -56,234 +55,281 @@ Tracability
     transition: transform 0.3s; 
   }
 
- 
-  #save-btn{
+#save-btn{
     background-color: green;
     color: white;
     height: 50px;
     width: 200px;
     margin-top: 20px;
     margin-left: 100px;
-  }
-  #delete-btn{
+}
+
+#delete-btn{
     background-color: red;
     color: white;
     height: 50px;
     width: 200px;
     margin-top: 20px;
     margin-left: 450px;
-  }
-  #cancel-btn{
+}
+
+#cancel-btn{
     background-color: orange;
     color:black;
     margin-top: 15px;
     height: 50px;
     width: 200px;
-    margin-left: 100px;
-   
-  }
-  table {
+    margin-left: 100px;  
+}
+
+table {
     border-collapse: collapse;
     width: 100%;
-  }
+}
 
-  th, td {
+th, td {
     border: 1px solid black;
     padding: 8px;
     text-align: center;
-  }
+}
 
-  .inner-box:hover {
-      background-color: #f11a1a;
-    }
+
 
 </style>
 
 <div class="box-0">
-  <center style="color:black;text-shadow: 2px 2px 4px white;">
-    <h1><b>Tracability</b></h1></center>
+    <center style="color:black;text-shadow: 2px 2px 4px white;">
+        <h1><b>Tracability</b></h1></center>
 </div>
 
 <div class="box-1">
-  <div id="part" class="inner-box-1" onclick="enlargeItem(1),showItem('item-1')"><h4><b>Part</b></h4></div>
-  <div id="batchNumber" class="inner-box-2" onclick="enlargeItem(2),showItem('item-2')"><h4><b>Batch Number</b></h4></div>
-  <div id="machine" class="inner-box-3" onclick="enlargeItem(3),showItem('item-3')"><h4><b>Machine</b></h4></div>
-  <div id="operator" class="inner-box-4" onclick="enlargeItem(4),showItem('item-4')"><h4><b>Operator</b></h4></div>
-  <div id="vendorCode" class="inner-box-5" onclick="enlargeItem(5),showItem('item-5')"><h4><b>Vendor Code</b></h4></div>
-
+    <div id="part" class="inner-box-1" onclick="enlargeItem(1),showItem('item-1')"><h4><b>Part</b></h4></div>
+    <div id="batchNumber" class="inner-box-2" onclick="enlargeItem(2),showItem('item-2')"><h4><b>Batch Number</b></h4></div>
+    <div id="machine" class="inner-box-3" onclick="enlargeItem(3),showItem('item-3')"><h4><b>Machine</b></h4></div>
+    <div id="operator" class="inner-box-4" onclick="enlargeItem(4),showItem('item-4')"><h4><b>Operator</b></h4></div>
+    <div id="vendorCode" class="inner-box-5" onclick="enlargeItem(5),showItem('item-5')"><h4><b>Vendor Code</b></h4></div>
 </div>
+
 <div class="box" id="boxContent"style="overflow-x: auto;overflow-y:auto;">
-  <div class="item item-1">
-    <table border="1">
-      <thead>
-        <tr>
-          <th style="width: 5%;">Sr.No</th>
-          <th style="width: 20%;">Part Name</th>
-          <th style="width: 20%;">Customer Name</th>
-          <th style="width: 20%;">Part Model</th>
-          <th style="width: 20%;">Part No</th>
-          <th style="width: 5%;">Check Box</th>
-        </tr>
-      </thead>
-      <tbody id="tableBody-1"></tbody>
-    </table><br>
-    <button onclick="addRow('item-1', 6)">Add New</button>
-  </div>
+    <div class="item item-1">
+        <table border="1">
+            <thead>
+                <tr>
+                    <th style="width: 5%;">Sr.No</th>
+                    <th style="width: 20%;">Part Name</th>
+                    <th style="width: 20%;">Customer Name</th>
+                    <th style="width: 20%;">Part Model</th>
+                    <th style="width: 20%;">Part No</th>
+                    <th style="width: 5%;">Check Box</th>
+                </tr>
+            </thead>
+            <tbody id="tableBody-1"></tbody>
+        </table><br>
+        <button onclick="addRow('item-1', 6)">Add New</button>
+    </div>
 
-  <div class="item item-2">
-    <table border="1">
-      <thead>
-        <tr>
-          <th style="width: 5%;">Sr.No</th>
-          <th style="width: 20%;">Batch No</th>
-          <th style="width: 5%;">Check Box</th>
-        </tr>
-      </thead>
-      <tbody id="tableBody-2"></tbody>
-    </table><br>
-    <button onclick="addRow('item-2', 3)">Add New</button>
-  </div>
+    <div class="item item-2">
+        <table border="1">
+            <thead>
+                <tr>
+                    <th style="width: 5%;">Sr.No</th>
+                    <th style="width: 20%;">Batch No</th>
+                </tr>
+            </thead>
+            <tbody id="tableBody-2"></tbody>
+        </table><br>
+        <button onclick="addRow('item-2', 3)">Add New</button>
+    </div>
 
-  <div class="item item-3">
-    <table border="1">
-      <thead>
-        <tr>
-          <th style="width: 5%;">Sr.No</th>
-          <th style="width: 20%;">Machine No</th>
-          <th style="width: 20%;">Machine Name</th>
-          <th style="width: 5%;">Check Box</th>
-        </tr>
-      </thead>
-      <tbody id="tableBody-3"></tbody>
-    </table><br>
-    <button onclick="addRow('item-3', 4)">Add New</button>
-  </div>
+    <div class="item item-3">
+        <table border="1">
+            <thead>
+                <tr>
+                    <th style="width: 5%;">Sr.No</th>
+                    <th style="width: 20%;">Machine No</th>
+                    <th style="width: 20%;">Machine Name</th>
+                </tr>
+            </thead>
+            <tbody id="tableBody-3"></tbody>
+        </table><br>
+        <button onclick="addRow('item-3', 4)">Add New</button>
+    </div>
 
-  <div class="item item-4">
-    <table border="1">
-      <thead>
-        <tr>
-          <th style="width: 5%;">Sr.No</th>
-          <th style="width: 20%;">Operator No</th>
-          <th style="width: 20%;">Operator Name</th>
-          <th style="width: 5%;">Check Box</th>
-        </tr>
-      </thead>
-      <tbody id="tableBody-4"></tbody>
-    </table><br>
-    <button onclick="addRow('item-4', 4)">Add New</button>
-  </div>
+    <div class="item item-4">
+        <table border="1">
+            <thead>
+                <tr>
+                    <th style="width: 5%;">Sr.No</th>
+                    <th style="width: 20%;">Operator No</th>
+                    <th style="width: 20%;">Operator Name</th>
+                </tr>
+            </thead>
+            <tbody id="tableBody-4"></tbody>
+        </table><br>
+        <button onclick="addRow('item-4', 4)">Add New</button>
+    </div>
 
-  <div class="item item-5">
-    <table border="1">
-      <thead>
-        <tr>
-          <th style="width: 5%;">Sr.No</th>
-          <th style="width: 25%;">Vendor Code</th>
-          <th style="width: 25%;">Email</th>
-          <th style="width: 5%;">Check Box</th>
-        </tr>
-      </thead>
-      <tbody id="tableBody-5"></tbody>
-    </table><br>
-    <button onclick="addRow('item-5', 4)">Add New</button>
-  </div>
+    <div class="item item-5">
+        <table border="1">
+            <thead>
+                <tr>
+                    <th style="width: 5%;">Sr.No</th>
+                    <th style="width: 25%;">Vendor Code</th>
+                    <th style="width: 25%;">Email</th>
+                </tr>
+            </thead>
+            <tbody id="tableBody-5"></tbody>
+        </table><br>
+        <button onclick="addRow('item-5', 4)">Add New</button>
+    </div>
 </div>
 
-<button type="button" id="delete-btn"><b> Delete</b></button>
-<button type="button" id="save-btn"><b>Save</b></button>
+<button type="button" id="save-btn" onclick="saveData()"><b>Save</b></button>
+<button type="button" id="delete-btn" onclick="deleteSelectedRows()"><b>Delete Selected</b></button>
+
 <a href="{% url 'index' %}" >
-  <button type="button" id="cancel-btn"><b>Cancel</b></button>
+    <button type="button" id="cancel-btn"><b>Cancel</b></button>
 </a>
 
 <script>
-
- function enlargeItem(index) {
-    // Remove 'enlarged' class and reset background color for all inner-boxes
+function enlargeItem(index) {
     document.querySelectorAll('.box-1 > div').forEach(function (el) {
-      el.style.backgroundColor = ''; 
+        el.style.backgroundColor = ''; 
     });
     var clickedInnerBox = document.querySelector(`.box-1 .inner-box-${index}`);
-    clickedInnerBox.style.backgroundColor = 'red'; // Set background color to red
-  }
+    clickedInnerBox.style.backgroundColor = 'red';
+}
 
-
-
-    window.onload = function() {
-          showItem('item-1');
-        };
-
-
-    function showItem(itemClassName) {
+function showItem(itemClassName) {
     var itemClasses = document.querySelectorAll('.item');
     itemClasses.forEach(function (item) {
-      item.style.display = 'none';
+        item.style.display = 'none';
     });
 
     var selectedItem = document.querySelector('.' + itemClassName);
     if (selectedItem) {
-      selectedItem.style.display = 'block';
+        selectedItem.style.display = 'block';
     }
-  }
-
-
-  function addRow(itemClassName, numColumns) {
-  var tableBody = document.querySelector('#tableBody-' + itemClassName.charAt(itemClassName.length - 1));
-  var newRow = tableBody.insertRow(tableBody.rows.length);
-
-  // Add Serial Number in the first column
-  var serialCell = newRow.insertCell(0);
-  serialCell.textContent = tableBody.rows.length; // Assuming that the table starts from 1
-
-  // Add data cells (input type text)
-  for (var i = 1; i < numColumns - 1; i++) {
-    var cell = newRow.insertCell(i);
-    var input = document.createElement('input');
-    input.type = 'text';
-    input.style.width = '100%';
-    input.style.padding = '0'; // Set padding to 0
-    input.style.border = 'none'; // Remove border
-    input.style.outline = 'none'; // Remove outline
-    cell.appendChild(input);
-  }
-
-  // Add checkbox in the last column
-  var checkboxCell = newRow.insertCell(numColumns - 1);
-  var checkbox = document.createElement('input');
-  checkbox.type = 'checkbox';
-  checkboxCell.appendChild(checkbox);
 }
-// Function to save values
-function saveValues() {
-      var tables = document.querySelectorAll('.item table tbody');
-      var data = [];
 
-      tables.forEach(function (table, index) {
-        var rows = table.querySelectorAll('tr');
-        var rowData = [];
+var rowData = {};
 
-        rows.forEach(function (row) {
-          var cells = row.querySelectorAll('input');
-          var cellData = [];
+window.onload = function () {
+    rowData = loadData() || {};
+    populateTables();
+    showItem('item-1');
+};
 
-          cells.forEach(function (cell) {
-            cellData.push(cell.value);
-          });
+function loadData() {
+    var savedData = localStorage.getItem('tableData');
+    return savedData ? JSON.parse(savedData) : {};
+}
 
-          rowData.push(cellData);
-        });
+function saveData() {
+    var tables = document.querySelectorAll('.item');
+    tables.forEach((table, index) => {
+        var tableBodyId = 'tableBody-' + (index + 1);
+        var tableBody = table.querySelector('#' + tableBodyId);
 
-        data.push({ tableIndex: index + 1, rows: rowData });
-      });
+        rowData[tableBodyId] = [];
 
-      // Here, you can decide how to handle or store the data
-      console.log('Data to be saved:', data);
-      // You may want to send the data to the server or perform other actions
+        for (var i = 0; i < tableBody.rows.length; i++) {
+            var row = tableBody.rows[i];
+            var rowDataIndex = rowData[tableBodyId].findIndex(data => data.rowIndex === i + 1);
+            if (rowDataIndex === -1) {
+                rowData[tableBodyId].push({
+                    rowIndex: i + 1,
+                    values: []
+                });
+                rowDataIndex = rowData[tableBodyId].length - 1;
+            }
+
+            for (var j = 1; j < row.cells.length - 1; j++) {
+                var input = row.cells[j].querySelector('input');
+                rowData[tableBodyId][rowDataIndex].values[j - 1] = input.value;
+            }
+        }
+    });
+
+    localStorage.setItem('tableData', JSON.stringify(rowData));
+    console.log('Data saved:', rowData);
+}
+
+function addRow(itemClassName, numColumns) {
+    var tableBodyId = 'tableBody-' + itemClassName.charAt(itemClassName.length - 1);
+    var tableBody = document.querySelector('#' + tableBodyId);
+    var newRow = tableBody.insertRow(tableBody.rows.length);
+
+    var rowIndex = tableBody.rows.length;
+
+    var serialCell = newRow.insertCell(0);
+    serialCell.textContent = rowIndex;
+
+    for (var i = 1; i < numColumns - 1; i++) {
+        var cell = newRow.insertCell(i);
+        var input = document.createElement('input');
+        input.type = 'text';
+        input.style.width = '100%';
+        input.style.padding = '0';
+        input.style.border = 'none';
+        input.style.outline = 'none';
+        cell.appendChild(input);
     }
 
-    // Attach click event handler to the "Save" button
-    document.getElementById('save-btn').addEventListener('click', saveValues);
+    // Add checkbox in the last column only for the first table (Part)
+    if (itemClassName === 'item-1') {
+        var checkboxCell = newRow.insertCell(numColumns - 1);
+        var checkbox = document.createElement('input');
+        checkbox.type = 'checkbox';
+        checkboxCell.appendChild(checkbox);
+    }
 
+    if (!rowData[tableBodyId]) {
+        rowData[tableBodyId] = [];
+    }
 
+    rowData[tableBodyId].push({
+        rowIndex: rowIndex,
+        values: []
+    });
+}
+
+function populateTables() {
+    var tables = document.querySelectorAll('.item');
+    tables.forEach((table, index) => {
+        var tableBodyId = 'tableBody-' + (index + 1);
+        var tableBody = table.querySelector('#' + tableBodyId);
+
+        if (rowData[tableBodyId]) {
+            for (var i = 0; i < rowData[tableBodyId].length; i++) {
+                var data = rowData[tableBodyId][i];
+                var newRow = tableBody.insertRow(tableBody.rows.length);
+
+                var serialCell = newRow.insertCell(0);
+                serialCell.textContent = data.rowIndex;
+
+                for (var j = 0; j < data.values.length; j++) {
+                    var cell = newRow.insertCell(j + 1);
+                    var input = document.createElement('input');
+                    input.type = 'text';
+                    input.style.width = '100%';
+                    input.style.padding = '0';
+                    input.style.border = 'none';
+                    input.style.outline = 'none';
+                    input.value = data.values[j];
+                    cell.appendChild(input);
+                }
+
+                // Add checkbox in the last column only for the first table (Part)
+                if (index === 0) {
+                    var checkboxCell = newRow.insertCell(data.values.length + 1);
+                    var checkbox = document.createElement('input');
+                    checkbox.type = 'checkbox';
+                    checkboxCell.appendChild(checkbox);
+                }
+            }
+        }
+    });
+}
 </script>
 {% endblock content %}
