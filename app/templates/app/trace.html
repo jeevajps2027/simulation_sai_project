@@ -111,16 +111,15 @@ th, td {
 </div>
 
 <div class="box" id="boxContent"style="overflow-x: auto;overflow-y:auto;">
-    <div class="item item-1">
+    <div class="item item-1" id="item1">
         <table border="1">
             <thead>
                 <tr>
                     <th style="width: 5%;">Sr.No</th>
-                    <th style="width: 20%;">Part Name</th>
-                    <th style="width: 20%;">Customer Name</th>
-                    <th style="width: 20%;">Part Model</th>
-                    <th style="width: 20%;">Part No</th>
-                    <th style="width: 5%;">Check Box</th>
+                    <th style="width: 20%;" id="partname">Part Name</th>
+                    <th style="width: 20%;" id="customername">Customer Name</th>
+                    <th style="width: 20%;" id="partmodel">Part Model</th>
+                    <th style="width: 20%;" id="partno">Part No</th>
                 </tr>
             </thead>
             <tbody id="tableBody-1"></tbody>
@@ -128,12 +127,12 @@ th, td {
         <button onclick="addRow('item-1', 6)">Add New</button>
     </div>
 
-    <div class="item item-2">
+    <div class="item item-2" id="item2">
         <table border="1">
             <thead>
                 <tr>
                     <th style="width: 5%;">Sr.No</th>
-                    <th style="width: 20%;">Batch No</th>
+                    <th id="batchno" style="width: 20%;">Batch No</th>
                 </tr>
             </thead>
             <tbody id="tableBody-2"></tbody>
@@ -141,13 +140,13 @@ th, td {
         <button onclick="addRow('item-2', 3)">Add New</button>
     </div>
 
-    <div class="item item-3">
+    <div class="item item-3" id="item3">
         <table border="1">
             <thead>
                 <tr>
                     <th style="width: 5%;">Sr.No</th>
-                    <th style="width: 20%;">Machine No</th>
-                    <th style="width: 20%;">Machine Name</th>
+                    <th id="machineno" style="width: 20%;">Machine No</th>
+                    <th id="machinename" style="width: 20%;">Machine Name</th>
                 </tr>
             </thead>
             <tbody id="tableBody-3"></tbody>
@@ -155,13 +154,13 @@ th, td {
         <button onclick="addRow('item-3', 4)">Add New</button>
     </div>
 
-    <div class="item item-4">
+    <div class="item item-4" id="item-4">
         <table border="1">
             <thead>
                 <tr>
                     <th style="width: 5%;">Sr.No</th>
-                    <th style="width: 20%;">Operator No</th>
-                    <th style="width: 20%;">Operator Name</th>
+                    <th id="operatorno" style="width: 20%;">Operator No</th>
+                    <th id="operatorname" style="width: 20%;">Operator Name</th>
                 </tr>
             </thead>
             <tbody id="tableBody-4"></tbody>
@@ -169,13 +168,13 @@ th, td {
         <button onclick="addRow('item-4', 4)">Add New</button>
     </div>
 
-    <div class="item item-5">
+    <div class="item item-5" id="item-5">
         <table border="1">
             <thead>
                 <tr>
                     <th style="width: 5%;">Sr.No</th>
-                    <th style="width: 25%;">Vendor Code</th>
-                    <th style="width: 25%;">Email</th>
+                    <th id="vendorcode" style="width: 25%;">Vendor Code</th>
+                    <th id="email" style="width: 25%;">Email</th>
                 </tr>
             </thead>
             <tbody id="tableBody-5"></tbody>
@@ -183,7 +182,6 @@ th, td {
         <button onclick="addRow('item-5', 4)">Add New</button>
     </div>
 </div>
-
 <button type="button" id="save-btn" onclick="saveData()"><b>Save</b></button>
 <button type="button" id="delete-btn" onclick="deleteSelectedRows()"><b>Delete Selected</b></button>
 
@@ -191,7 +189,10 @@ th, td {
     <button type="button" id="cancel-btn"><b>Cancel</b></button>
 </a>
 
+
 <script>
+
+
 function enlargeItem(index) {
     document.querySelectorAll('.box-1 > div').forEach(function (el) {
         el.style.backgroundColor = ''; 
@@ -218,6 +219,7 @@ window.onload = function () {
     rowData = loadData() || {};
     populateTables();
     showItem('item-1');
+    document.querySelector('.box-1 .inner-box-1').style.backgroundColor='red';
 };
 
 function loadData() {
@@ -225,42 +227,74 @@ function loadData() {
     return savedData ? JSON.parse(savedData) : {};
 }
 
+
+
 function saveData() {
-    var tables = document.querySelectorAll('.item');
-    tables.forEach((table, index) => {
-        var tableBodyId = 'tableBody-' + (index + 1);
-        var tableBody = table.querySelector('#' + tableBodyId);
+var tables = document.querySelectorAll('.item');
+var allRowData = {}; // All row data for all tables
+tables.forEach((table, index) => {
+    var tableBodyId = 'tableBody-' + (index + 1);
+    var tableBody = table.querySelector('#' + tableBodyId);
+    var rowData = []; // Row data for a specific table
 
-        rowData[tableBodyId] = [];
+    for (var i = 0; i < tableBody.rows.length; i++) {
+        var row = tableBody.rows[i];
+        var rowDataItem = {
+            rowIndex: i + 1,
+            values: []
+        };
 
-        for (var i = 0; i < tableBody.rows.length; i++) {
-            var row = tableBody.rows[i];
-            var rowDataIndex = rowData[tableBodyId].findIndex(data => data.rowIndex === i + 1);
-            if (rowDataIndex === -1) {
-                rowData[tableBodyId].push({
-                    rowIndex: i + 1,
-                    values: []
-                });
-                rowDataIndex = rowData[tableBodyId].length - 1;
-            }
-
-            for (var j = 1; j < row.cells.length; j++) {
-                var input = row.cells[j].querySelector('input');
-                rowData[tableBodyId][rowDataIndex].values[j - 1] = input.value;
-            }
+        for (var j = 1; j < row.cells.length; j++) {
+            var input = row.cells[j].querySelector('input');
+            rowDataItem.values.push(input.value);
         }
-    });
+        rowData.push(rowDataItem);
+    }
 
-    localStorage.setItem('tableData', JSON.stringify(rowData));
-    console.log('Data saved:', rowData);
+    allRowData[tableBodyId] = rowData;
+});
+
+// Update localStorage with allRowData
+localStorage.setItem('tableData', JSON.stringify(allRowData));
+console.log('Data saved:', allRowData);
+
+// Send allRowData to the backend
+$.ajax({
+    type: 'POST',
+    url: '/trace/', // Replace with your actual backend endpoint
+    data: {
+        'tableData': JSON.stringify(allRowData)
+    },
+    success: function(response) {
+        // Handle success response from the server if needed
+        console.log('Response from server:', response);
+    },
+    error: function(xhr, status, error) {
+        // Handle error response from the server if needed
+        console.error('Error saving data:', error);
+    }
+});
 }
+
 
 function addRow(itemClassName, numColumns) {
     var tableBodyId = 'tableBody-' + itemClassName.charAt(itemClassName.length - 1);
     var tableBody = document.querySelector('#' + tableBodyId);
     var newRow = tableBody.insertRow(tableBody.rows.length);
-
     var rowIndex = tableBody.rows.length;
+
+    newRow.addEventListener('click', function(event) {
+        var rows = tableBody.querySelectorAll('tr');
+        rows.forEach(function(row) {
+            row.style.backgroundColor = ''; // Reset background color for all rows
+        });
+
+        event.currentTarget.style.backgroundColor = 'lightblue'; // Set background color for the clicked row
+
+        var clickedRowIndex = event.currentTarget.cells[0].textContent; // Get the row index of the clicked row
+        var clickedRowData = getRowData(tableBodyId, parseInt(clickedRowIndex)); // Retrieve data of the clicked row
+        console.log('Selected Row Data:', clickedRowData);
+    });
 
     var serialCell = newRow.insertCell(0);
     serialCell.textContent = rowIndex;
@@ -276,8 +310,7 @@ function addRow(itemClassName, numColumns) {
         cell.appendChild(input);
     }
 
-    // Add checkbox in the last column only for the first table (Part)
-    if (itemClassName === 'item-1') {
+    if (itemClassName === 'item-1'){
         var checkboxCell = newRow.insertCell(numColumns - 1);
         var checkbox = document.createElement('input');
         checkbox.type = 'checkbox';
@@ -292,6 +325,17 @@ function addRow(itemClassName, numColumns) {
         rowIndex: rowIndex,
         values: []
     });
+}
+
+
+function getRowData(tableBodyId, rowIndex) {
+    if (rowData[tableBodyId]) {
+        var selectedRowData = rowData[tableBodyId].find(function(data) {
+            return data.rowIndex === rowIndex;
+        });
+        return selectedRowData ? selectedRowData.values : null;
+    }
+    return null;
 }
 
 function populateTables() {
@@ -320,17 +364,59 @@ function populateTables() {
                     cell.appendChild(input);
                 }
 
-                // Add checkbox in the last column only for the first table (Part)
-                if (index === 0) {
-                    var checkboxCell = newRow.insertCell(data.values.length + 1);
-                    var checkbox = document.createElement('input');
-                    checkbox.type = 'checkbox';
-                    checkboxCell.appendChild(checkbox);
-                }
+                newRow.addEventListener('click', function(event) {
+                    var rows = tableBody.querySelectorAll('tr');
+                    rows.forEach(function(row) {
+                        row.style.backgroundColor = ''; // Reset background color for all rows
+                    });
+
+                    event.currentTarget.style.backgroundColor = 'yellow'; // Set background color for the clicked row
+
+                    var clickedRowIndex = event.currentTarget.cells[0].textContent; // Get the row index of the clicked row
+                    var clickedRowData = getRowData(tableBodyId, parseInt(clickedRowIndex)); // Retrieve data of the clicked row
+                    console.log('Selected Row Data:', clickedRowData);
+                });
             }
         }
     });
 }
-</script>
 
-{% endblock content %}
+populateTables(); 
+
+
+function deleteSelectedRows() {
+var tables = document.querySelectorAll('.item');
+
+tables.forEach((table, index) => {
+    var tableBodyId = 'tableBody-' + (index + 1);
+    var tableBody = table.querySelector('#' + tableBodyId);
+    var rows = tableBody.querySelectorAll('tr');
+    
+    rows.forEach(function(row) {
+        if (row.style.backgroundColor === 'yellow') {
+            var rowIndex = parseInt(row.cells[0].textContent);
+            var rowDataIndex = rowData[tableBodyId].findIndex(data => data.rowIndex === rowIndex);
+            
+            if (rowDataIndex !== -1) {
+                rowData[tableBodyId].splice(rowDataIndex, 1); // Remove selected row data
+                tableBody.deleteRow(row.rowIndex - 1); // Delete the row from the table
+            }
+        }
+    });
+});
+
+// Optional: Clear the yellow background color after deletion
+var selectedRows = document.querySelectorAll('tr[style="background-color: yellow;"]');
+selectedRows.forEach(function(row) {
+    row.style.backgroundColor = '';
+});
+
+// Update localStorage after deletion if needed
+localStorage.setItem('tableData', JSON.stringify(rowData));
+console.log('Row(s) deleted. Updated Data:', rowData);
+}
+
+
+
+</script>
+{% endblock %}
