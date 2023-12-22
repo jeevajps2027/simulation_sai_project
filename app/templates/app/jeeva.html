@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    .notification {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background-color: #4CAF50; /* Green */
+        color: white;
+        padding: 15px;
+        border-radius: 5px;
+        opacity: 0;
+        transition: opacity 0.5s ease-in-out;
+        z-index: 1;
+    }
+
+    .notification.success {
+        background-color: #4CAF50; /* Green */
+    }
+
+    .notification.show {
+        opacity: 1;
+    }
+  </style>
+</head>
+<body>
+
+    <div id="notification" class="notification">
+        <p id="notification-message"></p>
+    </div>
+    
+    <button type="button" id="save-btn" onclick="saveData()"><b>Save</b></button>
+    
+<script>
+  function showNotification(message, type) {
+        var notificationElement = document.getElementById('notification');
+        var notificationMessageElement = document.getElementById('notification-message');
+
+        notificationMessageElement.innerHTML = message;
+        notificationElement.classList.add(type, 'show');
+
+        setTimeout(function () {
+            notificationElement.classList.remove(type, 'show');
+        }, 3000);  // Display the notification for 3 seconds (adjust as needed)
+    }
+
+    function saveData() {
+        // Your existing saveData() function code here
+
+        // Show a success notification
+        showNotification('Data saved successfully!', 'success');
+    }
+</script>
+
+</body>
+</html>

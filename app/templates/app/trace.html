@@ -93,14 +93,29 @@ th, td {
     text-align: center;
 }
 
+#notification {
+    display: none;
+    position: fixed;
+    
+    top: 50%;
+    left: 60%;
+    transform: translate(-50%, -50%);
+    padding: 10px;
+    border-radius: 5px;
+   font-weight: bold;
+    color: black;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); /* Optional: Add a box shadow for better visibility */
+    z-index: 1000; /* Set a higher z-index to ensure it appears above other elements */
+}
 
 
 </style>
-
 <div class="box-0">
     <center style="color:black;text-shadow: 2px 2px 4px white;">
         <h1><b>Tracability</b></h1></center>
 </div>
+
+<div id="notification" style="display: none;"></div>
 
 <div class="box-1">
     <div id="part" class="inner-box-1" onclick="enlargeItem(1),showItem('item-1')"><h4><b>Part</b></h4></div>
@@ -189,8 +204,27 @@ th, td {
     <button type="button" id="cancel-btn"><b>Cancel</b></button>
 </a>
 
-
 <script>
+
+
+function showNotification(message, isSuccess) {
+      var notificationElement = document.getElementById('notification');
+      notificationElement.textContent = message;
+
+      if (isSuccess) {
+          notificationElement.style.backgroundColor = 'yellow';
+      } else {
+          notificationElement.style.backgroundColor = 'red';
+      }
+
+      // Display the notification
+      notificationElement.style.display = 'block';
+
+      // Hide the notification after 3 seconds (adjust the timeout as needed)
+      setTimeout(function () {
+          notificationElement.style.display = 'none';
+      }, 1500);
+  }
 
 
 function enlargeItem(index) {
@@ -230,50 +264,52 @@ function loadData() {
 
 
 function saveData() {
-var tables = document.querySelectorAll('.item');
-var allRowData = {}; // All row data for all tables
-tables.forEach((table, index) => {
-    var tableBodyId = 'tableBody-' + (index + 1);
-    var tableBody = table.querySelector('#' + tableBodyId);
-    var rowData = []; // Row data for a specific table
+    var tables = document.querySelectorAll('.item');
+    var allRowData = {}; // All row data for all tables
+    tables.forEach((table, index) => {
+        var tableBodyId = 'tableBody-' + (index + 1);
+        var tableBody = table.querySelector('#' + tableBodyId);
+        var rowData = []; // Row data for a specific table
 
-    for (var i = 0; i < tableBody.rows.length; i++) {
-        var row = tableBody.rows[i];
-        var rowDataItem = {
-            rowIndex: i + 1,
-            values: []
-        };
+        for (var i = 0; i < tableBody.rows.length; i++) {
+            var row = tableBody.rows[i];
+            var rowDataItem = {
+                rowIndex: i + 1,
+                values: []
+            };
 
-        for (var j = 1; j < row.cells.length; j++) {
-            var input = row.cells[j].querySelector('input');
-            rowDataItem.values.push(input.value);
+            for (var j = 1; j < row.cells.length; j++) {
+                var input = row.cells[j].querySelector('input');
+                rowDataItem.values.push(input.value);
+            }
+            rowData.push(rowDataItem);
         }
-        rowData.push(rowDataItem);
-    }
 
-    allRowData[tableBodyId] = rowData;
-});
+        allRowData[tableBodyId] = rowData;
+    });
 
-// Update localStorage with allRowData
-localStorage.setItem('tableData', JSON.stringify(allRowData));
-console.log('Data saved:', allRowData);
+    // Update localStorage with allRowData
+    localStorage.setItem('tableData', JSON.stringify(allRowData));
+    console.log('Data saved:', allRowData);
 
-// Send allRowData to the backend
-$.ajax({
-    type: 'POST',
-    url: '/trace/', // Replace with your actual backend endpoint
-    data: {
-        'tableData': JSON.stringify(allRowData)
-    },
-    success: function(response) {
-        // Handle success response from the server if needed
-        console.log('Response from server:', response);
-    },
-    error: function(xhr, status, error) {
-        // Handle error response from the server if needed
-        console.error('Error saving data:', error);
-    }
-});
+    // Send allRowData to the backend
+    $.ajax({
+        type: 'POST',
+        url: '/trace/', // Replace with your actual backend endpoint
+        data: {
+            'tableData': JSON.stringify(allRowData)
+        },
+        success: function(response) {
+            // Handle success response from the server if needed
+            console.log('Response from server:', response);
+            showNotification('Data saved successfully.', true);
+        },
+        error: function(xhr, status, error) {
+            // Handle error response from the server if needed
+            console.error('Error saving data:', error);
+            showNotification('Error saving data.', false);
+        }
+    });
 }
 
 
@@ -384,38 +420,98 @@ function populateTables() {
 populateTables(); 
 
 
+
 function deleteSelectedRows() {
-var tables = document.querySelectorAll('.item');
+    var tables = document.querySelectorAll('.item');
+    var rowsToDelete = [];
 
-tables.forEach((table, index) => {
-    var tableBodyId = 'tableBody-' + (index + 1);
-    var tableBody = table.querySelector('#' + tableBodyId);
-    var rows = tableBody.querySelectorAll('tr');
-    
-    rows.forEach(function(row) {
-        if (row.style.backgroundColor === 'yellow') {
-            var rowIndex = parseInt(row.cells[0].textContent);
-            var rowDataIndex = rowData[tableBodyId].findIndex(data => data.rowIndex === rowIndex);
-            
-            if (rowDataIndex !== -1) {
-                rowData[tableBodyId].splice(rowDataIndex, 1); // Remove selected row data
-                tableBody.deleteRow(row.rowIndex - 1); // Delete the row from the table
+    tables.forEach((table, index) => {
+        var tableBodyId = 'tableBody-' + (index + 1);
+        var tableBody = table.querySelector('#' + tableBodyId);
+        var rows = tableBody.querySelectorAll('tr');
+
+        rows.forEach(function(row) {
+            if (row.style.backgroundColor === 'yellow') {
+                var rowIndex = parseInt(row.cells[0].textContent);
+                var rowDataIndex = rowData[tableBodyId].findIndex(data => data.rowIndex === rowIndex);
+
+                if (rowDataIndex !== -1) {
+                    var values = rowData[tableBodyId][rowDataIndex].values;
+
+                    // Ensure values array has at least four elements
+                    while (values.length < 4) {
+                        values.push('');  // Pad with empty strings if needed
+                    }
+
+                    // Queue rows for deletion
+                    rowsToDelete.push({
+                        tableId: tableBodyId,
+                        rowIndex: rowIndex,
+                        values: values
+                    });
+
+                    // Optional: Clear the yellow background color after queuing for deletion
+                    row.style.backgroundColor = '';
+                }
             }
-        }
+        });
     });
-});
 
-// Optional: Clear the yellow background color after deletion
-var selectedRows = document.querySelectorAll('tr[style="background-color: yellow;"]');
-selectedRows.forEach(function(row) {
-    row.style.backgroundColor = '';
-});
+    // Delete rows from the server
+    var totalRowsToDelete = rowsToDelete.length;
+    var rowsDeletedCount = 0;
 
-// Update localStorage after deletion if needed
-localStorage.setItem('tableData', JSON.stringify(rowData));
-console.log('Row(s) deleted. Updated Data:', rowData);
+    rowsToDelete.forEach(function(rowToDelete) {
+        console.log('Deleting row:', rowToDelete);
+
+        fetch('/trace/', {
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                'tableId': rowToDelete.tableId,
+                'rowIndex': rowToDelete.rowIndex,
+                'values': rowToDelete.values
+            }),
+        })
+        .then(response => response.json())
+        .then(data => {
+            console.log('Response from server:', data);
+
+            if (data.error) {
+                throw new Error(data.error);
+            }
+
+            // Remove selected row data from local storage after successful server deletion
+            var tableBodyId = rowToDelete.tableId;
+            var rowDataIndex = rowData[tableBodyId].findIndex(data => data.rowIndex === rowToDelete.rowIndex);
+            if (rowDataIndex !== -1) {
+                rowData[tableBodyId].splice(rowDataIndex, 1);
+            }
+
+            // Find and delete the row from the table
+            var tableRow = document.querySelector('#' + rowToDelete.tableId + ' tr:nth-child(' + rowToDelete.rowIndex + ')');
+            if (tableRow) {
+                tableRow.remove();
+            }
+
+            rowsDeletedCount++;
+
+            // Update localStorage after deletion if all rows are successfully deleted
+            if (rowsDeletedCount === totalRowsToDelete) {
+                localStorage.setItem('tableData', JSON.stringify(rowData));
+                console.log('All rows deleted. Updated Data:', rowData);
+                showNotification('Rows deleted successfully.', true);
+            }
+        })
+        .catch(error => {
+            console.error('Error deleting row:', error);
+            showNotification('Error deleting rows.', false);
+            // Optional: Handle error by showing a message or taking appropriate action
+        });
+    });
 }
-
 
 
 </script>

@@ -27,7 +27,7 @@ class operatorTable(models.Model):
     operator_no = models.CharField(max_length=100)
     operator_name = models.CharField(max_length=100)
 
-class vendorTable(models.Model):
+class vTable(models.Model):
     vendor_code = models.CharField(max_length=100)
     email = models.EmailField()
 
