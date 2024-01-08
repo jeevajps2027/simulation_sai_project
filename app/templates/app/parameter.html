@@ -12,6 +12,19 @@ Parameter Settings
         background-color: lightblue;
         border: 2px solid black;     
     }
+
+    /* CSS styles for the input fields */
+        .custom-input {
+        background-color: lightblue;
+        cursor: pointer;
+        }
+
+        /* Change background color on focus */
+        .custom-input:focus {
+        background-color: red; /* Change this to the desired highlighted color */
+        }
+
+
     .box-3{
         height: 50px;
         width: 900px;
@@ -27,6 +40,18 @@ Parameter Settings
         border: 2px solid black;  
         margin-top: -530px;
     }
+
+    #model_dropdown {
+    width: 220px;
+}
+
+    /* CSS to style the input element */
+    .box-2 input[type="text"] {
+        border: none; /* Remove border */
+        width: 100%; /* Set width to 100% */
+        outline: none; /* Remove outline */
+    }
+
     label {
             display: inline-block;
             width: 150px; 
@@ -72,16 +97,27 @@ Parameter Settings
             height:40px ;
             margin-left: 10px;
         }
+        #toggleList {
+            list-style-type: none;
+            padding: 0;
+            }
+
+        #toggleList li {
+            margin-bottom: 10px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
 </style>
 
 
 <center style="color: white; text-shadow: 2px 2px 4px #000000;">
     <h1><b>Parameter Settings</b></h1></center>
 
-<div class="box-1">
+<div class="box-1" id="box1">
     
     <label for="partModel">PART MODEL:</label>
-    <input type="text" id="partModel">
+    <input type="text" id="partModel"> 
 
     <label for="parameter_no" style="margin-left: 80px;">PARAMETER NO:</label>
     <select id="parameter_no" name="parameter_no" style="width: 50px;">
@@ -90,14 +126,19 @@ Parameter Settings
                 document.write('<option value="' + i + '">' + i + '</option>');
             }
         </script>
-    </select><br>
+    </select>
+
+
+    <label for="sr.no" style="margin-left: 80px;">SR.NO:</label>
+    <input type="text" id="sr_no" name="sr_no" style="width: 35px;"><br>
+
 
     <label for="parameter_name">PARAMETER NAME:</label>
     <input type="text" id="parameter_name">
     
     <label style="margin-left: 50px;">MASTER:</label>
     <label for="single" style="margin-left: -30px;" >Single
-        <input type="radio" id="single" name="radioOption" onclick="handleRadioClick('single')">
+        <input type="radio" id="single" name="radioOption" oninput="validateInteger(this)" onclick="handleRadioClick('single')">
     </label>
     
     <label for="double" style="margin-left: 10px;">Double
@@ -106,7 +147,7 @@ Parameter Settings
     
 
     <label for="probe_no">PROBE NO:</label>
-    <select id="parameter_name" name="parameter_name">
+    <select id="probe_no" name="probe_no" oninput="validateInteger(this)">
         <script>
             for (var i = 1; i <= 11; i++) {
                 document.write('<option value="' + i + '">' + i + '</option>');
@@ -115,9 +156,9 @@ Parameter Settings
     </select>
 
     <label for="analog_zero">ANALOG ZERO:</label>
-    <input type="text" id="analog_zero" style="width: 10%;">
+    <input type="text" id="analog_zero" style="width: 10%;" oninput="validateInteger(this)">
     <label for="high_mv" style="text-align: right;margin-left: 5px;">HIGH M-V:</label>
-    <input type="text" id="high_mv" style="width: 10%;"><br>
+    <input type="text" id="high_mv" style="width: 10%;" oninput="validateInteger(this)"><br> 
     
     
 
@@ -131,26 +172,26 @@ Parameter Settings
     </select>
 
     <label for="reference_value">REFERENCE VALUE:</label>
-    <input type="text" id="reference_value" style="width: 10%; ">
+    <input type="text" id="reference_value" style="width: 10%; " oninput="validateInteger(this)">
     <label for="low_mv" style="text-align: right; margin-left: 5px;" >LOW M-V:</label>
-    <input type="text" id="low_mv" style="width: 10%; "><br><br>
+    <input type="text" id="low_mv" style="width: 10%; " oninput="validateInteger(this)"><br><br>
 
     
 
     <label for="nominal">NOMINAL:</label>
-    <input type="text" id="nominal" style="width: 10%;">
+    <input type="text" id="nominal" style="width: 10%;" oninput="validateInteger(this)">
 
 
 
     <label for="usl" style="text-align: right;">USL:</label>
-    <input type="text" id="usl" style="width: 10%;">
+    <input type="text" id="usl" style="width: 10%;" oninput="validateInteger(this)">
 
     <label for="lsl" style="text-align: right;">LSL:</label>
-    <input type="text" id="lsl" style="width: 10%;"><br>
+    <input type="text" id="lsl" style="width: 10%;" oninput="validateInteger(this)"><br>
 
 
     <label for="mastering" style="margin-top: 15px;">MASTERING GROUP:</label>
-    <select id="mastering" name="mastering">
+    <select id="mastering" name="mastering" oninput="validateInteger(this)">
         <script>
             for (var i = 1; i <= 30; i++) {
                 document.write('<option value="' + i + '">' + i + '</option>');
@@ -159,7 +200,7 @@ Parameter Settings
     </select>
 
     <label for="step_no">STEP NO:</label>
-    <select id="step_no" name="step_no">
+    <select id="step_no" name="step_no" oninput="validateInteger(this)">
         <script>
             for (var i = 1; i <= 20; i++) {
                 document.write('<option value="' + i + '">' + i + '</option>');
@@ -169,7 +210,7 @@ Parameter Settings
  
     <div class="box-3">
         <button type="button" id="add-btn"><b> Add New</b></button>
-        <button type="button" id="save-btn"><b>Save</b></button>
+        <button type="button" id="save-btn" onclick="saveValues()"><b>Save</b></button>
         <button type="button" id="delete-btn"><b> Delete</b></button> 
         <a href="{% url 'index' %}" >
         <button type="button" id="cancel-btn"><b>Cancel</b></button>
@@ -178,32 +219,202 @@ Parameter Settings
 
 </div>
 
-<div class="box-2">
+<div class="box-2" id="model_name">
+    <ul id="nestedValues">
+        <!-- Nested values will be added here -->
+    </ul>
+   
 </div>
 
 <script>
-    function handleRadioClick(option) {
-        // Get references to the input fields
-        var analogZeroInput = document.getElementById('analog_zero');
-        var highMvInput = document.getElementById('high_mv');
-        var referenceValueInput = document.getElementById('reference_value');
-        var lowMvInput = document.getElementById('low_mv');
 
-        // Reset all fields to enabled
-        analogZeroInput.disabled = false;
-        highMvInput.disabled = false;
-        referenceValueInput.disabled = false;
-        lowMvInput.disabled = false;
 
-        // Disable specific fields based on the radio button clicked
-        if (option === 'single') {
-            document.getElementById('high_mv').disabled = true;
-            document.getElementById('low_mv').disabled = true;
-        } else if (option === 'double') {
-            document.getElementById('analog_zero').disabled = true;
-            document.getElementById('reference_value').disabled = true;
+// Assuming retrievedValues contains your "part model" values
+const retrievedValues = JSON.parse(localStorage.getItem('modeValues'));
+
+// Select the box-2 element
+const box2 = document.getElementById('model_name');
+
+// Create a <ul> element to hold the toggle list
+const toggleList = document.createElement('ul');
+toggleList.id = 'toggleList'; // Assign an ID to the list if needed
+box2.appendChild(toggleList);
+
+// Select the input field for part model
+const partModelInput = document.getElementById('partModel');
+
+// Keep track of the previously selected item
+let previousSelectedItem = null;
+
+// Counter for assigning colors to nested lists
+let nestedListCounter = 0;
+
+// Iterate through the retrieved values and create list items
+retrievedValues.forEach(value => {
+    const listItem = document.createElement('li');
+    listItem.textContent = value;
+
+    // Create a nested <ul> for parameter names
+    const nestedList = document.createElement('ul');
+    nestedList.classList.add('nested-list'); // Add the CSS class to the nested list
+    listItem.appendChild(nestedList);
+
+
+    // Add an event listener to handle the click on each item
+    listItem.addEventListener('click', function () {
+        if (previousSelectedItem !== null) {
+            // Reset the background color of the previously selected item
+            previousSelectedItem.style.backgroundColor = '';
         }
-    }
-</script>
 
-{% endblock content %}
+        // Update the background color of the current item
+        listItem.style.backgroundColor = 'red';
+
+        // Update the part model value
+        updatePartModelValue(value);
+
+        // Set the current item as the previously selected item
+        previousSelectedItem = listItem;
+    });
+
+    // Add the list item to the toggle list
+    toggleList.appendChild(listItem);
+});
+
+// Function to update the part model value
+function updatePartModelValue(value) {
+    // Update the input field with the selected part model value
+    partModelInput.value = value;
+}
+
+
+
+
+///////////////////////////////////////
+let previousSelectedNestedItem = null; // To track the previously selected nested item
+
+function saveValues() {
+    const parameterInput = document.getElementById('parameter_name');
+    const newParameter = parameterInput.value.trim(); // Trim any extra spaces
+
+    if (newParameter !== '') {
+        // Check if a model is selected
+        if (previousSelectedItem !== null) {
+            const selectedModelList = previousSelectedItem.querySelector('ul');
+            const paramItem = document.createElement('li');
+            paramItem.textContent = newParameter;
+            selectedModelList.appendChild(paramItem);
+
+            // Clear the input field after saving the value
+            parameterInput.value = '';
+
+            // Add click event listener to the newly created item
+            paramItem.addEventListener('click', function() {
+                // If there was a previously selected nested item, revert its background color
+                if (previousSelectedNestedItem !== null) {
+                    previousSelectedNestedItem.style.backgroundColor = '';
+                }
+                // Change the background color of the clicked item to green
+                this.style.backgroundColor = 'green';
+                // Store the reference to the currently selected nested item
+                previousSelectedNestedItem = this;
+            });
+
+        } else {
+            alert('Please select a model before adding parameters.');
+        }
+    } else {
+        alert('Please enter a parameter name to save.');
+    }
+}
+
+
+/////////////////////////////////////////////////////////////////////////////
+
+
+        
+        
+        // this is used to only integer field::::::::
+        // Function to validate input and allow only integer values
+        function validateInteger(input) {
+           input.value = input.value.replace(/[^0-9 .]/g, ''); // Allow only digits (0-9)
+        }
+        
+        
+        
+           function handleRadioClick(option) {
+               // Get references to the input fields
+               var analogZeroInput = document.getElementById('analog_zero');
+               var highMvInput = document.getElementById('high_mv');
+               var referenceValueInput = document.getElementById('reference_value');
+               var lowMvInput = document.getElementById('low_mv');
+        
+               // Reset all fields to enabled
+               analogZeroInput.disabled = false;
+               highMvInput.disabled = false;
+               referenceValueInput.disabled = false;
+               lowMvInput.disabled = false;
+        
+               // Disable specific fields based on the radio button clicked
+               if (option === 'single') {
+                   document.getElementById('high_mv').disabled = true;
+                   document.getElementById('low_mv').disabled = true;
+               } else if (option === 'double') {
+                   document.getElementById('analog_zero').disabled = true;
+                   document.getElementById('reference_value').disabled = true;
+               }
+           }
+        
+        
+        // Function to reset/clear input fields
+        function resetInputFields() {
+            document.getElementById('partModel').value = ''; 
+            document.getElementById('parameter_name').value = '';
+            document.getElementById('analog_zero').value = '';
+            document.getElementById('high_mv').value = '';
+            document.getElementById('reference_value').value = '';
+            document.getElementById('low_mv').value = '';
+            document.getElementById('nominal').value = '';
+            document.getElementById('usl').value = '';
+            document.getElementById('lsl').value = '';
+            // ... (clear other input fields in a similar manner)
+        }
+        
+        // Event listener for the "Add New" button
+        document.getElementById('add-btn').addEventListener('click', function() {
+           resetInputFields(); // Clear the input fields when the button is clicked
+        });
+        
+        //////////////////////////
+        
+        
+        window.onload = function() {
+           var srNoInput = document.getElementById('sr_no');
+           srNoInput.value = '1'; // Set the default value to 1
+        }
+        
+        document.getElementById('add-btn').addEventListener('click', function() {
+           autoIncrement();
+        });
+        
+        function autoIncrement() {
+           var srNoInput = document.getElementById('sr_no');
+           var currentValue = parseInt(srNoInput.value);
+        
+           // Check if the current value is a valid number
+           if (!isNaN(currentValue)) {
+               srNoInput.value = currentValue + 1; // Increment the value
+           } else {
+               srNoInput.value = 1; // If the value is not a number, start from 1
+           }
+        }
+        
+        
+        </script>
+        
+        
+        
+        {% endblock content %}
+    
+    
+    

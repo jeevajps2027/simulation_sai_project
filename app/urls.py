@@ -7,13 +7,12 @@ from app import views
 
 
 
-
 urlpatterns = [
     path('',views.home,name="home"),
     path('comport/',views.comport, name='comport'),
     path('index/',views.index,name="index"),
     path('probe/',views.probe,name="probe"),
-    path('trace/',views.trace,name="trace"), 
+    path('trace/',views.trace,name="trace"),
     path('parameter/', views.parameter, name='parameter'),
     path('jeeva/',views.jeeva,name="jeeva"), 
 

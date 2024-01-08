@@ -11,39 +11,7 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.CreateModel(
-            name='batchTable',
-            fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('batch_no', models.CharField(max_length=100)),
-            ],
-        ),
-        migrations.CreateModel(
-            name='machineTable',
-            fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('machine_no', models.CharField(max_length=100)),
-                ('machine_name', models.CharField(max_length=100)),
-            ],
-        ),
-        migrations.CreateModel(
-            name='operatorTable',
-            fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('operator_no', models.CharField(max_length=100)),
-                ('operator_name', models.CharField(max_length=100)),
-            ],
-        ),
-        migrations.CreateModel(
-            name='partTable',
-            fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('part_name', models.CharField(max_length=100)),
-                ('customer_name', models.CharField(max_length=100)),
-                ('part_model', models.CharField(max_length=100)),
-                ('part_no', models.CharField(max_length=100)),
-            ],
-        ),
+       
         migrations.CreateModel(
             name='probecalibration',
             fields=[

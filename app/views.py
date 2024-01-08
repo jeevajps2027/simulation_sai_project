@@ -11,7 +11,7 @@ import threading
 import serial
 from django.views.decorators.csrf import csrf_exempt
 from django.core.cache import cache
-from.models import probecalibration,partTable,batchTable,machineTable,operatorTable,vTable
+from.models import probecalibration,paTable,baTable,maTable,opTable,veTable
 
 
 
@@ -128,29 +128,25 @@ def probe(request):
 def index(request):
     return render(request,'app/index.html')
 
+
+
 @csrf_exempt
 def trace(request):
     if request.method == 'POST':
         try:
-            received_data = json.loads(request.POST.get('tableData'))
+            received_data = json.loads(request.body)
 
             # Process received_data and save to the database for each table
             for item_id, rows in received_data.items():
-                print(f"Table ID: {item_id}")
                 for row in rows:
-                    row_index = row['rowIndex']
                     values = row['values']
-
-                    print(f"Row Index: {row_index}")
-                    for column_index, value in enumerate(values):
-                        print(f"Column Index: {column_index + 1}, Value: {value}")
 
                     # Check if the row already exists in the database based on a unique identifier
                     if item_id == 'tableBody-1':
-                        existing_data = partTable.objects.filter(part_name=values[0], customer_name=values[1], part_model=values[2], part_no=values[3])
+                        existing_data = paTable.objects.filter(part_name=values[0], customer_name=values[1], part_model=values[2], part_no=values[3])
                         if not existing_data.exists():
                             # Save data to partTable model
-                            table_data = partTable.objects.create(
+                            table_data = paTable.objects.create(
                                 part_name=values[0],
                                 customer_name=values[1],
                                 part_model=values[2],
@@ -159,39 +155,39 @@ def trace(request):
                             table_data.save()
 
                     elif item_id == 'tableBody-2':
-                        existing_data = batchTable.objects.filter(batch_no=values[0])
+                        existing_data = baTable.objects.filter(batch_no=values[0])
                         if not existing_data.exists():
                             # Save data to batchTable model
-                            table_data = batchTable.objects.create(
+                            table_data = baTable.objects.create(
                                 batch_no=values[0]
                             )
                             table_data.save()
 
                     elif item_id == 'tableBody-3':
-                        existing_data = machineTable.objects.filter(machine_no=values[0], machine_name=values[1])
+                        existing_data = maTable.objects.filter(machine_no=values[0], machine_name=values[1])
                         if not existing_data.exists():
                             # Save data to machineTable model
-                            table_data = machineTable.objects.create(
+                            table_data = maTable.objects.create(
                                 machine_no=values[0],
                                 machine_name=values[1]
                             )
                             table_data.save()
 
                     elif item_id == 'tableBody-4':
-                        existing_data = operatorTable.objects.filter(operator_no=values[0], operator_name=values[1])
+                        existing_data = opTable.objects.filter(operator_no=values[0], operator_name=values[1])
                         if not existing_data.exists():
                             # Save data to operatorTable model
-                            table_data = operatorTable.objects.create(
+                            table_data = opTable.objects.create(
                                 operator_no=values[0],
                                 operator_name=values[1]
                             )
                             table_data.save()
 
                     elif item_id == 'tableBody-5':
-                        existing_data = vTable.objects.filter(vendor_code=values[0], email=values[1])
+                        existing_data = veTable.objects.filter(vendor_code=values[0], email=values[1])
                         if not existing_data.exists():
                             # Save data to vTable model
-                            table_data = vTable.objects.create(
+                            table_data = veTable.objects.create(
                                 vendor_code=values[0],
                                 email=values[1]
                             )
@@ -201,52 +197,46 @@ def trace(request):
 
         except Exception as e:
             return JsonResponse({'error': str(e)}, status=500)
+    
+    elif request.method == 'GET':
+        try:
+            # Fetch stored data for tableBody-1 from your database or any storage mechanism
+            # Replace this with your actual logic to fetch data for tableBody-1
+            table_body_1_data = paTable.objects.all() 
+            table_body_2_data = baTable.objects.all()
+            table_body_3_data = maTable.objects.all()
+            table_body_4_data = opTable.objects.all()
+            table_body_5_data = veTable.objects.all()
+            # Pass the retrieved data for tableBody-1 to the template for rendering
+            return render(request, 'app/trace.html', {'table_body_1_data': table_body_1_data,'table_body_2_data':table_body_2_data,'table_body_3_data': table_body_3_data,'table_body_4_data': table_body_4_data,'table_body_5_data': table_body_5_data})
 
+        except Exception as e:
+            return JsonResponse({'error': str(e)}, status=500)
     elif request.method == 'DELETE':
         try:
-            # Extract values from the request
-            data = json.loads(request.body)
-            table_id = data.get('tableId')
-            row_index = int(data.get('rowIndex'))
-            values = data.get('values')
+            received_data = json.loads(request.body)
 
-            print(f"Received DELETE request - Table ID: {table_id}, Row Index: {row_index}, Values: {values}")
+            for item_id, row_ids in received_data.items():
+                if item_id == 'tableBody-1':
+                    paTable.objects.filter(id__in=row_ids).delete()
+                elif item_id == 'tableBody-2':
+                    baTable.objects.filter(id__in=row_ids).delete()
+                elif item_id == 'tableBody-3':
+                    maTable.objects.filter(id__in=row_ids).delete()
+                elif item_id == 'tableBody-4':
+                    opTable.objects.filter(id__in=row_ids).delete()
+                elif item_id == 'tableBody-5':
+                    veTable.objects.filter(id__in=row_ids).delete()
 
-            # Check if values is a list and has the expected number of elements
-            if not isinstance(values, list) or len(values) < 4:
-                return JsonResponse({'error': 'Invalid values in DELETE request'}, status=400)
-
-            # Assuming values[0], values[1], values[2], and values[3] are the values from the frontend
-            value_0 = values[0]
-            value_1 = values[1]
-            value_2 = values[2]
-            value_3 = values[3]
-
-            if table_id == 'tableBody-1':
-                partTable.objects.filter(part_name=value_0, customer_name=value_1, part_model=value_2, part_no=value_3).delete()
-
-            elif table_id == 'tableBody-2':
-                batchTable.objects.filter(batch_no=value_0).delete()
-
-            elif table_id == 'tableBody-3':
-                machineTable.objects.filter(machine_no=value_0, machine_name=value_1).delete()
-
-            elif table_id == 'tableBody-4':
-                operatorTable.objects.filter(operator_no=value_0, operator_name=value_1).delete()
-
-            elif table_id == 'tableBody-5':
-                vTable.objects.filter(vendor_code=value_0, email=value_1).delete()
-
-            print(f"Row deleted successfully from the server")
-
-            return JsonResponse({'message': 'Row deleted successfully from the server'}, status=200)
+            return JsonResponse({'message': 'Data deleted successfully'}, status=200)
 
         except Exception as e:
             return JsonResponse({'error': str(e)}, status=500)
 
+                 
     else:
         return render(request, 'app/trace.html')
-            
+
 
        
 
