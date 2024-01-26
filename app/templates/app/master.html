@@ -1,0 +1,196 @@
+{% extends 'app/layouts/main.html' %}
+{% block title %}
+Mastering Page
+{% endblock title %}
+{% block content %}
+<style>
+   .full-page-box {
+        display: flex;
+        flex-direction: column;
+        background-color: lightblue;
+        padding: 20px; 
+        box-sizing: border-box;
+        
+    }
+
+    .left-box {
+        width: 350px;
+        height: 100px;
+        background-color: white; 
+        margin-right: 10px;
+        border: 2px solid black; 
+    }
+    label {
+            display: inline-block;
+            width: 150px; 
+            margin-top: 15px;
+            text-align: center;
+            font-weight: bold;
+        }
+
+        select {
+            margin-top: 10px;
+            box-sizing: border-box;
+            width: 50%; 
+            height: 30px;
+        } 
+        #cancel-btn{
+            background-color: orange;
+            color:black;
+            height: 40px;
+            width: 130px;
+            margin-left: 10px;
+            margin-top: 10px;
+              
+        }
+        #select-btn{
+            background-color: green;
+            color:black;           
+            height: 40px;
+            width: 130px; 
+            margin-left: 65px; 
+            margin-top: 10px;
+        }
+        #lowMasterBtn,#highMasterBtn{
+            width: 250px;
+            height: 40px;
+            margin-left: 950px;
+            margin-top: -60px;
+            background-color: blue;
+            color: white;
+        }
+        #highMasterBtn{    
+            margin-top: 10px;   
+        }
+        
+        .input-box-container {
+            border: 2px solid black;
+            padding: 10px;
+            width: 180px;
+            height: 140px;
+            margin: 30px;
+            box-sizing: border-box;
+            
+        }
+        .master_input {
+            margin-bottom: 10px;
+            width: 42%;
+            box-sizing: border-box;
+        }
+
+        #container-wrapper {
+        display: flex;
+        flex-wrap: wrap;
+        }
+</style>
+
+
+<div class="full-page-box" style="overflow-x: auto;overflow-y:auto;">
+    <div class="left-box">
+        <label for="partModel">PART MODEL:</label>
+        <select id="partModel" name="partModel">            
+        </select>
+        <button type="button" id="cancel-btn"><b>Cancel</b></button>
+        <button type="button" id="select-btn"><b>Select</b></button>
+    </div>
+    <label for="all_parameter" style="margin-left: 400px; margin-top: -80px;">All Parameter
+        <input type="radio" style="margin-left: 10px;" id="all_parameter">
+    </label>
+    
+    <label for="parameterwise" style="margin-left: 400px;">Parameterwise
+        <input type="radio" style="margin-left: 7px;" id="parameterwise">
+    </label><br>
+    
+    <label for="mastering" style="margin-left: 570px;margin-top: -80px;">MASTERING GROUP:</label>
+    <select id="mastering"  style="width: 15%;margin-left: 700px;margin-top: -40px;" name="mastering" >
+        <script>
+            for (var i = 1; i <= 30; i++) {
+                document.write('<option value="' + i + '">' + i + '</option>');
+            }
+        </script>
+    </select>
+    <button  id="lowMasterBtn" type="button"><b>Low Mastering</b></button>
+    <button  id="highMasterBtn" type="button"><b>High Mastering</b></button>
+
+    <div style="border-bottom: 2px solid black; margin-top: 20px;"></div>
+
+
+
+    <div id="container-wrapper">
+    <div class="input-box-container" id="container-1">
+        <input type="radio" id="container-1_radioButton" style="margin-left: 70px;
+        margin-top: 0px;"><br>
+        L:<input class="master_input" type="text" id="container-1_input1">
+        <input  class="master_input" type="text" id="container-1_input2"><br>
+
+        H:<input class="master_input" type="text" id="container-1_input3">
+        <input class="master_input" type="text" id="container-1_input4">
+       
+        <pre id="pre_1" style="margin-top: 0px;margin-left: 50px;">jeeva</pre>
+    </div>
+    </div>
+</div>
+
+
+<script>
+    // Generate 50 input-box-container elements
+    for (let i = 1; i <= 49; i++) {
+        // Create a new container div
+        const container = document.createElement('div');
+        container.className = 'input-box-container';
+        container.id = 'container-' + i;
+
+        // Create radio button
+        const radioButton = document.createElement('input');
+        radioButton.type = 'radio';
+        radioButton.id = 'container-' + i + '_radioButton';
+        radioButton.style.marginLeft = '70px';
+        radioButton.style.marginTop = '0px';
+        container.appendChild(radioButton);
+        container.appendChild(document.createElement('br'));
+
+        // Create L: input fields
+        container.appendChild(document.createTextNode('L:'));
+        for (let j = 1; j <= 2; j++) {
+            const inputL = document.createElement('input');
+            inputL.className = 'master_input';
+            inputL.type = 'text';
+            inputL.id = 'container-' + i + '_input' + j;
+            container.appendChild(inputL);
+
+            // Add a small space after each inputL
+            container.appendChild(document.createTextNode(' '));
+        }
+        container.appendChild(document.createElement('br'));
+
+        // Create H: input fields
+        container.appendChild(document.createTextNode('H:'));
+        for (let k = 3; k <= 4; k++) {
+            const inputH = document.createElement('input');
+            inputH.className = 'master_input';
+            inputH.type = 'text';
+            inputH.id = 'container-' + i + '_input' + k;
+            container.appendChild(inputH);
+
+            // Add a small space after each inputL
+            container.appendChild(document.createTextNode(' '));
+        }
+
+        // Create pre element
+        const preElement = document.createElement('pre');
+        preElement.id = 'pre_' + i;
+        preElement.style.marginTop = '0px';
+        preElement.style.marginLeft = '50px';
+        preElement.appendChild(document.createTextNode('jeeva'));
+        container.appendChild(preElement);
+
+        // Append the container to the container-wrapper
+        document.getElementById('container-wrapper').appendChild(container);
+    
+    }
+
+    
+</script>
+
+
+{% endblock content %}

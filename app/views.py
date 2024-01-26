@@ -11,10 +11,8 @@ import threading
 import serial
 from django.views.decorators.csrf import csrf_exempt
 from django.core.cache import cache
-from.models import probecalibration,paTable,baTable,maTable,opTable,veTable
-
-
-
+from.models import viewvalues,parameterValue
+from.models import readings,find,TableOneData,TableTwoData,TableThreeData,TableFourData,TableFiveData
 import json
 
 
@@ -93,7 +91,7 @@ def probe(request):
 
         print('THESE ARE THE DATA YOU WANT TO DISPLAY:', probe_id, a_values, a1_values, b_values, b1_values, e_values)
 
-        probe, created = probecalibration.objects.get_or_create(probe_id=probe_id)
+        probe, created = find.objects.get_or_create(probe_id=probe_id)
 
         probe.low_ref = a_values[0] if a_values else None
         probe.low_count = a1_values[0] if a1_values else None
@@ -130,120 +128,209 @@ def index(request):
 
 
 
+
 @csrf_exempt
-def trace(request):
+def trace(request, row_id=None):
     if request.method == 'POST':
         try:
             received_data = json.loads(request.body)
+            print(f'received_data',request.body)
 
             # Process received_data and save to the database for each table
             for item_id, rows in received_data.items():
                 for row in rows:
                     values = row['values']
 
-                    # Check if the row already exists in the database based on a unique identifier
                     if item_id == 'tableBody-1':
-                        existing_data = paTable.objects.filter(part_name=values[0], customer_name=values[1], part_model=values[2], part_no=values[3])
-                        if not existing_data.exists():
-                            # Save data to partTable model
-                            table_data = paTable.objects.create(
-                                part_name=values[0],
-                                customer_name=values[1],
-                                part_model=values[2],
-                                part_no=values[3]
-                            )
-                            table_data.save()
+                        table_data = TableOneData.objects.create(
+                            part_name=values[0],
+                            customer_name=values[1],
+                            part_model=values[2],
+                            part_no=values[3]
+                        )
+                        table_data.save()
 
                     elif item_id == 'tableBody-2':
-                        existing_data = baTable.objects.filter(batch_no=values[0])
-                        if not existing_data.exists():
-                            # Save data to batchTable model
-                            table_data = baTable.objects.create(
-                                batch_no=values[0]
-                            )
-                            table_data.save()
+                        table_data = TableTwoData.objects.create(
+                            batch_no=values[0]
+                        )
+                        table_data.save()
 
                     elif item_id == 'tableBody-3':
-                        existing_data = maTable.objects.filter(machine_no=values[0], machine_name=values[1])
-                        if not existing_data.exists():
-                            # Save data to machineTable model
-                            table_data = maTable.objects.create(
-                                machine_no=values[0],
-                                machine_name=values[1]
-                            )
-                            table_data.save()
+                        table_data = TableThreeData.objects.create(
+                            machine_no=values[0],
+                            machine_name=values[1]
+                        )
+                        table_data.save()
 
                     elif item_id == 'tableBody-4':
-                        existing_data = opTable.objects.filter(operator_no=values[0], operator_name=values[1])
-                        if not existing_data.exists():
-                            # Save data to operatorTable model
-                            table_data = opTable.objects.create(
-                                operator_no=values[0],
-                                operator_name=values[1]
-                            )
-                            table_data.save()
+                        table_data = TableFourData.objects.create(
+                            operator_no=values[0],
+                            operator_name=values[1]
+                        )
+                        table_data.save()
 
                     elif item_id == 'tableBody-5':
-                        existing_data = veTable.objects.filter(vendor_code=values[0], email=values[1])
-                        if not existing_data.exists():
-                            # Save data to vTable model
-                            table_data = veTable.objects.create(
-                                vendor_code=values[0],
-                                email=values[1]
-                            )
-                            table_data.save()
+                        table_data = TableFiveData.objects.create(
+                            vendor_code=values[0],
+                            email=values[1]
+                        )
+                        table_data.save()
 
             return JsonResponse({'message': 'Data received and saved successfully'}, status=200)
 
         except Exception as e:
             return JsonResponse({'error': str(e)}, status=500)
-    
+
+
     elif request.method == 'GET':
         try:
             # Fetch stored data for tableBody-1 from your database or any storage mechanism
             # Replace this with your actual logic to fetch data for tableBody-1
-            table_body_1_data = paTable.objects.all() 
-            table_body_2_data = baTable.objects.all()
-            table_body_3_data = maTable.objects.all()
-            table_body_4_data = opTable.objects.all()
-            table_body_5_data = veTable.objects.all()
+            table_body_1_data = TableOneData.objects.all()
+            table_body_2_data = TableTwoData.objects.all()
+            table_body_3_data = TableThreeData.objects.all()
+            table_body_4_data = TableFourData.objects.all()
+            table_body_5_data = TableFiveData.objects.all()
             # Pass the retrieved data for tableBody-1 to the template for rendering
             return render(request, 'app/trace.html', {'table_body_1_data': table_body_1_data,'table_body_2_data':table_body_2_data,'table_body_3_data': table_body_3_data,'table_body_4_data': table_body_4_data,'table_body_5_data': table_body_5_data})
 
         except Exception as e:
             return JsonResponse({'error': str(e)}, status=500)
+
     elif request.method == 'DELETE':
         try:
             received_data = json.loads(request.body)
 
             for item_id, row_ids in received_data.items():
                 if item_id == 'tableBody-1':
-                    paTable.objects.filter(id__in=row_ids).delete()
+                    TableOneData.objects.filter(id__in=row_ids).delete()
                 elif item_id == 'tableBody-2':
-                    baTable.objects.filter(id__in=row_ids).delete()
+                    TableTwoData.objects.filter(id__in=row_ids).delete()
                 elif item_id == 'tableBody-3':
-                    maTable.objects.filter(id__in=row_ids).delete()
+                    TableThreeData.objects.filter(id__in=row_ids).delete()
                 elif item_id == 'tableBody-4':
-                    opTable.objects.filter(id__in=row_ids).delete()
+                    TableFourData.objects.filter(id__in=row_ids).delete()
                 elif item_id == 'tableBody-5':
-                    veTable.objects.filter(id__in=row_ids).delete()
+                    TableFiveData.objects.filter(id__in=row_ids).delete()
 
             return JsonResponse({'message': 'Data deleted successfully'}, status=200)
 
         except Exception as e:
-            return JsonResponse({'error': str(e)}, status=500)
-
-                 
+            return JsonResponse({'error': str(e)}, status=500)                                
     else:
         return render(request, 'app/trace.html')
 
 
-       
 
+
+
+
+@csrf_exempt
 def parameter(request):
+    if request.method == 'GET':
+        try:
+
+            table_body_1_data = TableOneData.objects.all()
+
+            # Dynamically filter constvalue objects based on the model_id parameter
+            model_id = request.GET.get('model_name')
+
+            print('your selected model from web page is:', model_id)
+
+            if model_id:
+                # Filter constvalue objects based on the model_id
+                paraname = parameterValue.objects.filter(model_id=model_id).values('parameter_name')
+                print('your filtered values are:', paraname)
+
+                # Return filtered parameter names as JSON
+                return JsonResponse({'paraname': list(paraname)})
+            else:
+                paraname = []  # If no model is selected, set paraname to an empty list
+
+            return render(request, 'app/parameter.html', {
+                'table_body_1_data': table_body_1_data,
+                'paraname': paraname,
+                'selected_model_id': model_id,
+            })
+        
+
+        except Exception as e:
+            print(f'Exception: {e}')
+            return HttpResponse(f'Error: {str(e)}', status=500)
+
+    elif request.method == 'POST':
+        try:
+            data = json.loads(request.body.decode('utf-8'))
+            print(f'Your values received from the frontend: {data}')
+
+            model_id = data.get('modelId')
+            print('Model ID:', model_id)
+
+            parameter_value = data.get('parameterValue')
+            print('Parameter Name:', parameter_value)
+
+            # Handle radio button values
+            single_radio = data.get('singleRadio')
+            double_radio = data.get('doubleRadio')
+            if single_radio:
+                analog_zero = data.get('analogZero')
+                reference_value = data.get('referenceValue')
+                high_mv = None
+                low_mv = None
+            elif double_radio:
+                high_mv = data.get('highMV')
+                low_mv = data.get('lowMV')
+                analog_zero = None
+                reference_value = None
+
+            # Continue handling other values
+            probe_no = data.get('probeNo')
+            measurement_mode = data.get('measurementMode')
+            nominal = data.get('nominal')
+            usl = data.get('usl')
+            lsl = data.get('lsl')
+            mastering = data.get('mastering')
+            step_no = data.get('stepNo')
+            hide_checkbox = data.get('hideCheckbox')
+
+            # Create an instance of your model with the received values
+            const_value_instance = parameterValue.objects.create(
+                model_id=model_id,
+                parameter_name=parameter_value,
+                single_radio=single_radio,
+                double_radio=double_radio,
+                analog_zero=analog_zero,
+                reference_value=reference_value,
+                high_mv=high_mv,
+                low_mv=low_mv,
+                probe_no=probe_no,
+                measurement_mode=measurement_mode,
+                nominal=nominal,
+                usl=usl,
+                lsl=lsl,
+                mastering=mastering,
+                step_no=step_no,
+                hide_checkbox=hide_checkbox
+            )
+
+            print("Your values in the server:", const_value_instance)
+            # Save the instance to the database
+            const_value_instance.save()
+
+            return JsonResponse({'success': True, 'message': 'Data saved successfully'})
+        except Exception as e:
+            return JsonResponse({'success': False, 'message': str(e)})
+
     return render(request, 'app/parameter.html')
 
-def jeeva(request):
-    return render(request, 'app/jeeva.html')
 
+
+
+
+def master(request):
+    return render(request,'app/master.html')
+
+def jeeva(request):
+    return render(request,'app/jeeva.html')  
 

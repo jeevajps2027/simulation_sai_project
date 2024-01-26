@@ -14,6 +14,7 @@ urlpatterns = [
     path('probe/',views.probe,name="probe"),
     path('trace/',views.trace,name="trace"),
     path('parameter/', views.parameter, name='parameter'),
+    path('master/',views.master,name="master"), 
     path('jeeva/',views.jeeva,name="jeeva"), 
 
 ]

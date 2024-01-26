@@ -99,6 +99,8 @@ th, td {
     
     top: 50%;
     left: 60%;
+    height: 150px;
+    width: 350px;
     transform: translate(-50%, -50%);
     padding: 10px;
     border-radius: 5px;
@@ -106,6 +108,7 @@ th, td {
     color: black;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); /* Optional: Add a box shadow for better visibility */
     z-index: 1000; /* Set a higher z-index to ensure it appears above other elements */
+    border: 2px solid black;
 }
 
 .selected {
@@ -193,7 +196,6 @@ th, td {
                     <td>{{ forloop.counter }}</td>
                     <td>{{ data.machine_no }}</td>
                     <td>{{ data.machine_name }}</td>
-                    <!-- Add more columns if needed -->
                 </tr>
                 {% endfor %}
             </tbody>
@@ -422,6 +424,8 @@ th, td {
         }
         return cookieValue;
     }
+////////////////////////////////
+
 
 
 
@@ -493,24 +497,49 @@ function deleteSelectedRows() {
     });
 
     function showNotification(message, isSuccess) {
-      var notificationElement = document.getElementById('notification');
-      notificationElement.textContent = message;
+    var notificationElement = document.getElementById('notification');
+    notificationElement.textContent = message;
 
-      if (isSuccess) {
-          notificationElement.style.backgroundColor = 'yellow';
-      } else {
-          notificationElement.style.backgroundColor = 'red';
-      }
+    if (isSuccess) {
+        notificationElement.style.backgroundColor = 'lightgreen';
+    } else {
+        notificationElement.style.backgroundColor = 'red';
+    }
 
-      // Display the notification
-      notificationElement.style.display = 'block';
+    // Add an "OK" button to the notification
+    var okButton = document.createElement('button');
+    okButton.textContent = 'OK';
+    okButton.style.display = 'block';   // Make the button a block element
+    okButton.style.margin = 'auto';     // Center the button horizontally
+    okButton.style.marginTop = '10px';  // Add some top margin for spacing
+    okButton.style.padding = '10px';
+    okButton.style.height = '40px';     // Set the button height
+    okButton.style.width = '80px';      // Set the button width
+    okButton.style.border = 'none';     // Remove the default button border
+    okButton.style.backgroundColor = 'orangered'; // Red background color
+    okButton.style.color = 'white';     // White text color
 
-      // Hide the notification after 3 seconds (adjust the timeout as needed)
-      setTimeout(function () {
-          notificationElement.style.display = 'none';
-      }, 1500);
-  }
+    okButton.addEventListener('click', function() {
+        // Redirect to the desired page
+        window.location.href = '{% url "trace" %}';
+    });
 
+    notificationElement.appendChild(okButton);
+
+    // Center the notification vertically and horizontally
+    notificationElement.style.display = 'flex';
+    notificationElement.style.flexDirection = 'column';
+    notificationElement.style.alignItems = 'center';
+    notificationElement.style.justifyContent = 'center';
+    notificationElement.style.position = 'fixed';
+    notificationElement.style.top = '50%';
+    notificationElement.style.left = '50%';
+    notificationElement.style.transform = 'translate(-50%, -50%)';
+    notificationElement.style.zIndex = '1000';
+
+    // Display the notification
+    notificationElement.style.display = 'block';
+}
 
          </script>
     {% endblock %}    
