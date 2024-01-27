@@ -79,7 +79,7 @@ Parameter Settings
             margin-left: 20px;
             background-color: rgb(236, 235, 157);
         }
-        #delete-btn{
+        #deleteParameterBtn{
             width: 200px;
             height: 40px;
             margin-top: 3px;
@@ -206,7 +206,7 @@ Parameter Settings
     <div class="box-3">
         <button type="button" id="add-btn"><b> Add New</b></button>
         <button type="button" id="save-btn" onclick="saveValues()"><b>Save</b></button>
-        <button type="button" id="delete-btn"><b> Delete</b></button>
+        <button type="button" id="deleteParameterBtn"><b> Delete</b></button>
         <a href="{% url 'index' %}" >
         <button type="button" id="cancel-btn"><b>Cancel</b></button>
         </a>
@@ -233,6 +233,7 @@ Parameter Settings
 /////////////////////////////////////////////////////
 
 let selectedModelId;
+let selectedParameterID;
 
 // Keep track of the last selected model and parameter
 let lastSelectedModel = null;
@@ -261,6 +262,9 @@ function updateUI(data) {
 
                 listItem.style.backgroundColor = 'red';
                 lastSelectedParameterElement = listItem;
+
+                // Update the selectedId when a parameter is clicked
+                selectedId = item.id;
 
                 const selectedParameterName = item.parameter_name;
                 const selectedParameterID = item.id;
@@ -528,6 +532,9 @@ function saveValues() {
                 document.getElementById('probe_no').value = ''; // Set the default value or an empty string
                 document.getElementById('mastering').value = ''; // Set the default value or an empty string
                 document.getElementById('step_no').value = ''; // Set the default value or an empty string
+
+                // Reset the selectedId
+                selectedId = null;
             }
 
             // Event listener for the "Add New" button
@@ -536,11 +543,40 @@ function saveValues() {
             });
                     
           //////////////////////////
-          
-          
-    
-    
-  
+          document.addEventListener('DOMContentLoaded', function() {
+    var deleteButton = document.getElementById('deleteParameterBtn');
+
+    deleteButton.addEventListener('click', function() {
+        if (selectedId) {
+            fetch('/parameter/?id=' + selectedId, {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json',
+                    // Add any additional headers if needed
+                },
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    console.log(data.message);
+                    // Handle success
+                } else {
+                    console.error(data.message);
+                    // Handle failure
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                // Handle network or other errors
+            });
+        } else {
+            console.error('No ID selected for deletion.');
+            // Handle the case where no ID is selected
+        }
+    });
+});
+
+ 
   
   
   </script>   
