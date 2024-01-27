@@ -124,92 +124,83 @@ Parameter Settings
 <div class="box-1" id="box1">
    
     <label for="partModel">PART MODEL:</label>
-    <input type="text" id="partModel">
+    <input type="text" id="partModel" readonly>
 
    
 
     <label for="sr.no" style="margin-left: 60px;">PARAMETER.NO:</label>
     <input type="text" id="sr_no" name="sr_no" style="width: 50px;"><br>
-   
-
-    <label for="parameter_name">PARAMETER NAME:</label>
-    <input type="text" id="parameter_name">
-   
-    <label style="margin-left: 50px;">MASTER:</label>
-    <label for="single" style="margin-left: -30px;" >Single
-        <input type="radio" id="single" name="radioOption" oninput="validateInteger(this)" onclick="handleRadioClick('single')">
-    </label>
-   
-    <label for="double" style="margin-left: 10px;">Double
-        <input type="radio" id="double" name="radioOption" onclick="handleRadioClick('double')">
-    </label><br>
-   
-
-    <label for="probe_no">PROBE NO:</label>
-    <select id="probe_no" name="probe_no" oninput="validateInteger(this)">
-        <script>
-            for (var i = 1; i <= 11; i++) {
-                document.write('<option value="' + i + '">' + i + '</option>');
-            }
-        </script>
-    </select>
-
-    <label for="analog_zero">ANALOG ZERO:</label>
-    <input type="text" id="analog_zero" style="width: 10%;" oninput="validateInteger(this)">
-    <label for="high_mv" style="text-align: right;margin-left: 5px;">HIGH M-V:</label>
-    <input type="text" id="high_mv" style="width: 10%;" oninput="validateInteger(this)"><br>
-   
-   
-
-    <label for="measurement_mode">MEASUREMENT MODE:</label>
-    <select id="measurement_mode" name="measurement_mode">
-        <option value="CUR">CUR</option>
-        <option value="MAX">MAX</option>
-        <option value="MIN">MIN</option>
-        <option value="TIR">TIR</option>
-        <option value="AVG">AVG</option>
-    </select>
-
-    <label for="reference_value">REFERENCE VALUE:</label>
-    <input type="text" id="reference_value" style="width: 10%; " oninput="validateInteger(this)">
-    <label for="low_mv" style="text-align: right; margin-left: 5px;" >LOW M-V:</label>
-    <input type="text" id="low_mv" style="width: 10%; " oninput="validateInteger(this)"><br><br>
-
-   
-
-    <label for="nominal">NOMINAL:</label>
-    <input type="text" id="nominal" style="width: 10%;" oninput="validateInteger(this)">
-
-
-
-    <label for="usl" style="text-align: right;">USL:</label>
-    <input type="text" id="usl" style="width: 10%;" oninput="validateInteger(this)">
-
-    <label for="lsl" style="text-align: right;">LSL:</label>
-    <input type="text" id="lsl" style="width: 10%;" oninput="validateInteger(this)"><br>
-
-
-    <label for="mastering" style="margin-top: 15px;">MASTERING GROUP:</label>
-    <select id="mastering"  style="width: 15%;" name="mastering" oninput="validateInteger(this)">
-        <script>
-            for (var i = 1; i <= 30; i++) {
-                document.write('<option value="' + i + '">' + i + '</option>');
-            }
-        </script>
-    </select>
-
-    <label for="step_no">STEP NO:</label>
-    <select id="step_no" style="width: 15%;" name="step_no" oninput="validateInteger(this)">
-        <script>
-            for (var i = 1; i <= 20; i++) {
-                document.write('<option value="' + i + '">' + i + '</option>');
-            }
-        </script>
-    </select>
-   
-    <label for="hide" style="text-align: right;margin-left: 5px;">HIDE:</label>
-    <input type="checkbox" id="hide" style="width: 5%;margin-left:0px;" name="hideCheckbox"><br>
-
+    
+        <label for="parameter_name">PARAMETER NAME:</label>
+        <input type="text" id="parameter_name" value="{{ value.parameter_name }}" >
+    
+        <label style="margin-left: 50px;">MASTER:</label>
+        <label for="single" style="margin-left: -30px;" >Single
+            <input type="radio" id="single" name="radioOption" oninput="validateInteger(this)" onclick="handleRadioClick('single')">
+        </label>
+       
+        <label for="double" style="margin-left: 10px;">Double
+            <input type="radio" id="double" name="radioOption" onclick="handleRadioClick('double')">
+        </label><br>
+    
+        <label for="probe_no">PROBE NO:</label>
+        <select id="probe_no" name="probe_no" oninput="validateInteger(this)">
+            <script>
+                for (var i = 1; i <= 11; i++) {
+                    document.write('<option value="' + i + '">' + i + '</option>');
+                }
+            </script>
+        </select>
+    
+        <label for="analog_zero">ANALOG ZERO:</label>
+        <input type="text" id="analog_zero" style="width: 10%;" value="{{ value.analog_zero }}" >
+        <label for="high_mv" style="text-align: right;margin-left: 5px;">HIGH M-V:</label>
+        <input type="text" id="high_mv" style="width: 10%;" value="{{ value.high_mv }}" ><br>
+    
+        <label for="measurement_mode">MEASUREMENT MODE:</label>
+        <select id="measurement_mode" name="measurement_mode">
+            <option value="CUR" {% if value.measurement_mode == 'CUR' %}selected{% endif %}>CUR</option>
+            <option value="MAX" {% if value.measurement_mode == 'MAX' %}selected{% endif %}>MAX</option>
+            <option value="MIN" {% if value.measurement_mode == 'MIN' %}selected{% endif %}>MIN</option>
+            <option value="TIR" {% if value.measurement_mode == 'TIR' %}selected{% endif %}>TIR</option>
+            <option value="AVG" {% if value.measurement_mode == 'AVG' %}selected{% endif %}>AVG</option>
+        </select>
+    
+        <label for="reference_value">REFERENCE VALUE:</label>
+        <input type="text" id="reference_value" style="width: 10%;" value="{{ value.reference_value }}">
+        <label for="low_mv" style="text-align: right; margin-left: 5px;" >LOW M-V:</label>
+        <input type="text" id="low_mv" style="width: 10%;" value="{{ value.low_mv }}" ><br><br>
+    
+        <label for="nominal">NOMINAL:</label>
+        <input type="text" id="nominal" style="width: 10%;" value="{{ value.nominal }}" >
+    
+        <label for="usl" style="text-align: right;">USL:</label>
+        <input type="text" id="usl" style="width: 10%;" value="{{ value.usl }}" >
+    
+        <label for="lsl" style="text-align: right;">LSL:</label>
+        <input type="text" id="lsl" style="width: 10%;" value="{{ value.lsl }}" ><br>
+    
+        <label for="mastering" style="margin-top: 15px;">MASTERING GROUP:</label>
+        <select id="mastering"  style="width: 15%;" name="mastering" oninput="validateInteger(this)">
+            <script>
+                for (var i = 1; i <= 30; i++) {
+                    document.write('<option value="' + i + '" {% if value.mastering == i %}selected{% endif %}>' + i + '</option>');
+                }
+            </script>
+        </select>
+    
+        <label for="step_no">STEP NO:</label>
+        <select id="step_no" style="width: 15%;" name="step_no" oninput="validateInteger(this)">
+            <script>
+                for (var i = 1; i <= 20; i++) {
+                    document.write('<option value="' + i + '" {% if value.step_no == i %}selected{% endif %}>' + i + '</option>');
+                }
+            </script>
+        </select>
+    
+        <label for="hide" style="text-align: right;margin-left: 5px;">HIDE:</label>
+        <input type="checkbox" id="hide" style="width: 5%;margin-left:0px;" name="hideCheckbox" {% if value.hide_checkbox %}checked{% endif %}><br>
+    
 
 
     <div class="box-3">
@@ -241,18 +232,13 @@ Parameter Settings
 
 /////////////////////////////////////////////////////
 
-///////////////////////////////////////////////////////////
-
-
-
 let selectedModelId;
 
-// Keep track of the last selected model
+// Keep track of the last selected model and parameter
 let lastSelectedModel = null;
+let lastSelectedParameterElement = null;
 
-// Define the updateUI function
 function updateUI(data) {
-    // Implement the logic to update the UI with the data received
     console.log('Updating UI with data:', data);
 
     const filteredValuesContainer = document.querySelector('.model-ul .nested-ul.active');
@@ -260,11 +246,75 @@ function updateUI(data) {
     // Clear previous content
     filteredValuesContainer.innerHTML = '';
 
-    // Check if data is not empty
+    resetInputFields();
+
     if (data && data.paraname && data.paraname.length > 0) {
         data.paraname.forEach(item => {
             const listItem = document.createElement('li');
             listItem.textContent = item.parameter_name;
+            listItem.setAttribute('data-parameter', item.id);
+
+            listItem.addEventListener('click', function () {
+                if (lastSelectedParameterElement) {
+                    lastSelectedParameterElement.style.backgroundColor = '';
+                }
+
+                listItem.style.backgroundColor = 'red';
+                lastSelectedParameterElement = listItem;
+
+                const selectedParameterName = item.parameter_name;
+                const selectedParameterID = item.id;
+
+                const parameterNameInput = document.getElementById('parameter_name');
+                parameterNameInput.value = selectedParameterName;
+
+                console.log('Selected parameter:', selectedParameterName);
+                console.log('Selected parameter ID:', selectedParameterID);
+
+                // Include the selectedParameterID in the fetch URL
+                fetch(`/parameter/?parameter_name=${selectedParameterName}&id=${selectedParameterID}`)
+                        .then(response => {
+                            if (!response.ok) {
+                                throw new Error(`HTTP error! Status: ${response.status}`);
+                            }
+                            return response.json();
+                        })
+                        .then(details => {
+                            console.log('Details about selected parameter:', details);
+                            // Access the HTML elements and update their values
+                                document.getElementById('parameter_name').value = details.parameter_details.parameter_name;
+
+                                // Handle radio buttons
+                                if (details.parameter_details.single_radio) {
+                                    document.getElementById('single').checked = true;
+                                } else if (details.parameter_details.double_radio) {
+                                    document.getElementById('double').checked = true;
+                                }
+
+                                document.getElementById('probe_no').value = details.parameter_details.probe_no;
+                                document.getElementById('analog_zero').value = details.parameter_details.analog_zero;
+                                document.getElementById('high_mv').value = details.parameter_details.high_mv;
+
+                                // Handle dropdowns
+                                document.getElementById('measurement_mode').value = details.parameter_details.measurement_mode;
+
+                                document.getElementById('reference_value').value = details.parameter_details.reference_value;
+                                document.getElementById('low_mv').value = details.parameter_details.low_mv;
+
+                                document.getElementById('nominal').value = details.parameter_details.nominal;
+                                document.getElementById('usl').value = details.parameter_details.usl;
+                                document.getElementById('lsl').value = details.parameter_details.lsl;
+
+                                document.getElementById('mastering').value = details.parameter_details.mastering;
+                                document.getElementById('step_no').value = details.parameter_details.step_no;
+
+                                // Handle checkbox
+                                document.getElementById('hide').checked = details.parameter_details.hide_checkbox;
+
+
+                        })
+                        .catch(error => console.error('Error fetching details:', error));
+                });
             filteredValuesContainer.appendChild(listItem);
         });
     } else {
@@ -274,6 +324,11 @@ function updateUI(data) {
     }
 }
 
+// Rest of your existing code remains unchanged
+
+
+
+
 document.querySelectorAll('.model-name').forEach(model => {
     model.addEventListener('click', function(event) {
         const target = event.target;
@@ -281,6 +336,9 @@ document.querySelectorAll('.model-name').forEach(model => {
 
         const selectedUL = target.nextElementSibling;
         const partModelInput = document.getElementById('partModel');
+        const parameterNameInput = document.getElementById('parameter_name')
+
+        parameterNameInput.value ='';
 
         // If the clicked model is the same as the last selected model, toggle its active state
         if (lastSelectedModel === target) {
@@ -315,8 +373,8 @@ document.querySelectorAll('.model-name').forEach(model => {
 
         // Display the nested-ul for the selected model
         selectedUL.style.display = 'block';
-
-        // Make an AJAX request to the server with the selected model name
+ 
+        // Make a GET request with the 'id' parameter
         fetch(`/parameter/?model_name=${selectedModel}`)
             .then(response => response.json())
             .then(data => {
@@ -446,24 +504,37 @@ function saveValues() {
  
           
           
-          // Function to reset/clear input fields
-          function resetInputFields() { 
-              document.getElementById('parameter_name').value = '';
-              document.getElementById('analog_zero').value = '';
-              document.getElementById('high_mv').value = '';
-              document.getElementById('reference_value').value = '';
-              document.getElementById('low_mv').value = '';
-              document.getElementById('nominal').value = '';
-              document.getElementById('usl').value = '';
-              document.getElementById('lsl').value = '';
-              // ... (clear other input fields in a similar manner)
-          }
-          
-          // Event listener for the "Add New" button
-          document.getElementById('add-btn').addEventListener('click', function() {
-             resetInputFields(); // Clear the input fields when the button is clicked
-          });
-          
+             function resetInputFields() {
+                document.getElementById('parameter_name').value = '';
+                document.getElementById('analog_zero').value = '';
+                document.getElementById('high_mv').value = '';
+                document.getElementById('reference_value').value = '';
+                document.getElementById('low_mv').value = '';
+                document.getElementById('nominal').value = '';
+                document.getElementById('usl').value = '';
+                document.getElementById('lsl').value = '';
+
+                // Clear radio button states
+                document.getElementById('single').checked = false;
+                document.getElementById('double').checked = false;
+
+                // Clear checkbox state
+                document.getElementById('hide').checked = false;
+
+                // Clear dropdown selection
+                document.getElementById('measurement_mode').value = ''; // You can set the default value here if needed
+
+                // Clear other dropdown selections if applicable
+                document.getElementById('probe_no').value = ''; // Set the default value or an empty string
+                document.getElementById('mastering').value = ''; // Set the default value or an empty string
+                document.getElementById('step_no').value = ''; // Set the default value or an empty string
+            }
+
+            // Event listener for the "Add New" button
+            document.getElementById('add-btn').addEventListener('click', function () {
+                resetInputFields(); // Clear the input fields when the button is clicked
+            });
+                    
           //////////////////////////
           
           

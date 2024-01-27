@@ -222,29 +222,64 @@ def trace(request, row_id=None):
         return render(request, 'app/trace.html')
 
 
-
-
-
+from django.shortcuts import render, get_object_or_404
 
 @csrf_exempt
 def parameter(request):
     if request.method == 'GET':
         try:
-
             table_body_1_data = TableOneData.objects.all()
 
             # Dynamically filter constvalue objects based on the model_id parameter
             model_id = request.GET.get('model_name')
+            print('your selected model from the web page is:', model_id)
 
-            print('your selected model from web page is:', model_id)
+            # Get the selected parameter name from the request
+            parameter_name = request.GET.get('parameter_name')
+            print('Your selected parameter from the web page is:', parameter_name)
 
-            if model_id:
+            # Check if an id is provided in the query parameters
+            selected_id = request.GET.get('id')
+            print('Selected ID:', selected_id)  # Add this line for debugging
+
+            if selected_id:
+                # Fetch the parameter details by ID
+                parameter = get_object_or_404(parameterValue, id=selected_id)
+
+                # Convert parameter details to a dictionary
+                parameter_details = {
+                    'id': parameter.id,
+                    'parameter_name': parameter.parameter_name,
+                    'single_radio': parameter.single_radio,
+                    'double_radio': parameter.double_radio,
+                    'analog_zero': parameter.analog_zero,
+                    'reference_value': parameter.reference_value,
+                    'high_mv': parameter.high_mv,
+                    'low_mv': parameter.low_mv,
+                    'probe_no': parameter.probe_no,
+                    'measurement_mode': parameter.measurement_mode,
+                    'nominal': parameter.nominal,
+                    'usl': parameter.usl,
+                    'lsl': parameter.lsl,
+                    'mastering': parameter.mastering,
+                    'step_no': parameter.step_no,
+                    'hide_checkbox': parameter.hide_checkbox,
+                }
+
+                # Print the parameter details in the terminal
+                print('Parameter Details:', parameter_details)
+
+                # Return parameter details as JSON
+                return JsonResponse({'parameter_details': parameter_details})
+
+            elif model_id:
                 # Filter constvalue objects based on the model_id
-                paraname = parameterValue.objects.filter(model_id=model_id).values('parameter_name')
+                paraname = parameterValue.objects.filter(model_id=model_id).values('parameter_name','id')
                 print('your filtered values are:', paraname)
 
                 # Return filtered parameter names as JSON
                 return JsonResponse({'paraname': list(paraname)})
+
             else:
                 paraname = []  # If no model is selected, set paraname to an empty list
 
@@ -253,12 +288,11 @@ def parameter(request):
                 'paraname': paraname,
                 'selected_model_id': model_id,
             })
-        
 
         except Exception as e:
             print(f'Exception: {e}')
-            return HttpResponse(f'Error: {str(e)}', status=500)
-
+            return JsonResponse({'key': 'value'})
+            
     elif request.method == 'POST':
         try:
             data = json.loads(request.body.decode('utf-8'))
@@ -318,7 +352,7 @@ def parameter(request):
             # Save the instance to the database
             const_value_instance.save()
 
-            return JsonResponse({'success': True, 'message': 'Data saved successfully'})
+            
         except Exception as e:
             return JsonResponse({'success': False, 'message': str(e)})
 
