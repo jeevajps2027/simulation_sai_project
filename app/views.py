@@ -355,6 +355,34 @@ def parameter(request):
             
         except Exception as e:
             return JsonResponse({'success': False, 'message': str(e)})
+            
+    elif request.method == 'DELETE':
+        try:
+            # Check if an ID is provided in the query parameters
+            selected_id = request.GET.get('id')
+            print('Selected ID:', selected_id)
+
+            if selected_id:
+                # Fetch the parameter details by ID
+                parameter = get_object_or_404(parameterValue, id=selected_id)
+
+                # Delete the parameter
+                parameter.delete()
+
+                print(f'Parameter with ID {selected_id} deleted successfully.')
+
+                return JsonResponse({'success': True, 'message': f'Parameter with ID {selected_id} deleted successfully.'})
+
+            else:
+                return JsonResponse({'success': False, 'message': 'ID not provided in the query parameters.'})
+
+        except Exception as e:
+            print(f'Exception: {e}')
+            return JsonResponse({'success': False, 'message': str(e)})
+
+    else:
+        # Return 405 Method Not Allowed for other request methods
+        return HttpResponseNotAllowed(['GET', 'POST', 'DELETE'])
 
     return render(request, 'app/parameter.html')
 
