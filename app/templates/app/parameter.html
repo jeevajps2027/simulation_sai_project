@@ -13,15 +13,13 @@ Parameter Settings
         border: 2px solid black;    
     }
 
-    /* CSS styles for the input fields */
         .custom-input {
         background-color: lightblue;
         cursor: pointer;
         }
 
-        /* Change background color on focus */
         .custom-input:focus {
-        background-color: red; /* Change this to the desired highlighted color */
+        background-color: red;
         }
 
 
@@ -104,7 +102,7 @@ Parameter Settings
         }
 
         .model-list.selected {
-            background-color: lightskyblue; /* Set your desired background color for selected model */
+            background-color: lightskyblue; 
         }
 
         .parameter-list {
@@ -114,13 +112,33 @@ Parameter Settings
         .parameter-list li.selected {
             background-color: red;
         }
+
+#notification {
+    display: none;
+    position: fixed;    
+    top: 50%;
+    left: 50%;
+    height: 120px;
+    width: 350px;
+    transform: translate(-50%, -50%);
+    padding: 10px;
+    border-radius: 5px;
+    font-weight: bold;
+    color: black;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); 
+    z-index: 1000; 
+    border: 2px solid black;
+}
+
+
+
        
 </style>
 
 
 <center style="color: white; text-shadow: 2px 2px 4px #000000;">
     <h1><b>Parameter Settings</b></h1></center>
-
+    <div id="notification" style="display: none;"></div>
 <div class="box-1" id="box1">
    
     <label for="partModel">PART MODEL:</label>
@@ -136,7 +154,7 @@ Parameter Settings
     
         <label style="margin-left: 50px;">MASTER:</label>
         <label for="single" style="margin-left: -30px;" >Single
-            <input type="radio" id="single" name="radioOption" oninput="validateInteger(this)" onclick="handleRadioClick('single')">
+            <input type="radio" id="single" name="radioOption"  onclick="handleRadioClick('single')">
         </label>
        
         <label for="double" style="margin-left: 10px;">Double
@@ -153,9 +171,9 @@ Parameter Settings
         </select>
     
         <label for="analog_zero">ANALOG ZERO:</label>
-        <input type="text" id="analog_zero" style="width: 10%;" value="{{ value.analog_zero }}" >
+        <input type="text" id="analog_zero" style="width: 10%;" value="{{ value.analog_zero }}" oninput="validateInteger(this)">
         <label for="high_mv" style="text-align: right;margin-left: 5px;">HIGH M-V:</label>
-        <input type="text" id="high_mv" style="width: 10%;" value="{{ value.high_mv }}" ><br>
+        <input type="text" id="high_mv" style="width: 10%;" value="{{ value.high_mv }}" oninput="validateInteger(this)" ><br>
     
         <label for="measurement_mode">MEASUREMENT MODE:</label>
         <select id="measurement_mode" name="measurement_mode">
@@ -167,18 +185,18 @@ Parameter Settings
         </select>
     
         <label for="reference_value">REFERENCE VALUE:</label>
-        <input type="text" id="reference_value" style="width: 10%;" value="{{ value.reference_value }}">
+        <input type="text" id="reference_value" style="width: 10%;" value="{{ value.reference_value }}" oninput="validateInteger(this)">
         <label for="low_mv" style="text-align: right; margin-left: 5px;" >LOW M-V:</label>
-        <input type="text" id="low_mv" style="width: 10%;" value="{{ value.low_mv }}" ><br><br>
+        <input type="text" id="low_mv" style="width: 10%;" value="{{ value.low_mv }}" oninput="validateInteger(this)"><br><br>
     
         <label for="nominal">NOMINAL:</label>
-        <input type="text" id="nominal" style="width: 10%;" value="{{ value.nominal }}" >
+        <input type="text" id="nominal" style="width: 10%;" value="{{ value.nominal }}" oninput="validateInteger(this)" >
     
         <label for="usl" style="text-align: right;">USL:</label>
-        <input type="text" id="usl" style="width: 10%;" value="{{ value.usl }}" >
+        <input type="text" id="usl" style="width: 10%;" value="{{ value.usl }}" oninput="validateInteger(this)">
     
         <label for="lsl" style="text-align: right;">LSL:</label>
-        <input type="text" id="lsl" style="width: 10%;" value="{{ value.lsl }}" ><br>
+        <input type="text" id="lsl" style="width: 10%;" value="{{ value.lsl }}" oninput="validateInteger(this)" ><br>
     
         <label for="mastering" style="margin-top: 15px;">MASTERING GROUP:</label>
         <select id="mastering"  style="width: 15%;" name="mastering" oninput="validateInteger(this)">
@@ -230,8 +248,6 @@ Parameter Settings
 
 <script>
 
-/////////////////////////////////////////////////////
-
 let selectedModelId;
 let selectedParameterID;
 
@@ -271,6 +287,12 @@ function updateUI(data) {
 
                 const parameterNameInput = document.getElementById('parameter_name');
                 parameterNameInput.value = selectedParameterName;
+
+                const parameterIndex = data.paraname.findIndex(param => param.id === selectedParameterID);
+
+                // Set sr_no based on the index (+1 because indices start from 0)
+                const srNoInput = document.getElementById('sr_no');
+                srNoInput.value = parameterIndex + 1;
 
                 console.log('Selected parameter:', selectedParameterName);
                 console.log('Selected parameter ID:', selectedParameterID);
@@ -390,8 +412,6 @@ document.querySelectorAll('.model-name').forEach(model => {
 });
 
 
-
- 
 ///////////////////////////////////////////////    
 
 
@@ -412,6 +432,18 @@ function saveValues() {
     const mastering = document.getElementById('mastering').value;
     const stepNo = document.getElementById('step_no').value;
     const hideCheckbox = document.getElementById('hide').checked;
+
+     // Check if high_mv is less than or equal to low_mv (only if the double radio button is not checked)
+    if (!doubleRadio && parseFloat(highMV) <= parseFloat(lowMV)) {
+        alert('Error: HIGH M-V should be greater than LOW M-V.');
+        return; // Stop further processing
+    }
+
+    // Check if usl is less than or equal to lsl
+    if (usl <= lsl) {
+        alert('Error: USL should be greater than LSL.');
+        return; // Stop further processing
+    }
 
     if (selectedUL) {
         // Prepare data to be sent to the server
@@ -454,13 +486,12 @@ function saveValues() {
 
                 // Clear input fields after successful save
                 document.getElementById('parameter_name').value = '';
-                // Clear other input fields
-                // ...
-
+                showNotification('Data saved successfully', true);
             },
             error: function (error) {
                 // Handle the error response from the server if needed
                 console.error('Error saving data:', error);
+                showNotification('Error saving data', false);
             }
         });
     } else {
@@ -470,19 +501,25 @@ function saveValues() {
 
 ////////////////////////////////////////////////////////////////
 
+function validateInteger(input) {
+    input.value = input.value.replace(/[^0-9.]/g, ''); // Allow only digits (0-9) and a dot
+    const decimalParts = input.value.split('.');
+    
+    if (decimalParts.length > 1) {
+        // If there is a decimal part, limit it to 4 decimal places
+        input.value = `${decimalParts[0]}.${decimalParts[1].slice(0, 4)}`;
+    }
+}
 
+// Event listener for the specified fields
+['high_mv', 'low_mv', 'nominal', 'usl', 'lsl'].forEach(field => {
+    const inputField = document.getElementById(field);
+    inputField.addEventListener('input', function () {
+        validateInteger(this);
+    });
+});
 
-//////////////////////////////////////////////////////////////////////////
-  
-  
-          
-          
-          // this is used to only integer field::::::::
-          // Function to validate input and allow only integer values
-          function validateInteger(input) {
-             input.value = input.value.replace(/[^0-9 .]/g, ''); // Allow only digits (0-9)
-          }
-          
+    
           function handleRadioClick(option) {
                  // Get references to the input fields
                  var analogZeroInput = document.getElementById('analog_zero');
@@ -510,6 +547,7 @@ function saveValues() {
           
              function resetInputFields() {
                 document.getElementById('parameter_name').value = '';
+                document.getElementById('sr_no').value='';
                 document.getElementById('analog_zero').value = '';
                 document.getElementById('high_mv').value = '';
                 document.getElementById('reference_value').value = '';
@@ -542,8 +580,8 @@ function saveValues() {
                 resetInputFields(); // Clear the input fields when the button is clicked
             });
                     
-          //////////////////////////
-          document.addEventListener('DOMContentLoaded', function() {
+        
+document.addEventListener('DOMContentLoaded', function() {
     var deleteButton = document.getElementById('deleteParameterBtn');
 
     deleteButton.addEventListener('click', function() {
@@ -559,27 +597,74 @@ function saveValues() {
             .then(data => {
                 if (data.success) {
                     console.log(data.message);
-                    // Handle success
+                    showNotification('Data deleted successfully', true);
                 } else {
                     console.error(data.message);
-                    // Handle failure
+                    showNotification('Error deleting data', false);
                 }
             })
             .catch(error => {
                 console.error('Error:', error);
-                // Handle network or other errors
+                showNotification('Error deleting data', false);
             });
         } else {
             console.error('No ID selected for deletion.');
-            // Handle the case where no ID is selected
+            showNotification('No ID selected for deletion', false);
         }
     });
 });
 
- 
+function showNotification(message, isSuccess) {
+    var notificationElement = document.getElementById('notification');
+    notificationElement.textContent = message;
+
+    if (isSuccess) {
+        notificationElement.style.backgroundColor = 'lightgreen';
+    } else {
+        notificationElement.style.backgroundColor = 'coral';
+    }
+
+    // Add an "OK" button to the notification
+    var okButton = document.createElement('button');
+    okButton.textContent = 'OK';
+    okButton.style.display = 'block';   // Make the button a block element
+    okButton.style.margin = 'auto';     // Center the button horizontally
+    okButton.style.marginTop = '10px';  // Add some top margin for spacing
+    okButton.style.padding = '10px';
+    okButton.style.height = '40px';     // Set the button height
+    okButton.style.width = '80px';      // Set the button width
+    okButton.style.border = 'none';     // Remove the default button border
+    okButton.style.backgroundColor = 'orangered'; // Red background color
+    okButton.style.color = 'white';     // White text color
+
+    okButton.addEventListener('click', function() {
+        // Hide the notification when the "OK" button is clicked
+        window.location.href = '{% url "parameter" %}';
+    });
+
+    notificationElement.appendChild(okButton);
+
+    // Center the notification vertically and horizontally
+    notificationElement.style.display = 'flex';
+    notificationElement.style.flexDirection = 'column';
+    notificationElement.style.alignItems = 'center';
+    notificationElement.style.textAlign = 'center';
+    notificationElement.style.justifyContent = 'center';
+    notificationElement.style.position = 'fixed';
+    notificationElement.style.top = '50%';
+    notificationElement.style.left = '50%';
+    notificationElement.style.transform = 'translate(-50%, -50%)';
+    notificationElement.style.zIndex = '1000';
+
+    // Add a margin-top of 30px to the notification text
+    notificationElement.style.marginTop = '30px';
+
+    // Display the notification
+    notificationElement.style.display = 'block';
+
+    console.log('Notification displayed:', message);
+}
   
   
-  </script>   
-  
-  
-  {% endblock content %}
+</script>   
+{% endblock content %}

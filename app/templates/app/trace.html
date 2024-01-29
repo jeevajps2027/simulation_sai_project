@@ -95,19 +95,18 @@ th, td {
 
 #notification {
     display: none;
-    position: fixed;
-    
+    position: fixed;    
     top: 50%;
     left: 60%;
-    height: 150px;
+    height: 120px;
     width: 350px;
     transform: translate(-50%, -50%);
     padding: 10px;
     border-radius: 5px;
     font-weight: bold;
     color: black;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); /* Optional: Add a box shadow for better visibility */
-    z-index: 1000; /* Set a higher z-index to ensure it appears above other elements */
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); 
+    z-index: 1000; 
     border: 2px solid black;
 }
 
@@ -503,7 +502,7 @@ function deleteSelectedRows() {
     if (isSuccess) {
         notificationElement.style.backgroundColor = 'lightgreen';
     } else {
-        notificationElement.style.backgroundColor = 'red';
+        notificationElement.style.backgroundColor = 'coral';
     }
 
     // Add an "OK" button to the notification
@@ -530,13 +529,14 @@ function deleteSelectedRows() {
     notificationElement.style.display = 'flex';
     notificationElement.style.flexDirection = 'column';
     notificationElement.style.alignItems = 'center';
+    notificationElement.style.textAlign = 'center';
     notificationElement.style.justifyContent = 'center';
-    notificationElement.style.position = 'fixed';
     notificationElement.style.top = '50%';
     notificationElement.style.left = '50%';
     notificationElement.style.transform = 'translate(-50%, -50%)';
     notificationElement.style.zIndex = '1000';
 
+   
     // Display the notification
     notificationElement.style.display = 'block';
 }
