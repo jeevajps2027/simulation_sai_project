@@ -140,6 +140,7 @@ th, td {
                     <th style="width: 20%;" id="customername">Customer Name</th>
                     <th style="width: 20%;" id="partmodel">Part Model</th>
                     <th style="width: 20%;" id="partno">Part No</th>
+                    <th style="width: 20%;" id="hide">Hide</th>
                 </tr>
             </thead>
             <tbody id="tableBody-1">
@@ -151,6 +152,7 @@ th, td {
                     <td>{{ data.customer_name }}</td>
                     <td>{{ data.part_model }}</td>
                     <td>{{ data.part_no }}</td>
+                    <td><input type="checkbox" {% if data.hide %}checked{% endif %}></td>
                 </tr>
                 {% endfor %}
         
@@ -303,22 +305,7 @@ th, td {
             document.querySelector('.box-1 .inner-box-1').style.backgroundColor='red';
         };
         
-    
-    // Function to handle row selection
-    function handleRowSelection(event) {
-        var selectedRow = event.currentTarget;
-        var allRows = document.querySelectorAll('table tbody tr');
-    
-        // Remove 'selected' class and background color for all rows
-        allRows.forEach(row => {
-            row.classList.remove('selected');
-        });
-    
-        // Toggle 'selected' class for the clicked row and set its background color
-        selectedRow.classList.add('selected');
-    }
-    
-     
+ 
     
     // Define an object to hold row data
     var rowData = {};
@@ -348,40 +335,57 @@ th, td {
             input.style.outline = 'none';
             cell.appendChild(input);
         }
+
     
-        // Add the new row data to the rowData object
-        if (!rowData[tableBodyId]) {
-            rowData[tableBodyId] = [];
-        }
-    
-        rowData[tableBodyId].push({
-            rowIndex: rowIndex,
-            values: []
-        });
+// Conditionally add a checkbox in the last column for tableBody-1
+if (tableBodyId === 'tableBody-1') {
+        var checkboxCell = newRow.insertCell(numColumns);
+        var checkbox = document.createElement('input');
+        checkbox.type = 'checkbox';
+        checkboxCell.appendChild(checkbox);
     }
+
+    // Add the new row data to the rowData object
+    if (!rowData[tableBodyId]) {
+        rowData[tableBodyId] = [];
+    }
+
+    var checkboxValue = tableBodyId === 'tableBody-1' ? checkbox.checked : null;
+
+    rowData[tableBodyId].push({
+        rowIndex: rowIndex,
+        values: Array.from(newRow.cells).map(cell => cell.querySelector('input').value),
+        checkboxValue: checkboxValue
+    });
+}
+
     
-    function saveData() {
-        var tableData = {};
-    
-        // Loop through each table body
-        Object.keys(rowData).forEach(function(key) {
-            var rowsData = rowData[key];
-            var rows = [];
-            rowsData.forEach(function(rowData) {
-                var row = {
-                    rowIndex: rowData.rowIndex,
-                    values: []
-                };
-                var tableBody = document.getElementById(key);
-                var cells = tableBody.rows[rowData.rowIndex - 1].cells; // Correct the index here
-                for (var i = 1; i < cells.length; i++) {
+function saveData() {
+    var tableData = {};
+
+    // Loop through each table body
+    Object.keys(rowData).forEach(function(key) {
+        var rowsData = rowData[key];
+        var rows = [];
+        rowsData.forEach(function(rowData) {
+            var row = {
+                rowIndex: rowData.rowIndex,
+                values: []
+            };
+            var tableBody = document.getElementById(key);
+            var cells = tableBody.rows[rowData.rowIndex - 1].cells;
+            for (var i = 1; i < cells.length; i++) {
+                if (key === 'tableBody-1' && i === cells.length - 1) {
+                    // Check if it's the last column (checkbox column) for tableBody-1
+                    row.values.push(cells[i].querySelector('input').checked);
+                } else {
                     row.values.push(cells[i].querySelector('input').value);
                 }
-                rows.push(row);
-            });
-            tableData[key] = rows;
+            }
+            rows.push(row);
         });
-    
+        tableData[key] = rows;
+    });    
         // Send the tableData object to the server
         sendDataToServer(tableData);
     }
@@ -427,10 +431,6 @@ th, td {
 
 
 
-
-
-
-    ///////////////////////
 // Function to handle row selection
 function handleRowSelection(event) {
     var selectedRow = event.currentTarget;
@@ -487,7 +487,8 @@ function deleteSelectedRows() {
     }
 }
 
-    
+
+
     document.addEventListener('DOMContentLoaded', function () {
         var rows = document.querySelectorAll('table tbody tr');
         rows.forEach(function (row) {

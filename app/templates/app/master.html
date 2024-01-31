@@ -88,7 +88,10 @@ Mastering Page
 <div class="full-page-box" style="overflow-x: auto;overflow-y:auto;">
     <div class="left-box">
         <label for="partModel">PART MODEL:</label>
-        <select id="partModel" name="partModel">            
+        <select id="partModel" name="partModel">
+            {% for value in part_model_values %}
+                <option value="{{ value }}">{{ value }}</option>
+            {% endfor %}
         </select>
         <button type="button" id="cancel-btn"><b>Cancel</b></button>
         <button type="button" id="select-btn"><b>Select</b></button>

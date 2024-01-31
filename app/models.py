@@ -22,7 +22,8 @@ class TableOneData(models.Model):
     part_name = models.CharField(max_length=100)
     customer_name = models.CharField(max_length=100)
     part_model = models.CharField(max_length=100)
-    part_no = models.CharField(max_length=100)    
+    part_no = models.CharField(max_length=100)
+    hide = models.BooleanField(default=False)    
 
 def __str__(self):
         return self.model_name

@@ -127,8 +127,6 @@ def index(request):
     return render(request,'app/index.html')
 
 
-
-
 @csrf_exempt
 def trace(request, row_id=None):
     if request.method == 'POST':
@@ -146,7 +144,8 @@ def trace(request, row_id=None):
                             part_name=values[0],
                             customer_name=values[1],
                             part_model=values[2],
-                            part_no=values[3]
+                            part_no=values[3],
+                            hide = values[4]
                         )
                         table_data.save()
 
@@ -391,8 +390,12 @@ def parameter(request):
 
 
 def master(request):
-    return render(request,'app/master.html')
+    part_model_values = TableOneData.objects.values_list('part_model', flat=True).distinct()
+    
+    context = {
+        'part_model_values': part_model_values,
+    }
 
+    return render(request, 'app/master.html', context)
 def jeeva(request):
     return render(request,'app/jeeva.html')  
-
