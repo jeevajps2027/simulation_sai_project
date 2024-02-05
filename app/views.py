@@ -11,7 +11,7 @@ import threading
 import serial
 from django.views.decorators.csrf import csrf_exempt
 from django.core.cache import cache
-from.models import viewvalues,parameterValue
+from.models import viewvalues,captValue
 from.models import readings,find,TableOneData,TableTwoData,TableThreeData,TableFourData,TableFiveData
 import json
 
@@ -221,6 +221,10 @@ def trace(request, row_id=None):
         return render(request, 'app/trace.html')
 
 
+
+
+
+
 from django.shortcuts import render, get_object_or_404
 
 @csrf_exempt
@@ -243,11 +247,12 @@ def parameter(request):
 
             if selected_id:
                 # Fetch the parameter details by ID
-                parameter = get_object_or_404(parameterValue, id=selected_id)
+                parameter = get_object_or_404(captValue, id=selected_id)
 
                 # Convert parameter details to a dictionary
                 parameter_details = {
                     'id': parameter.id,
+                    'sr_no': parameter.sr_no, 
                     'parameter_name': parameter.parameter_name,
                     'single_radio': parameter.single_radio,
                     'double_radio': parameter.double_radio,
@@ -273,7 +278,7 @@ def parameter(request):
 
             elif model_id:
                 # Filter constvalue objects based on the model_id
-                paraname = parameterValue.objects.filter(model_id=model_id).values('parameter_name','id')
+                paraname = captValue.objects.filter(model_id=model_id).values('parameter_name','id')
                 print('your filtered values are:', paraname)
 
                 # Return filtered parameter names as JSON
@@ -300,56 +305,101 @@ def parameter(request):
             model_id = data.get('modelId')
             print('Model ID:', model_id)
 
+            # Extract sr_no from the data
+            sr_no = data.get('srNo')
+            print('SR_NO:', sr_no)
+
             parameter_value = data.get('parameterValue')
             print('Parameter Name:', parameter_value)
+            
+            
+            existing_instance = captValue.objects.filter(model_id=model_id, sr_no=sr_no).first()
 
-            # Handle radio button values
-            single_radio = data.get('singleRadio')
-            double_radio = data.get('doubleRadio')
-            if single_radio:
-                analog_zero = data.get('analogZero')
-                reference_value = data.get('referenceValue')
-                high_mv = None
-                low_mv = None
-            elif double_radio:
-                high_mv = data.get('highMV')
-                low_mv = data.get('lowMV')
-                analog_zero = None
-                reference_value = None
+            if existing_instance:
+                # Update the existing instance with the received values
+                existing_instance.parameter_name = data.get('parameterValue')          
+                existing_instance.single_radio = data.get('singleRadio')
+                existing_instance.double_radio = data.get('doubleRadio')
 
-            # Continue handling other values
-            probe_no = data.get('probeNo')
-            measurement_mode = data.get('measurementMode')
-            nominal = data.get('nominal')
-            usl = data.get('usl')
-            lsl = data.get('lsl')
-            mastering = data.get('mastering')
-            step_no = data.get('stepNo')
-            hide_checkbox = data.get('hideCheckbox')
+                if existing_instance.single_radio:
+                    existing_instance.analog_zero = data.get('analogZero')
+                    existing_instance.reference_value = data.get('referenceValue')
+                    existing_instance.high_mv = None
+                    existing_instance.low_mv = None
+                elif existing_instance.double_radio:
+                    existing_instance.high_mv = data.get('highMV')
+                    existing_instance.low_mv = data.get('lowMV')
+                    existing_instance.analog_zero = None
+                    existing_instance.reference_value = None
 
-            # Create an instance of your model with the received values
-            const_value_instance = parameterValue.objects.create(
-                model_id=model_id,
-                parameter_name=parameter_value,
-                single_radio=single_radio,
-                double_radio=double_radio,
-                analog_zero=analog_zero,
-                reference_value=reference_value,
-                high_mv=high_mv,
-                low_mv=low_mv,
-                probe_no=probe_no,
-                measurement_mode=measurement_mode,
-                nominal=nominal,
-                usl=usl,
-                lsl=lsl,
-                mastering=mastering,
-                step_no=step_no,
-                hide_checkbox=hide_checkbox
-            )
+                # Update other values
+                existing_instance.probe_no = data.get('probeNo')
+                existing_instance.parameter_name = data.get('parameterValue')
+                existing_instance.measurement_mode = data.get('measurementMode')
+                existing_instance.nominal = data.get('nominal')
+                existing_instance.usl = data.get('usl')
+                existing_instance.lsl = data.get('lsl')
+                existing_instance.mastering = data.get('mastering')
+                existing_instance.step_no = data.get('stepNo')
+                existing_instance.hide_checkbox = data.get('hideCheckbox')
 
-            print("Your values in the server:", const_value_instance)
-            # Save the instance to the database
-            const_value_instance.save()
+                existing_instance.parameter_name = data.get('parameterValue')
+
+                existing_instance.save()
+
+                print("Your values in the server (updated):", existing_instance)
+
+
+            else:    
+                # Handle radio button values
+                single_radio = data.get('singleRadio')
+                double_radio = data.get('doubleRadio')
+                if single_radio:
+                    analog_zero = data.get('analogZero')
+                    reference_value = data.get('referenceValue')
+                    high_mv = None
+                    low_mv = None
+                elif double_radio:
+                    high_mv = data.get('highMV')
+                    low_mv = data.get('lowMV')
+                    analog_zero = None
+                    reference_value = None
+
+                # Continue handling other values
+                probe_no = data.get('probeNo')
+                measurement_mode = data.get('measurementMode')
+                nominal = data.get('nominal')
+                usl = data.get('usl')
+                lsl = data.get('lsl')
+                mastering = data.get('mastering')
+                step_no = data.get('stepNo')
+                hide_checkbox = data.get('hideCheckbox')
+                
+
+                # Create an instance of your model with the received values
+                const_value_instance = captValue.objects.create(
+                    model_id=model_id,
+                    parameter_name=parameter_value,
+                    sr_no=sr_no, 
+                    single_radio=single_radio,
+                    double_radio=double_radio,
+                    analog_zero=analog_zero,
+                    reference_value=reference_value,
+                    high_mv=high_mv,
+                    low_mv=low_mv,
+                    probe_no=probe_no,
+                    measurement_mode=measurement_mode,
+                    nominal=nominal,
+                    usl=usl,
+                    lsl=lsl,
+                    mastering=mastering,
+                    step_no=step_no,
+                    hide_checkbox=hide_checkbox
+                )
+
+                print("Your values in the server:", const_value_instance)
+                # Save the instance to the database
+                const_value_instance.save()
 
             
         except Exception as e:
@@ -363,12 +413,22 @@ def parameter(request):
 
             if selected_id:
                 # Fetch the parameter details by ID
-                parameter = get_object_or_404(parameterValue, id=selected_id)
+                parameter = get_object_or_404(captValue, id=selected_id)
+
+                # Get the model_id and sr_no before deletion
+                model_id = parameter.model_id
+                sr_no = parameter.sr_no
 
                 # Delete the parameter
                 parameter.delete()
 
                 print(f'Parameter with ID {selected_id} deleted successfully.')
+                # Adjust sr_no values for the remaining parameters of the same model
+                remaining_parameters = captValue.objects.filter(model_id=model_id).order_by('sr_no')
+                for index, remaining_param in enumerate(remaining_parameters, start=1):
+                    if remaining_param.sr_no != index:
+                        remaining_param.sr_no = index
+                        remaining_param.save()
 
                 return JsonResponse({'success': True, 'message': f'Parameter with ID {selected_id} deleted successfully.'})
 
@@ -390,12 +450,66 @@ def parameter(request):
 
 
 def master(request):
-    part_model_values = TableOneData.objects.values_list('part_model', flat=True).distinct()
-    
-    context = {
-        'part_model_values': part_model_values,
-    }
+    context = {}  # Initialize an empty context
+
+    if request.method == 'POST':
+        try:
+            # Retrieve the selected value from the request body
+            data = json.loads(request.body.decode('utf-8'))
+            selected_value = data.get('selectedValue')
+            print('your selected values from your client sde:', selected_value)
+
+           # Your filtering logic based on selected_value
+            filtered_data = captValue.objects.filter(model_id=selected_value).values().distinct()
+            print('filtered values in the selected_value:', filtered_data)
+
+            # Extract only the "parameter_name" from each element
+            parameter_names = [item['parameter_name'] for item in filtered_data]
+            print('parameter_name:',parameter_names)
+
+             # Extract only the "parameter_name" from each element
+            high_mv = [item['high_mv'] for item in filtered_data]
+            print('high_mv:',high_mv)
+
+             # Extract only the "parameter_name" from each element
+            low_mv = [item['low_mv'] for item in filtered_data]
+            print('low_mv:',low_mv)
+
+
+
+
+            response_data = {'message': 'Successfully received the selected value.', 
+            'selectedValue': selected_value,
+            'parameter_names': parameter_names, 
+            'low_mv':low_mv,
+            'high_mv':high_mv,
+
+            }
+            return JsonResponse(response_data)
+
+        except json.JSONDecodeError as e:
+            return JsonResponse({'error': 'Invalid JSON format in the request body'}, status=400)
+
+    elif request.method == 'GET':
+        try:
+            # Your initial queryset for part_model_values
+            part_model_values = captValue.objects.values_list('model_id', flat=True).distinct()
+            print('part_model_values:', part_model_values)
+
+            context = {
+                'part_model_values': part_model_values,
+            }
+
+        except Exception as e:
+            print(f'Exception: {e}')
+            return JsonResponse({'key': 'value'})
 
     return render(request, 'app/master.html', context)
+
+
+
+
+
+
 def jeeva(request):
     return render(request,'app/jeeva.html')  

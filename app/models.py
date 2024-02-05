@@ -73,5 +73,29 @@ class parameterValue(models.Model):
     step_no = models.FloatField()
     hide_checkbox = models.BooleanField(default=False)
 
+
+def __str__(self):
+        return f'{self.model_id} - {self.parameter_name}'
+
+class captValue(models.Model):
+    model_id = models.CharField(max_length=255)
+    parameter_name = models.CharField(max_length=255)
+    sr_no = models.IntegerField()
+    single_radio = models.BooleanField(default=False)
+    analog_zero = models.FloatField(blank=True, null=True)
+    reference_value = models.FloatField(blank=True, null=True)
+    double_radio = models.BooleanField(default=False)
+    high_mv = models.FloatField(blank=True, null=True)
+    low_mv = models.FloatField(blank=True, null=True)    
+    probe_no = models.FloatField()
+    measurement_mode = models.CharField(max_length=50)
+    nominal = models.FloatField()
+    usl = models.FloatField()
+    lsl = models.FloatField()
+    mastering = models.FloatField()
+    step_no = models.FloatField()
+    hide_checkbox = models.BooleanField(default=False)
+
+
 def __str__(self):
         return f'{self.model_id} - {self.parameter_name}'

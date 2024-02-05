@@ -119,25 +119,13 @@ Mastering Page
 
 
 
-    <div id="container-wrapper">
-    <div class="input-box-container" id="container-1">
-        <input type="radio" id="container-1_radioButton" style="margin-left: 70px;
-        margin-top: 0px;"><br>
-        L:<input class="master_input" type="text" id="container-1_input1">
-        <input  class="master_input" type="text" id="container-1_input2"><br>
-
-        H:<input class="master_input" type="text" id="container-1_input3">
-        <input class="master_input" type="text" id="container-1_input4">
-       
-        <pre id="pre_1" style="margin-top: 0px;margin-left: 50px;">jeeva</pre>
-    </div>
-    </div>
+    <div id="container-wrapper"></div>
 </div>
 
 
 <script>
     // Generate 50 input-box-container elements
-    for (let i = 1; i <= 49; i++) {
+    for (let i = 1; i <= 50; i++) {
         // Create a new container div
         const container = document.createElement('div');
         container.className = 'input-box-container';
@@ -184,13 +172,129 @@ Mastering Page
         preElement.id = 'pre_' + i;
         preElement.style.marginTop = '0px';
         preElement.style.marginLeft = '50px';
-        preElement.appendChild(document.createTextNode('jeeva'));
+        preElement.appendChild(document.createTextNode(''));
         container.appendChild(preElement);
 
         // Append the container to the container-wrapper
         document.getElementById('container-wrapper').appendChild(container);
     
     }
+
+
+
+
+
+
+    document.getElementById('select-btn').addEventListener('click', function () {
+    var selectedValue = document.getElementById('partModel').value;
+    console.log('Selected Value: ' + selectedValue);
+
+    // Make an AJAX request to the backend
+    fetch('/master/', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCookie('csrftoken'), // Include CSRF token for Django
+        },
+        body: JSON.stringify({
+            selectedValue: selectedValue,
+        }),
+    })
+    .then(response => response.json())
+    .then(data => {
+        // Handle the response from the backend if needed
+        console.log('Response from backend:', data);
+
+        // Extract parameter names from the response data
+        const parameter_names = data.parameter_names;
+
+        // Check if the parameter names are available
+        if (parameter_names && parameter_names.length > 0) {
+            // Iterate over the parameter names and update the corresponding pre tags
+            for (let i = 1; i <= parameter_names.length; i++) {
+                const preElement = document.getElementById('pre_' + i);
+                preElement.innerHTML = '<b style="color: red;">' + parameter_names[i - 1] + '</b>';
+            }
+            // Clear the remaining pre tags if there are fewer parameter names than the total number of pre tags
+            for (let i = parameter_names.length + 1; i <= 50; i++) {
+                const preElement = document.getElementById('pre_' + i);
+                preElement.innerHTML = '';
+            }
+        } else {
+            console.error('No or empty parameter names received from the backend.');
+        }
+
+
+
+        // Extract low_mv values from the response data
+        const low_mv_values = data.low_mv;
+
+        // Reset previous low_mv values
+        for (let i = 1; i <= 50; i++) {
+            const inputLowMV = document.getElementById('container-' + i + '_input1');
+            inputLowMV.value = '';
+        }
+
+        // Check if low_mv values are available
+        if (low_mv_values && low_mv_values.length > 0) {
+            // Iterate over the low_mv values and update the corresponding input fields
+            for (let i = 1; i <= low_mv_values.length; i++) {
+                const inputLowMV = document.getElementById('container-' + i + '_input1');
+                inputLowMV.value = low_mv_values[i - 1];
+            }
+        } else {
+            console.error('No or empty low_mv values received from the backend.');
+        }
+
+        // Extract high_mv values from the response data
+        const high_mv_values = data.high_mv;
+        
+        // Reset previous high_mv values
+        for (let i = 1; i <= 50; i++) {
+            const inputHighMV = document.getElementById('container-' + i + '_input3');
+            inputHighMV.value = '';
+        }
+
+        
+        // Check if high_mv values are available
+        if (high_mv_values && high_mv_values.length > 0) {
+            // Iterate over the high_mv values and update the corresponding input fields
+            for (let i = 1; i <= high_mv_values.length; i++) {
+                const inputHighMV = document.getElementById('container-' + i + '_input3');
+                inputHighMV.value = high_mv_values[i - 1];
+            }
+        } else {
+            console.error('No or empty high_mv values received from the backend.');
+        }
+
+    })
+    .catch(error => {
+        console.error('Error:', error);
+    });
+});
+
+
+
+
+
+    // Function to get CSRF token from cookies
+    function getCookie(name) {
+        var cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            var cookies = document.cookie.split(';');
+            for (var i = 0; i < cookies.length; i++) {
+                var cookie = cookies[i].trim();
+                // Check if the cookie name matches the desired name
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+
+
 
     
 </script>

@@ -269,6 +269,8 @@ function updateUI(data) {
         data.paraname.forEach(item => {
             const listItem = document.createElement('li');
             listItem.textContent = item.parameter_name;
+            
+            listItem.setAttribute('data-sr-no', item.sr_no);
             listItem.setAttribute('data-parameter', item.id);
 
             listItem.addEventListener('click', function () {
@@ -298,7 +300,7 @@ function updateUI(data) {
                 console.log('Selected parameter ID:', selectedParameterID);
 
                 // Include the selectedParameterID in the fetch URL
-                fetch(`/parameter/?parameter_name=${selectedParameterName}&id=${selectedParameterID}`)
+                fetch(`/parameter/?parameter_name=${selectedParameterName}&id=${selectedParameterID}&sr_no=${item.sr_no}`)
                         .then(response => {
                             if (!response.ok) {
                                 throw new Error(`HTTP error! Status: ${response.status}`);
@@ -309,7 +311,7 @@ function updateUI(data) {
                             console.log('Details about selected parameter:', details);
                             // Access the HTML elements and update their values
                                 document.getElementById('parameter_name').value = details.parameter_details.parameter_name;
-
+                                document.getElementById('sr_no').value = details.parameter_details.sr_no;
                                 // Handle radio buttons
                                 if (details.parameter_details.single_radio) {
                                     document.getElementById('single').checked = true;
@@ -406,6 +408,18 @@ document.querySelectorAll('.model-name').forEach(model => {
             .then(data => {
                 // Update the UI with the filtered data
                 updateUI(data);
+                
+                // Retrieve the first parameter and trigger a click event
+                const firstParameter = document.querySelector('.nested-ul.active li:first-child');
+                if (firstParameter) {
+                    firstParameter.click(); // Simulate a click on the first parameter
+                }
+                // Set sr_no to 1 if the model has no parameters
+                const srNoInput = document.getElementById('sr_no');
+                if (data.paraname.length === 0) {
+                    srNoInput.value = 1;
+                }
+            
             })
             .catch(error => console.error('Error:', error));
     });
@@ -432,6 +446,12 @@ function saveValues() {
     const mastering = document.getElementById('mastering').value;
     const stepNo = document.getElementById('step_no').value;
     const hideCheckbox = document.getElementById('hide').checked;
+    const srNo = document.getElementById('sr_no').value; // Add this line
+
+    
+
+
+
 
      // Check if high_mv is less than or equal to low_mv (only if the double radio button is not checked)
     if (!doubleRadio && parseFloat(highMV) <= parseFloat(lowMV)) {
@@ -463,7 +483,8 @@ function saveValues() {
             lsl: lsl,
             mastering: mastering,
             stepNo: stepNo,
-            hideCheckbox: hideCheckbox
+            hideCheckbox: hideCheckbox,
+            srNo: srNo,
         };
 
         console.log('your data is :', data);
@@ -547,7 +568,6 @@ function validateInteger(input) {
           
              function resetInputFields() {
                 document.getElementById('parameter_name').value = '';
-                document.getElementById('sr_no').value='';
                 document.getElementById('analog_zero').value = '';
                 document.getElementById('high_mv').value = '';
                 document.getElementById('reference_value').value = '';
@@ -570,17 +590,38 @@ function validateInteger(input) {
                 document.getElementById('probe_no').value = ''; // Set the default value or an empty string
                 document.getElementById('mastering').value = ''; // Set the default value or an empty string
                 document.getElementById('step_no').value = ''; // Set the default value or an empty string
-
+                
+                if(lastSelectedParameterElement){
+                    lastSelectedParameterElement.style.backgroundColor ='';
+                }
                 // Reset the selectedId
                 selectedId = null;
             }
 
-            // Event listener for the "Add New" button
-            document.getElementById('add-btn').addEventListener('click', function () {
-                resetInputFields(); // Clear the input fields when the button is clicked
-            });
+
+// Event listener for the "Add New" button
+document.getElementById('add-btn').addEventListener('click', function () {
+    const nestedUl = document.querySelector('.nested-ul.active');
+    const totalParameters = nestedUl ? nestedUl.querySelectorAll('li').length : 0;
+
+    // Increment the total number of parameters by 1
+    const nextSrNo = totalParameters + 1;
+
+    // Set the incremented sr_no
+    document.getElementById('sr_no').value = nextSrNo;
+
+    resetInputFields(); // Clear the input fields when the button is clicked
+});
+
+
+
+
+
+
                     
-        
+/////////////////////////////////////////////
+ 
+ 
 document.addEventListener('DOMContentLoaded', function() {
     var deleteButton = document.getElementById('deleteParameterBtn');
 
