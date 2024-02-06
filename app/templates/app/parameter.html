@@ -563,7 +563,31 @@ function validateInteger(input) {
                      document.getElementById('reference_value').disabled = true;
                  }
              }
- 
+            document.getElementById('high_mv').addEventListener('input', function(event) {
+                if (!document.getElementById('double').checked) {
+                    alert('Please select the "double" radio button first.');
+                }
+            });
+
+            document.getElementById('low_mv').addEventListener('input', function(event) {
+                if (!document.getElementById('double').checked) {
+                    alert('Please select the "double" radio button first.');
+                }
+            });
+
+            document.getElementById('analog_zero').addEventListener('input', function(event) {
+                if (!document.getElementById('single').checked) {
+                    alert('Please select the "single" radio button first.');
+                }
+            });
+
+            document.getElementById('reference_value').addEventListener('input', function(event) {
+                if (!document.getElementById('single').checked) {
+                    alert('Please select the "single" radio button first.');
+                }
+            });
+
+
           
           
              function resetInputFields() {

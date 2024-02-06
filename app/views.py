@@ -448,42 +448,36 @@ def parameter(request):
 
 
 
-
 def master(request):
-    context = {}  # Initialize an empty context
+    context = {}  
 
     if request.method == 'POST':
         try:
-            # Retrieve the selected value from the request body
+            # Retrieve the selected values from the request body
             data = json.loads(request.body.decode('utf-8'))
             selected_value = data.get('selectedValue')
-            print('your selected values from your client sde:', selected_value)
+            selected_mastering = data.get('selectedMastering')
+            print('Selected values from the client side:', selected_value, selected_mastering)
 
-           # Your filtering logic based on selected_value
-            filtered_data = captValue.objects.filter(model_id=selected_value).values().distinct()
-            print('filtered values in the selected_value:', filtered_data)
+            # Your filtering logic based on selected_value and selected_mastering
+            filtered_data = captValue.objects.filter(
+                model_id=selected_value,
+                mastering=selected_mastering,
+                hide_checkbox=False
+            ).values().distinct()
 
-            # Extract only the "parameter_name" from each element
+            # Extract necessary data from filtered_data
             parameter_names = [item['parameter_name'] for item in filtered_data]
-            print('parameter_name:',parameter_names)
-
-             # Extract only the "parameter_name" from each element
-            high_mv = [item['high_mv'] for item in filtered_data]
-            print('high_mv:',high_mv)
-
-             # Extract only the "parameter_name" from each element
             low_mv = [item['low_mv'] for item in filtered_data]
-            print('low_mv:',low_mv)
+            high_mv = [item['high_mv'] for item in filtered_data]
 
-
-
-
-            response_data = {'message': 'Successfully received the selected value.', 
-            'selectedValue': selected_value,
-            'parameter_names': parameter_names, 
-            'low_mv':low_mv,
-            'high_mv':high_mv,
-
+            response_data = {
+                'message': 'Successfully received the selected values.',
+                'selectedValue': selected_value,
+                'parameter_names': parameter_names,
+                'low_mv': low_mv,
+                'high_mv': high_mv,
+                'mastering': selected_mastering,
             }
             return JsonResponse(response_data)
 

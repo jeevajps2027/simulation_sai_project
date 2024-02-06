@@ -189,6 +189,9 @@ Mastering Page
     var selectedValue = document.getElementById('partModel').value;
     console.log('Selected Value: ' + selectedValue);
 
+    var selectedMastering = document.getElementById('mastering').value;
+    console.log('Selected MASTERING GROUP:', selectedMastering);
+
     // Make an AJAX request to the backend
     fetch('/master/', {
         method: 'POST',
@@ -198,12 +201,14 @@ Mastering Page
         },
         body: JSON.stringify({
             selectedValue: selectedValue,
+            selectedMastering: selectedMastering,
         }),
     })
     .then(response => response.json())
     .then(data => {
-        // Handle the response from the backend if needed
-        console.log('Response from backend:', data);
+
+
+        
 
         // Extract parameter names from the response data
         const parameter_names = data.parameter_names;
@@ -267,13 +272,29 @@ Mastering Page
             console.error('No or empty high_mv values received from the backend.');
         }
 
+         // Extract MASTERING GROUP value from the response data
+         const selectedMastering = data.mastering && data.mastering.length > 0 ? data.mastering[0] : 1;
+
+        // Set the default value for MASTERING GROUP based on the response
+        document.getElementById('mastering').value = selectedMastering;
+
+        // Trigger the change event to log the selected value in the console
+        document.getElementById('mastering').dispatchEvent(new Event('change'));
+
+
     })
     .catch(error => {
         console.error('Error:', error);
     });
 });
 
+////////////////////////////////////////
 
+
+document.getElementById('mastering').addEventListener('change', function () {
+        var selectedMastering = this.value;
+        console.log('Selected MASTERING GROUP:', selectedMastering);
+    });
 
 
 
