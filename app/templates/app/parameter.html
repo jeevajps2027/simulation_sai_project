@@ -454,7 +454,7 @@ function saveValues() {
 
 
      // Check if high_mv is less than or equal to low_mv (only if the double radio button is not checked)
-    if (!doubleRadio && parseFloat(highMV) <= parseFloat(lowMV)) {
+    if (highMV <= lowMV) {
         alert('Error: HIGH M-V should be greater than LOW M-V.');
         return; // Stop further processing
     }

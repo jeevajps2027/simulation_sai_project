@@ -21,7 +21,7 @@
         }
 
         .gallery {
-            margin-top: 200px;
+            margin-top: 220px;
             margin-left: 150px;
             position: relative;
             width: 400px; /* Adjust this value based on your preference */
@@ -100,15 +100,15 @@
         </div>
 
         <div class="image-container image-2">
-            <a href="http://127.0.0.1:8000/probe/">
+            <a href="http://127.0.0.1:8000/parameter/">
                 <img src="{% static 'images/para.jpg' %}"></a>
                 <p>Parameter Settings</p>
             
         </div>
 
         <div class="image-container image-3">
-            
-                <img src="{% static 'images/master.jpg' %}">
+            <a href="http://127.0.0.1:8000/master/">
+                <img src="{% static 'images/master.jpg' %}"></a>
                 <p>Mastering</p>
          
         </div>
@@ -119,17 +119,18 @@
         </div>
 
         <div class="image-container image-5">
-            <img src="{% static 'images/spc.jpg' %}">
-            <p>SPC</p>
-        </div>
-
-        <div class="image-container image-6">
             <img src="{% static 'images/report.jpg' %}">
             <p>Report</p>
         </div>
 
+        <div class="image-container image-6">
+            <img src="{% static 'images/spc.jpg' %}">
+            <p>SPC</p>
+        </div>
+
         <div class="image-container image-7">
-            <img src="{% static 'images/general_settings.png' %}">
+            <a href="http://127.0.0.1:8000/trace/">
+            <img src="{% static 'images/general_settings.png' %}"></a>
             <p>General Settings</p>
         </div>
 

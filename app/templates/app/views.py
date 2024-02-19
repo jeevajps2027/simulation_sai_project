@@ -450,8 +450,25 @@ def parameter(request):
 
 def master(request):
     context = {}  
+    with serial_data_lock:
+        data_to_display = serial_data
 
-    if request.method == 'POST':
+    if request.META.get('HTTP_X_REQUESTED_WITH') == 'XMLHttpRequest':
+        # Split the serial data into 11 channels (A-K) using regular expressions
+        parts = re.split(r'([A-K])', data_to_display)
+        print('the values from the master page:',parts)
+        parts = [part for part in parts if part.strip()]  # Remove empty strings
+
+        # Create a dictionary to store data for each channel
+        channel_data = {}
+        for channel_id, part in zip(parts[0::2], parts[1::2]):
+            part = part.replace('+', '')
+            channel_data[channel_id] = part
+
+        # Return the channel data as JSON response
+        return JsonResponse({'serial_data': channel_data})
+
+    elif request.method == 'POST':
         try:
             # Retrieve the selected values from the request body
             data = json.loads(request.body.decode('utf-8'))
@@ -469,13 +486,7 @@ def master(request):
             # Extract necessary data from filtered_data
             parameter_names = [item['parameter_name'] for item in filtered_data]
             low_mv = [item['low_mv'] for item in filtered_data]
-            print('low values:',low_mv)
             high_mv = [item['high_mv'] for item in filtered_data]
-            print('high values:',high_mv)
-            probe_no = [item['probe_no'] for item in filtered_data]
-            print('probe no:',probe_no)
-            nominal = [item['nominal'] for item in filtered_data]
-            print('nominal:',nominal)
 
             response_data = {
                 'message': 'Successfully received the selected values.',
@@ -484,8 +495,6 @@ def master(request):
                 'low_mv': low_mv,
                 'high_mv': high_mv,
                 'mastering': selected_mastering,
-                'probe_no':probe_no,
-                'nominal':nominal,
             }
             return JsonResponse(response_data)
 
@@ -500,15 +509,12 @@ def master(request):
 
             context = {
                 'part_model_values': part_model_values,
+                'serial_data': data_to_display,
             }
 
         except Exception as e:
             print(f'Exception: {e}')
             return JsonResponse({'key': 'value'})
-    
-    global serial_data
-    with serial_data_lock:
-        context['serial_data']=serial_data
 
     return render(request, 'app/master.html', context)
 
