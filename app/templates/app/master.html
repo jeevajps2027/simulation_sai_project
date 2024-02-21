@@ -154,6 +154,23 @@ Mastering Page
 
 
 <script>
+    function toggleContainerRadioButtons(show) {
+    const containerRadioButtons = document.querySelectorAll('[name="radio-container"]');
+    containerRadioButtons.forEach(radioButton => {
+        radioButton.style.display = show ? 'inline' : 'none';
+    });
+}
+
+// Event listener for the "Parameterwise" radio button
+document.getElementById('parameterwise').addEventListener('change', function() {
+    if (this.checked) {
+        toggleContainerRadioButtons(true); // Show container radio buttons
+    } else {
+        toggleContainerRadioButtons(false); // Hide container radio buttons
+    }
+});
+
+//////////////////////////////
     // Generate 50 input-box-container elements
     for (let i = 1; i <= 50; i++) {
         // Create a new container div
@@ -176,9 +193,11 @@ Mastering Page
         })
         container.appendChild(radioButton);
         container.appendChild(document.createElement('br'));
+        toggleContainerRadioButtons(false);
 
          // Append container to the document body or any other container
     document.body.appendChild(container);
+
 
 
     let probeNo;
