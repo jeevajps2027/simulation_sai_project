@@ -99,6 +99,15 @@ Mastering Page
             width: 100px;
             margin-right: 10px; 
         }
+
+       #pre{
+        margin-left: 400px;
+        margin-top: 15px;
+        color:red;
+        text-shadow: 2px 2px 4px white;
+        font-size: 20px;
+
+       }
        
 </style>
 
@@ -114,12 +123,14 @@ Mastering Page
         <button type="button" id="cancel-btn"><b>Cancel</b></button>
         <button type="button" id="select-btn"><b>Select</b></button>
     </div>
-    <label for="all_parameter" style="margin-left: 400px; margin-top: -80px;">All Parameter
-        <input type="radio" style="margin-left: 10px;" id="all_parameter">
+    <label for="all_parameter" style="margin-left: 400px; margin-top: -80px;">
+        All Parameter
+        <input type="radio" style="margin-left: 10px;" id="all_parameter" onclick="handleRadioClick(this)">
     </label>
     
-    <label for="parameterwise" style="margin-left: 400px;">Parameterwise
-        <input type="radio" style="margin-left: 7px;" id="parameterwise">
+    <label for="parameterwise" style="margin-left: 400px;">
+        Parameterwise
+        <input type="radio" style="margin-left: 7px;" id="parameterwise" onclick="handleRadioClick(this)">
     </label><br>
     
     <label for="mastering" style="margin-left: 570px;margin-top: -80px;">MASTERING GROUP:</label>
@@ -133,7 +144,9 @@ Mastering Page
     <button id="lowMasterBtn" type="button" onclick="lowMasteringClick()"><b>Low Mastering</b></button>
     <button id="highMasterBtn" type="button" onclick="highMasteringClick()"><b>High Mastering</b></button>
 
-    <div style="border-bottom: 2px solid black; margin-top: 20px;"></div>
+    <pre id="pre"></pre>
+
+    <div style="border-bottom: 2px solid black; "></div>
 
    
     <textarea id="probe-A"></textarea>
@@ -154,21 +167,78 @@ Mastering Page
 
 
 <script>
-    function toggleContainerRadioButtons(show) {
+
+function handleRadioClick(clickedRadio) {
+    var allParameterRadio = document.getElementById('all_parameter');
+    var parameterwiseRadio = document.getElementById('parameterwise');
+    var containerRadioButtons = document.querySelectorAll('[name="radio-container"]');
+    var preTag = document.getElementById('pre');
+
+    // Unselect the other radio button
+    if (clickedRadio.id === 'all_parameter' && parameterwiseRadio.checked) {
+            parameterwiseRadio.checked = false;
+        } else if (clickedRadio.id === 'parameterwise' && allParameterRadio.checked) {
+            allParameterRadio.checked = false;
+        }
+
+
+    else if (clickedRadio.id === 'all_parameter') {
+        // Hide container radio buttons if 'All Parameter' radio button is clicked
+        toggleContainerRadioButtons(false);
+        preTag.innerText = 'All Parameters are selected.';
+
+    } else if (clickedRadio.id === 'parameterwise') {
+        // Show container radio buttons if 'Parameterwise' radio button is clicked
+        toggleContainerRadioButtons(true);
+        preTag.innerText = 'Parameterwise is selected.';
+
+    }
+}
+
+// Function to toggle container radio buttons visibility
+function toggleContainerRadioButtons(show) {
     const containerRadioButtons = document.querySelectorAll('[name="radio-container"]');
     containerRadioButtons.forEach(radioButton => {
         radioButton.style.display = show ? 'inline' : 'none';
     });
 }
+window.addEventListener('load',function(){
+    toggleContainerRadioButtons(false);
+});
 
-// Event listener for the "Parameterwise" radio button
-document.getElementById('parameterwise').addEventListener('change', function() {
+
+// Event listeners for radio buttons
+document.getElementById('all_parameter').addEventListener('change', function() {
     if (this.checked) {
-        toggleContainerRadioButtons(true); // Show container radio buttons
-    } else {
-        toggleContainerRadioButtons(false); // Hide container radio buttons
+        handleRadioClick(this);
     }
 });
+
+document.getElementById('parameterwise').addEventListener('change', function() {
+    if (this.checked) {
+        handleRadioClick(this);
+    }
+});
+///////////////////////////////////////////
+
+
+
+// Event listener for the "All Parameter" radio button
+document.getElementById('all_parameter').addEventListener('change', function() {
+    if (this.checked) {
+        displayAllContainerValues();
+    }
+    console.log("you are select the all parameter now");
+});
+
+// Function to display values for all containers
+function displayAllContainerValues() {
+    const containers = document.querySelectorAll('.input-box-container');
+    containers.forEach(container => {
+        displayContainerValues(container);
+    });
+}
+
 
 //////////////////////////////
     // Generate 50 input-box-container elements
@@ -199,12 +269,11 @@ document.getElementById('parameterwise').addEventListener('change', function() {
     document.body.appendChild(container);
 
 
-
     let probeNo;
 let a1; // lowcount
 let b1; // highcount
 let callingFunction;
-let a; // low master
+let a ; // low master
 let b; // high master
 let e; // nominal
 let d; // coeffiecient
@@ -225,9 +294,9 @@ function displayContainerValues(container) {
     values['preValue'] = preValue;
 
     // Rename keys as needed
-    a = values['low_mv'];
-    b = values['high_mv'];
-    e = values['nominal'];
+    const a = parseFloat(values['low_mv']);
+    const b = parseFloat(values['high_mv']);
+    const e = parseFloat(values['nominal']);
 
     console.log("Container values:", values);
     console.log("a:", a);
@@ -235,7 +304,7 @@ function displayContainerValues(container) {
     console.log("e:", e);
 
     // Map probe numbers to corresponding textarea IDs
-    probeNo = values['probe_no']; // Assign value to the global probeNo
+    const probeNo = values['probe_no'];
 
     if (probeNo) {
         const probeTextareaId = mapProbeToTextareaId(probeNo);
@@ -243,59 +312,129 @@ function displayContainerValues(container) {
 
         if (probeTextarea) {
             const valueInTextarea = probeTextarea.value;
-            console.log('Value in textarea :', probeTextareaId);
+            console.log('Value in textarea:', probeTextareaId);
 
             // Save the value based on the calling function
             if (callingFunction === 'lowMasteringClick') {
-                a1 = valueInTextarea;
+                a1 = parseFloat(valueInTextarea);
                 console.log("Saving value as 'a1':", a1);
             } else if (callingFunction === 'highMasteringClick') {
-                b1 = valueInTextarea;
+                b1 = parseFloat(valueInTextarea);
                 console.log("Saving value as 'b1':", b1);
 
                 // Perform calculations and display the output
                 const c = b - a;
                 const c1 = b1 - a1;
-                d = c / c1; // Use the global 'd' variable instead of redeclaring
-                const o = parseFloat(e) + (a1 * d);
-                o1 = a - o; // Use the global 'o1' variable instead of redeclaring
+                const d = c / c1;
+                const o = e + (a1 * d);
+                const o1 = a - o;
 
                 console.log("c:", c);
                 console.log("c1:", c1);
                 console.log("d:", d);
                 console.log("o:", o);
                 console.log("offset value:", o1);
+                console.log("container value id:",container.id);
+
+                // Function to handle serial data changes
+                function handleSerialDataChange(newSerialData) {
+                    // Call calculateMastering with the appropriate values and newSerialData
+                    calculateMastering(e, d, o1, newSerialData,container.id);
+                }
+
+                // Get the initial serialData by calling displaySerialData
+                const initialSerialData = displaySerialData(container, handleSerialDataChange);
+
+                if (initialSerialData !== null) {
+                    // Call calculateMastering with the appropriate values and initialSerialData
+                    calculateMastering(e, d, o1, initialSerialData,container.id);
+                }
             }
         }
     }
+    return a;
 }
-
 
 
 function lowMasteringClick() {
-    console.log("lowMasteringClick");
-    const container = getSelectedContainer();
-    callingFunction = 'lowMasteringClick';
-    displayContainerValues(container);
+        console.log("lowMasteringClick");
 
-    // Assuming 'a' is the value you want to display
-    const additionalInput = document.getElementById(container.id + '_additional_input');
-    if (additionalInput) {
-        additionalInput.value = a;  // Set the value of the additional input field
-    } else {
-        console.error('Additional input field not found for container:', container.id);
+        const preTag = document.getElementById('pre');
+
+        if (document.getElementById('all_parameter').checked) {
+            const containers = document.querySelectorAll('.input-box-container');
+            containers.forEach(container => {
+                callingFunction = 'lowMasteringClick';
+
+                // Capture the returned value of 'a' from displayContainerValues
+                const a = displayContainerValues(container);
+
+                // Assuming 'a' is the value you want to display
+                console.log("Value of 'a':", a);
+
+                const additionalInput = document.getElementById(container.id + '_additional_input');
+                if (additionalInput) {
+                    additionalInput.value = a;  // Set the value of the additional input field
+                } else {
+                    console.error('Additional input field not found for container:', container.id);
+                }
+            });
+
+            // Display notification for low mastering in the pre tag
+            preTag.innerText = 'All Parameter Low Mastering selected.';
+
+        } else if (document.getElementById('parameterwise').checked) {
+            const container = getSelectedContainer();
+            callingFunction = 'lowMasteringClick';
+
+            // Capture the returned value of 'a' from displayContainerValues
+            const a = displayContainerValues(container);
+
+            // Assuming 'a' is the value you want to display
+            console.log("Value of 'a':", a);
+
+            const additionalInput = document.getElementById(container.id + '_additional_input');
+            if (additionalInput) {
+                additionalInput.value = a;  // Set the value of the additional input field
+            } else {
+                console.error('Additional input field not found for container:', container.id);
+            }
+
+            // Display notification for low mastering in the pre tag
+            preTag.innerText = 'Parameterwise Low Mastering selected.';
+        }
     }
-}
 
-function highMasteringClick() {
-    console.log("highMasteringClick");
-    const container = getSelectedContainer(); 
-    callingFunction = 'highMasteringClick';
-    displayContainerValues(container);
+    function highMasteringClick() {
+        console.log("highMasteringClick");
 
-    // Assuming 'm' is the value you want to display
-    updateAdditionalInputValue(m);
-}
+        const preTag = document.getElementById('pre');
+
+        if (document.getElementById('all_parameter').checked) {
+            const containers = document.querySelectorAll('.input-box-container');
+            containers.forEach(container => {
+                callingFunction = 'highMasteringClick';
+                displayContainerValues(container);
+            });
+
+            // Assuming you want to update additional input values after all containers are processed
+            updateAllParameterValues();
+
+            // Display notification for high mastering in the pre tag
+            preTag.innerText = 'All Parameter High Mastering selected.';
+
+        } else if (document.getElementById('parameterwise').checked) {
+            const container = getSelectedContainer();
+            callingFunction = 'highMasteringClick';
+            displayContainerValues(container);
+
+            updateAdditionalInputValue(m);
+
+            // Display notification for high mastering in the pre tag
+            preTag.innerText = 'Parameterwise High Mastering selected.';
+        }
+    }
+
 
 
 // Function to get the selected container
@@ -357,8 +496,8 @@ function mapProbeToTextareaId(probeNumber) {
 
 
 
-
-let intervalId; // Variable to store the interval ID
+let intervalIdRadio; // Separate variable for radio button interval
+let intervalIdContainers; // Separate variable for container interval
 
 // Add an event listener to each radio button inside the containers
 document.querySelectorAll('input[name="radio-container"]').forEach(radioButton => {
@@ -368,17 +507,37 @@ document.querySelectorAll('input[name="radio-container"]').forEach(radioButton =
             displayContainerValues(container);
             
             // Clear the previous interval if exists
-            clearInterval(intervalId);
+            clearInterval(intervalIdRadio);
 
             // Start a new interval to display serial data periodically
-            intervalId = setInterval(() => {
+            intervalIdRadio = setInterval(() => {
                 displaySerialData(container);
             }, 5000); // Adjust the interval time (in milliseconds) as needed
         }
     });
 });
 
-function displaySerialData(container) {
+// Assume you want to display serial data for all containers
+const containers = document.querySelectorAll('.input-box-container');
+
+
+// Start a new interval to display serial data periodically for each container
+containers.forEach(container => {
+    displayContainerValues(container);
+// Clear the previous interval if exists
+clearInterval(intervalIdContainers);
+    intervalIdContainers = setInterval(() => {
+        displaySerialData(container);
+    }, 5000); // Adjust the interval time (in milliseconds) as needed
+});
+
+
+
+
+
+
+// Function to display serial data
+function displaySerialData(container, callback) {
     const inputElements = container.querySelectorAll('.master_input');
     const values = {};
 
@@ -387,61 +546,89 @@ function displaySerialData(container) {
         values[inputName] = input.value;
     });
 
-    
-
     const probeInput = values['probe_no'];
     const textareaId = mapProbeToTextareaId(probeInput);
     const textarea = document.getElementById(textareaId);
 
-    
-
     if (textarea) {
-        const serialData = textarea.value;
-        console.log(`Serial Data for Probe ${probeInput}:`, serialData);
+        // Attach an event listener to the textarea for changes
+        textarea.addEventListener('input', function () {
+            const newSerialData = textarea.value;
+            console.log(`Serial Data for Probe ${probeInput}:`, newSerialData);
 
-        calculateMastering(serialData);
+            // Call the callback function with the newSerialData
+            callback(newSerialData);
+        });
 
-        // You can perform additional actions here with the serialData
-        // For example, processSerialData(serialData);
+        // Return the initial value of serialData
+        return textarea.value;
     } else {
         console.error('Textarea not found for Probe:', probeInput);
+        return null;
     }
 }
 
 
-let m; // Declare the variable 'm' outside the function
+let m; // Declare m in the global scope
 
-function calculateMastering(serialData) {
+function calculateMastering(e, d, o1, serialData,id) {
+    console.log('Entering calculateMastering');
+    console.log('e:', e);
+    console.log('serialData:', serialData);
+    console.log('d:', d);
+    console.log('o1:', o1);
+    console.log('jjjj container id:',id);
+
     const rawMastering = parseFloat(e) + (serialData * d + o1);
-    
+
     // Format the mastering value to 4 decimal places
-    m = rawMastering.toFixed(4); // Update the value of 'm' (remove 'const' to update the global variable)
+    m = rawMastering.toFixed(4);
 
     console.log('Calculated Mastering:', m);
 
-    // Display the dynamically changing value in the addition box
-    updateAdditionalInputValue(m);
+    if (document.getElementById('parameterwise').checked) {
+        console.log('Updating additional input value in calculateMastering:', m);
+        updateAdditionalInputValue(m);
+    } else if (document.getElementById('all_parameter').checked) {
+        console.log('Updating all parameter values in calculateMastering:', m);
+        updateAllParameterValues(id);
+    }
 
-    return m; // Return the value of 'm'
+    // Return m if needed in other parts of your code
+    return m;
 }
 
-
-
 function updateAdditionalInputValue(value) {
-    // Assuming you have a function to get the selected container
+    console.log('Entering updateAdditionalInputValue');
+    console.log("Updating additional input value:", value);
+
     const container = getSelectedContainer();
-    
-    // Assuming 'm' is the value you want to display
     const additionalInput = document.getElementById(container.id + '_additional_input');
+
     if (additionalInput) {
-        additionalInput.value = value;  // Set the value of the additional input field
+        additionalInput.value = value;
     } else {
         console.error('Additional input field not found for container:', container.id);
     }
 }
 
+function updateAllParameterValues(id) {
+    console.log('Entering updateAllParameterValues');
+    console.log("Updating all parameter values");
+
+    const containers = document.querySelectorAll('.input-box-container');
 
 
+        const additionalInput = document.getElementById(id + '_additional_input');
+
+        if (additionalInput) {
+            // Set the value of the additional input field with the global 'm' value
+            additionalInput.value = m;
+        } else {
+            console.error('Additional input field not found for container:',id);
+        }
+    
+}
 
 
 
