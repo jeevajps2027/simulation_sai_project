@@ -535,7 +535,6 @@ clearInterval(intervalIdContainers);
 
 
 
-
 // Function to display serial data
 function displaySerialData(container, callback) {
     const inputElements = container.querySelectorAll('.master_input');
@@ -551,23 +550,31 @@ function displaySerialData(container, callback) {
     const textarea = document.getElementById(textareaId);
 
     if (textarea) {
-        // Attach an event listener to the textarea for changes
-        textarea.addEventListener('input', function () {
+        // Function to check for changes in serial data
+        function checkSerialData() {
             const newSerialData = textarea.value;
             console.log(`Serial Data for Probe ${probeInput}:`, newSerialData);
 
             // Call the callback function with the newSerialData
             callback(newSerialData);
-        });
+        }
 
-        // Return the initial value of serialData
-        return textarea.value;
+        // Attach an event listener to the textarea for changes
+        textarea.addEventListener('input', checkSerialData);
+
+        // Use setInterval to periodically check for changes
+        const intervalId = setInterval(checkSerialData, 0.5); // Adjust the interval as needed
+
+        // Return the initial value of serialData and intervalId
+        return {
+            initialValue: textarea.value,
+            intervalId: intervalId,
+        };
     } else {
         console.error('Textarea not found for Probe:', probeInput);
         return null;
     }
 }
-
 
 let m; // Declare m in the global scope
 
@@ -921,7 +928,7 @@ function updateSerialData() {
 }
 
 // Update the serial data every 1 second (adjust the interval as needed)
-setInterval(updateSerialData, 500); // Update every second (1000 ms)
+setInterval(updateSerialData, 0.5); // Update every second (1000 ms)
 
 
 ///////////////////////////////////
