@@ -98,16 +98,18 @@ Mastering Page
             max-height: 100px;
             width: 100px;
             margin-right: 10px; 
+            display: none;
         }
 
        #pre{
         margin-left: 400px;
-        margin-top: 15px;
+        margin-top: -50px;
         color:red;
         text-shadow: 2px 2px 4px white;
         font-size: 20px;
 
        }
+       
        
 </style>
 
@@ -144,9 +146,15 @@ Mastering Page
     <button id="lowMasterBtn" type="button" onclick="lowMasteringClick()"><b>Low Mastering</b></button>
     <button id="highMasterBtn" type="button" onclick="highMasteringClick()"><b>High Mastering</b></button>
 
-    <pre id="pre"></pre>
+    
 
-    <div style="border-bottom: 2px solid black; "></div>
+    <div id="clock" style="margin-top: 20px;">
+        <div class="box" id="clock-box" style="border: 1px solid black; padding: 10px; max-width: 100px;margin-top: -10px;"></div>
+    </div>
+
+    <pre id="pre" ></pre><br><br>
+
+    <div style="border-bottom: 2px solid black; margin-top: 0px;"></div>
 
    
     <textarea id="probe-A"></textarea>
@@ -167,6 +175,34 @@ Mastering Page
 
 
 <script>
+
+
+function updateClock() {
+        var now = new Date();
+        var hours = now.getHours();
+        var minutes = now.getMinutes();
+        var seconds = now.getSeconds();
+        var day = now.getDate();
+        var month = now.getMonth() + 1; // January is 0, so we add 1 to get the actual month
+        var year = now.getFullYear();
+
+        // Format the time string
+        var timeString = hours + ":" + minutes + ":" + seconds;
+
+        // Format the date string
+        var dateString = day + "/" + month + "/" + year;
+
+        var dateTimeString =  timeString + "<br>" + dateString;
+
+
+        document.getElementById("clock-box").innerHTML = dateTimeString;
+
+        // Call this function again after 1 second
+        setTimeout(updateClock, 1000);
+    }
+
+    // Call the function to initially display the clock
+    updateClock();
 
 function handleRadioClick(clickedRadio) {
     var allParameterRadio = document.getElementById('all_parameter');
@@ -270,14 +306,15 @@ function displayAllContainerValues() {
 
 
     let probeNo;
-let a1; // lowcount
-let b1; // highcount
+const a1 ={}; // lowcount
+const b1 ={}; // highcount
 let callingFunction;
-let a ; // low master
+let a; // low master
 let b; // high master
 let e; // nominal
-let d; // coeffiecient
+let d; // coefficient
 let o1; // offset
+
 
 function displayContainerValues(container) {
     const inputs = container.querySelectorAll('.master_input');
@@ -316,17 +353,19 @@ function displayContainerValues(container) {
 
             // Save the value based on the calling function
             if (callingFunction === 'lowMasteringClick') {
-                a1 = parseFloat(valueInTextarea);
-                console.log("Saving value as 'a1':", a1);
+                // Store a1 value for the current container
+                a1[container.id] = parseFloat(valueInTextarea);
+                console.log("Saving value as 'a1':", a1[container.id]);
             } else if (callingFunction === 'highMasteringClick') {
-                b1 = parseFloat(valueInTextarea);
-                console.log("Saving value as 'b1':", b1);
+                // Store b1 value for the current container
+                b1[container.id] = parseFloat(valueInTextarea);
+                console.log("Saving value as 'b1':", b1[container.id]);
 
                 // Perform calculations and display the output
                 const c = b - a;
-                const c1 = b1 - a1;
+                const c1 = b1[container.id] - a1[container.id];
                 const d = c / c1;
-                const o = e + (a1 * d);
+                const o = e + (a1[container.id] * d);
                 const o1 = a - o;
 
                 console.log("c:", c);
@@ -334,12 +373,12 @@ function displayContainerValues(container) {
                 console.log("d:", d);
                 console.log("o:", o);
                 console.log("offset value:", o1);
-                console.log("container value id:",container.id);
+                console.log("container value id:", container.id);
 
                 // Function to handle serial data changes
                 function handleSerialDataChange(newSerialData) {
                     // Call calculateMastering with the appropriate values and newSerialData
-                    calculateMastering(e, d, o1, newSerialData,container.id);
+                    calculateMastering(e, d, o1, newSerialData, container.id);
                 }
 
                 // Get the initial serialData by calling displaySerialData
@@ -347,7 +386,7 @@ function displayContainerValues(container) {
 
                 if (initialSerialData !== null) {
                     // Call calculateMastering with the appropriate values and initialSerialData
-                    calculateMastering(e, d, o1, initialSerialData,container.id);
+                    calculateMastering(e, d, o1, initialSerialData, container.id);
                 }
             }
         }
@@ -578,12 +617,15 @@ function displaySerialData(container, callback) {
 
 let m; // Declare m in the global scope
 
-function calculateMastering(e, d, o1, serialData,id) {
+function calculateMastering(e, d, o1, serialData,id,a1,b1,c1) {
     console.log('Entering calculateMastering');
     console.log('e:', e);
     console.log('serialData:', serialData);
     console.log('d:', d);
     console.log('o1:', o1);
+    console.log('a1:', a1);
+    console.log('b1:', b1);
+    console.log('c1:', c1);
     console.log('jjjj container id:',id);
 
     const rawMastering = parseFloat(e) + (serialData * d + o1);
