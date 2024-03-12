@@ -11,10 +11,10 @@ import threading
 import serial
 from django.views.decorators.csrf import csrf_exempt
 from django.core.cache import cache
-from.models import viewvalues,captValue
+from.models import viewvalues,captValue,MasterData
 from.models import readings,find,TableOneData,TableTwoData,TableThreeData,TableFourData,TableFiveData
 import json
-
+from datetime import datetime
 
 def home(request):
     if request.method == 'POST':
@@ -446,15 +446,59 @@ def parameter(request):
     return render(request, 'app/parameter.html')
 
 
-
-
 def master(request):
     context = {}  
+    
 
     if request.method == 'POST':
         try:
             # Retrieve the selected values from the request body
             data = json.loads(request.body.decode('utf-8'))
+
+             # Process the data as needed
+            probeNo = data.get('probeNo')
+            a = data.get('a')
+            b = data.get('b')
+            parameterName = data.get('parameterName')
+            selectedValue = data.get('selectedValue')
+            selectedMastering = data.get('selectedMastering')
+            date_time_str = data.get('dateTime')
+            if date_time_str:
+                dateTime = datetime.strptime(date_time_str, "%m/%d/%Y, %I:%M:%S %p")
+                formatted_dateTime = dateTime.strftime("%Y-%m-%d %H:%M:%S%z")
+            else:
+                formatted_dateTime = None  # Let auto_now_add handle it
+
+
+            if None not in [probeNo, a, b, parameterName, selectedValue, selectedMastering, formatted_dateTime]:
+                probe_data_instance = MasterData(
+                    probe_no=probeNo,
+                    a=a,
+                    b=b,
+                    parameter_name=parameterName,
+                    selected_value=selectedValue,
+                    selected_mastering=selectedMastering,
+                    date_time=formatted_dateTime
+                )
+                probe_data_instance.save()
+            else:
+                print("Some required fields are missing or set to None.")
+
+            
+            
+
+            
+            # Now, you can use the received data as required
+            print('Probe No:', probeNo)
+            print('a:', a)
+            print('b:', b)
+            print('Parameter Name:', parameterName)
+            print('selectedValue :',selectedValue)
+            print('selectedMastering :',selectedMastering)
+            print('dateTime:',formatted_dateTime)
+            
+            
+            # Assuming you want to save the received data into your database
             selected_value = data.get('selectedValue')
             selected_mastering = data.get('selectedMastering')
             print('Selected values from the client side:', selected_value, selected_mastering)
@@ -466,6 +510,8 @@ def master(request):
                 hide_checkbox=False
             ).values().distinct()
 
+            
+
             # Extract necessary data from filtered_data
             parameter_names = [item['parameter_name'] for item in filtered_data]
             low_mv = [item['low_mv'] for item in filtered_data]
@@ -476,6 +522,14 @@ def master(request):
             print('probe no:',probe_no)
             nominal = [item['nominal'] for item in filtered_data]
             print('nominal:',nominal)
+            lsl = [item['lsl'] for item in filtered_data]
+            print('lsl:',lsl)
+            usl = [item['usl'] for item in filtered_data]
+            print('usl:',usl)
+
+            # Save the received data into your database
+
+            
 
             response_data = {
                 'message': 'Successfully received the selected values.',
@@ -486,8 +540,15 @@ def master(request):
                 'mastering': selected_mastering,
                 'probe_no':probe_no,
                 'nominal':nominal,
+                'lsl':lsl,
+                'usl':usl,
             }
+
+
+            
             return JsonResponse(response_data)
+        
+            
 
         except json.JSONDecodeError as e:
             return JsonResponse({'error': 'Invalid JSON format in the request body'}, status=400)
@@ -513,6 +574,10 @@ def master(request):
     return render(request, 'app/master.html', context)
 
 
+
+
+def measurement(request):
+    return render(request,'app/measurement.html')  
 
 
 

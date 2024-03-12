@@ -1,0 +1,210 @@
+{% extends 'app/layouts/main.html' %}
+
+{% block title %}
+Measurement Page
+{% endblock title %}
+
+{% block content %}
+<style>
+    .box-1{
+        height: 200px;
+        width: 100%;
+        padding: 10px;
+        background-color:rgb(245, 196, 106);
+        border: 2px solid black;    
+    }
+    .box-2{
+        height: 420px;
+        width: 1100px;
+        background-color: lightblue;
+        border: 1px solid black;    
+    }
+    label {
+            display: inline-block;
+            width: 100px; 
+            margin-top: 10px;
+            margin-left: 0%;
+            text-align: center;
+            font-size: 15px;
+            font-weight: bold;
+        }
+
+        select {
+            box-sizing: border-box;
+            width: 10%; 
+            height: 30px;
+        } 
+        input {
+            margin-top: 10px;
+            box-sizing: border-box;
+            width: 10%;
+        }
+        .center-image{
+            margin-left: 1130px;
+            margin-top: -120px;
+            
+        }
+       .center-image-1{
+        margin-top: -130px;
+       }
+       #box2{
+        margin-top: -440px;
+       }
+       .container{
+        height: 500px;
+        width: 1200px;
+        margin-top: 0px;
+        margin-left: 0;
+        background-color: lightgrey;
+       }
+
+
+
+       table {
+        border-collapse: collapse;
+        width: 100%;
+    }
+
+th, td {
+    border: 1px solid black;
+    padding: 8px;
+    text-align: center;
+}
+
+
+
+#reset-btn{
+            width: 100px;
+            height: 80px;
+            margin-left: 1150px;
+            background-color: pink;
+            
+        }
+        #master-btn{
+            width: 100px;
+            height: 80px;
+            margin-left: 1150px;
+            margin-top: 10px;
+            background-color: rgb(240, 96, 240);
+            
+        }
+
+        #start-btn{
+            width: 100px;
+            height:80px ;
+            margin-left: 1150px;
+            margin-top: 10px;
+            background-color: lightgreen;
+        }
+        
+        #stop-btn{
+            width: 100px;
+            height:80px ;
+            margin-left: 1150px;
+            margin-top: 10px;
+            background-color: coral;
+        }
+        #back-btn{
+            width: 100px;
+            height:80px ;
+            margin-left: 1150px;
+            margin-top: 10px;
+            background-color: rgb(233, 177, 73);
+        }
+
+</style>
+<div class="box-1" id="box1">
+    
+    <label for="date"style="width: 50px; margin-left:50px;">DATE:</label>
+    <input type="text" id="date" style="width: 170px;">
+
+    
+
+    <label for="operator">OPERATOR:</label>
+    <select id="operator" name="operator">
+    </select>
+
+    <label for="shift">SHIFT:</label>
+    <select id="shift" name="shift">
+    </select>
+    
+    <label for="accept" style="width: 70px;">ACCEPT:</label>
+    <input type="text" id="accept" style="background-color: green;width: 5%;">
+
+    <label for="reject"style="width: 70px;">REJECT:</label>
+    <input type="text" id="reject" style="background-color: red;width: 5%;">
+
+    <label for="rework" style="width: 70px;">REWORK:</label>
+    <input type="text" id="rework" style="background-color: yellow;width: 5%;"><br>
+
+    
+    <label for="cycle_mode" style="margin-left: 150px;" >CYCLE MODE:</label>
+    <input type="text" id="cycle_mode" >
+
+    <label for="partModel" style="width: 130px;" >PART MODEL:</label>
+    <select id="partModel" name="partModel" style="width: 200px;" >
+        {% for value in part_model_values %}
+            <option value="{{ value }}">{{ value }}</option>
+        {% endfor %}
+    </select>
+
+    <label for="comp_srno" style="width: 130px;">COMP SR.NO:</label>
+    <input type="text" id="comp_srno" style="width: 200px;">
+    
+    
+<br>
+
+    <label for="part_status" style="font-size: 20px; width: 150px;margin-left: 130px;" >PART STATUS</label>
+    <input type="text" id="part_status" style="width: 780px;height: 40px;" ><br>
+
+    <input type="text" id="pre" style="width: 930px;height: 30px;margin-left: 140px;">
+
+    {% load static %}
+    <div class="center-image">
+            <img src="{% static 'images/sai.jpg' %}" style="height: 130px;width: 120px; border: 4px solid white;">
+        </div>
+    
+        {% load static %}
+        <div class="center-image-1">
+                <img style="height: 130px;width: 120px; border: 4px solid black;">
+            </div>    
+</div>
+
+    <div><button type="button" id="reset-btn"><b> Reset</b></button></div>
+  <div><button type="button" id="master-btn"><b>Master<br>[F1]</b></button></div>
+  <div><button type="button" id="start-btn"><b> Start<br>[F4]</b></button></div>
+  <div><button type="button" id="stop-btn"><b>Stop<br>[F5]</b></button></div>
+  <div><button type="button" id="back-btn"><b>Back<br>[F7]</b></button></div>
+  
+
+
+<div class="box-2" id="box2">
+    <div class="container" style="overflow-y: auto;">
+      <table border="1" style="width: 100%;">
+        <thead>
+          <tr>
+            <th style="width: 5%;">Sr.No</th>
+            <th style="width: 15%;" id="parameter_name">Parameter Name</th>
+            <th style="width: 10%;" id="nominal">Nominal</th>
+            <th style="width: 10%;" id="readings">Readings</th>
+            <th style="width: 10%;" id="lsl">LSL</th>
+            <th style="width: 25%;" id="indicator">Indicator</th>
+            <th style="width: 10%;" id="usl">USL</th>
+            <th style="width: 15%;" id="status">Status</th>
+          </tr>
+        </thead>
+       
+        <tr>
+          
+        </tr>
+        
+      </table>
+    </div>
+  </div>
+
+
+
+
+
+
+{% endblock content %}

@@ -99,3 +99,18 @@ class captValue(models.Model):
 
 def __str__(self):
         return f'{self.model_id} - {self.parameter_name}'
+
+
+
+
+class MasterData(models.Model):
+    probe_no = models.CharField(max_length=100)
+    a = models.FloatField()
+    b = models.FloatField()
+    parameter_name = models.CharField(max_length=100)
+    selected_value = models.CharField(max_length=100)
+    selected_mastering = models.CharField(max_length=100)
+    date_time = models.DateTimeField()
+
+    def __str__(self):
+        return f"Probe No: {self.probe_no}, Parameter Name: {self.parameter_name}, DateTime: {self.date_time}"
