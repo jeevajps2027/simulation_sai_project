@@ -127,60 +127,120 @@ def index(request):
     return render(request,'app/index.html')
 
 
+from django.http import JsonResponse, HttpResponse
+import json
+
 @csrf_exempt
 def trace(request, row_id=None):
     if request.method == 'POST':
         try:
             received_data = json.loads(request.body)
-            print(f'received_data',request.body)
+            print('received_data', received_data)
 
-            # Process received_data and save to the database for each table
-            for item_id, rows in received_data.items():
-                for row in rows:
-                    values = row['values']
+            if 'rowId' in received_data:
+                row_id = received_data['rowId']
+                print('row_id:', row_id)
 
-                    if item_id == 'tableBody-1':
-                        table_data = TableOneData.objects.create(
-                            part_name=values[0],
-                            customer_name=values[1],
-                            part_model=values[2],
-                            part_no=values[3],
-                            hide = values[4]
-                        )
-                        table_data.save()
+                table_body_id = received_data.get('tableBodyId')
+                print('your table_body_id is:',table_body_id)
+                values = received_data.get('values')
 
-                    elif item_id == 'tableBody-2':
-                        table_data = TableTwoData.objects.create(
-                            batch_no=values[0]
-                        )
-                        table_data.save()
+                if table_body_id and values:
+                    if table_body_id == 'tableBody-1':
+                        try:
+                            table_data = TableOneData.objects.get(pk=row_id)
+                            table_data.part_name = values[0]
+                            table_data.customer_name = values[1]
+                            table_data.part_model = values[2]
+                            table_data.part_no = values[3]
+                            table_data.hide = values[4]
+                            table_data.save()
+                            return JsonResponse({'message': 'Data updated successfully'}, status=200)
+                        except TableOneData.DoesNotExist:
+                            pass
+                    elif table_body_id == 'tableBody-2':
+                        try:
+                            table_data = TableTwoData.objects.get(pk=row_id)
+                            table_data.batch_no = values[0]
+                            table_data.save()
+                            return JsonResponse({'message': 'Data updated successfully'}, status=200)
+                        except TableTwoData.DoesNotExist:
+                            pass
+                    elif table_body_id == 'tableBody-3':
+                        try:
+                            table_data = TableThreeData.objects.get(pk=row_id)
+                            table_data.machine_no = values[0]
+                            table_data.machine_name = values[1]
+                            table_data.save()
+                            return JsonResponse({'message': 'Data updated successfully'}, status=200)
+                        except TableThreeData.DoesNotExist:
+                            pass
+                    elif table_body_id == 'tableBody-4':
+                        try:
+                            table_data = TableFourData.objects.get(pk=row_id)
+                            table_data.operator_no = values[0]
+                            table_data.operator_name = values[1]
+                            table_data.save()
+                            return JsonResponse({'message': 'Data updated successfully'}, status=200)
+                        except TableFourData.DoesNotExist:
+                            pass
+                    elif table_body_id == 'tableBody-5':
+                        try:
+                            table_data = TableFiveData.objects.get(pk=row_id)
+                            table_data.vendor_code = values[0]
+                            table_data.email = values[1]
+                            table_data.save()
+                            return JsonResponse({'message': 'Data updated successfully'}, status=200)
+                        except TableFiveData.DoesNotExist:
+                            pass
 
-                    elif item_id == 'tableBody-3':
-                        table_data = TableThreeData.objects.create(
-                            machine_no=values[0],
-                            machine_name=values[1]
-                        )
-                        table_data.save()
+                return JsonResponse({'message': 'Record with provided rowId does not exist'}, status=404)
 
-                    elif item_id == 'tableBody-4':
-                        table_data = TableFourData.objects.create(
-                            operator_no=values[0],
-                            operator_name=values[1]
-                        )
-                        table_data.save()
+            # Code to handle creation of new records
+            # This part of the code is based on your previous logic
+            # It will create new records if the 'rowId' is not provided in the received data
+            else:
+                if received_data:
+                    for item_id, rows in received_data.items():
+                        for row in rows:
+                            values = row['values']
+                            if item_id == 'tableBody-1':
+                                table_data = TableOneData.objects.create(
+                                    part_name=values[0],
+                                    customer_name=values[1],
+                                    part_model=values[2],
+                                    part_no=values[3],
+                                    hide=values[4]
+                                )
+                            elif item_id == 'tableBody-2':
+                                table_data = TableTwoData.objects.create(
+                                    batch_no=values[0]
+                                )
+                            elif item_id == 'tableBody-3':
+                                table_data = TableThreeData.objects.create(
+                                    machine_no=values[0],
+                                    machine_name=values[1]
+                                )
+                            elif item_id == 'tableBody-4':
+                                table_data = TableFourData.objects.create(
+                                    operator_no=values[0],
+                                    operator_name=values[1]
+                                )
+                            elif item_id == 'tableBody-5':
+                                table_data = TableFiveData.objects.create(
+                                    vendor_code=values[0],
+                                    email=values[1]
+                                )
+                            table_data.save()
 
-                    elif item_id == 'tableBody-5':
-                        table_data = TableFiveData.objects.create(
-                            vendor_code=values[0],
-                            email=values[1]
-                        )
-                        table_data.save()
+                    return JsonResponse({'message': 'New record(s) created successfully'}, status=201)
+                else:
+                    return JsonResponse({'message': 'No data provided'}, status=400)
 
-            return JsonResponse({'message': 'Data received and saved successfully'}, status=200)
+        except json.decoder.JSONDecodeError:
+            return JsonResponse({'message': 'Invalid JSON format'}, status=400)
 
-        except Exception as e:
-            return JsonResponse({'error': str(e)}, status=500)
-
+        
 
     elif request.method == 'GET':
         try:
@@ -202,21 +262,35 @@ def trace(request, row_id=None):
             received_data = json.loads(request.body)
 
             for item_id, row_ids in received_data.items():
+                print(f"Deleting rows with IDs {row_ids} from {item_id}")
+
+                # Depending on the item_id, fetch the rows from the database
                 if item_id == 'tableBody-1':
-                    TableOneData.objects.filter(id__in=row_ids).delete()
+                    rows = TableOneData.objects.filter(id__in=row_ids)
                 elif item_id == 'tableBody-2':
-                    TableTwoData.objects.filter(id__in=row_ids).delete()
+                    rows = TableTwoData.objects.filter(id__in=row_ids)
                 elif item_id == 'tableBody-3':
-                    TableThreeData.objects.filter(id__in=row_ids).delete()
+                    rows = TableThreeData.objects.filter(id__in=row_ids)
                 elif item_id == 'tableBody-4':
-                    TableFourData.objects.filter(id__in=row_ids).delete()
+                    rows = TableFourData.objects.filter(id__in=row_ids)
                 elif item_id == 'tableBody-5':
-                    TableFiveData.objects.filter(id__in=row_ids).delete()
+                    rows = TableFiveData.objects.filter(id__in=row_ids)
+
+                # Print the column values of each row before deleting
+                for row in rows:
+                    part_model_value = row.part_model
+                    delete = captValue.objects.filter(model_id = part_model_value).delete()
+
+
+                # Delete the rows
+                rows.delete()
 
             return JsonResponse({'message': 'Data deleted successfully'}, status=200)
 
         except Exception as e:
-            return JsonResponse({'error': str(e)}, status=500)                                
+            print(f"Error deleting rows: {e}")
+            return JsonResponse({'error': 'Error deleting rows'}, status=500)
+    
     else:
         return render(request, 'app/trace.html')
 
@@ -556,7 +630,7 @@ def master(request):
     elif request.method == 'GET':
         try:
             # Your initial queryset for part_model_values
-            part_model_values = captValue.objects.values_list('model_id', flat=True).distinct()
+            part_model_values = TableOneData.objects.values_list('part_model', flat=True).distinct()
             print('part_model_values:', part_model_values)
 
             context = {
@@ -575,12 +649,75 @@ def master(request):
 
 
 
-
 def measurement(request):
-    return render(request,'app/measurement.html')  
+    if request.method == 'GET':
+        part_model = request.GET.get('partModel', None)
+        operator = request.GET.get('operator', None)
+        machine = request.GET.get('machine', None)
+        shift = request.GET.get('shift', None)
+        hiddenTextarea = request.GET.get('hiddenTextarea', None)
+
+        # Your initial queryset for part_model_values
+        part_model_values = TableOneData.objects.values_list('part_model', flat=True).distinct()
+        print('part_model_values:', part_model_values)
+
+        if part_model:
+            customer_name_values = TableOneData.objects.filter(part_model=part_model).values_list('customer_name', flat=True).distinct()
+            if customer_name_values.exists():
+                customer_name_values = customer_name_values[0]
+                print('customer_name_values:', customer_name_values)
+
+
+        # Do something with the retrieved values, such as passing them to the template
+        context = {
+            'part_model': part_model,
+            'operator': operator,
+            'machine': machine,
+            'shift': shift,
+            'hidden-textarea': hiddenTextarea,
+            'part_model_values': part_model_values,
+            'customer_name_values':customer_name_values
+        }
+        print('context values are:',context)
+        return render(request, 'app/measurement.html', context)
+    else:
+        # Handle other request methods if needed
+        return HttpResponseNotAllowed(['GET'])
+
+
+def measurebox(request):
+    if request.method == 'GET':
+        try:
+            # Your initial queryset for part_model_values
+            part_model_values = TableOneData.objects.values_list('part_model', flat=True).distinct()
+            print('part_model_values:', part_model_values)
+
+            operator_values = TableFourData.objects.values_list('operator_name', flat=True).distinct()
+            print('operator_values:', operator_values)
+
+            batch_no_values = TableTwoData.objects.values_list('batch_no', flat=True).distinct()
+            print('operator_values:', batch_no_values)
+
+            machine_name_values = TableThreeData.objects.values_list('machine_name', flat=True).distinct()
+            print('operator_values:', machine_name_values)
+
+            customer_name_values = TableOneData.objects.values_list('customer_name', flat=True).distinct()
+            print('customer_name_values:', customer_name_values)
+
+            context = {
+                'part_model_values': part_model_values,
+                'operator_values': operator_values,
+                'batch_no_values': batch_no_values,
+                'machine_name_values': machine_name_values,
+                'customer_name_values': customer_name_values,
+                
+
+            }
+
+        except json.JSONDecodeError as e:
+            return JsonResponse({'error': 'Invalid JSON format in the request body'}, status=400)
+    return render(request,'app/measurebox.html',context)
 
 
 
 
-def jeeva(request):
-    return render(request,'app/jeeva.html')  

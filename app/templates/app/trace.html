@@ -111,9 +111,15 @@ th, td {
 }
 
 .selected {
-        background-color: red;
+        background-color:red;
     }
-
+    .no-outline{
+        border: none;
+        outline: none;
+    }    /* CSS styles for selected column */
+        .selected-column {
+            background-color: yellow;
+        }
 </style>
 <div class="box-0">
     <center style="color:black;text-shadow: 2px 2px 4px white;">
@@ -148,10 +154,11 @@ th, td {
                 <tr data-id="{{ data.id }}">
                     <td>{{ forloop.counter }}</td>
 
-                    <td>{{ data.part_name }}</td>
-                    <td>{{ data.customer_name }}</td>
-                    <td>{{ data.part_model }}</td>
-                    <td>{{ data.part_no }}</td>
+                     <td><input type="text" value="{{ data.part_name }}" class="no-outline" style="width: 100%;"></td>
+                    <td><input type="text" value="{{ data.customer_name }}" class="no-outline" style="width: 100%;"></td>
+                    <td><input type="text" value="{{ data.part_model }}" class="no-outline" style="width: 100%;"></td>
+                    <td><input type="text" value="{{ data.part_no }}" class="no-outline" style="width: 100%;"></td>
+
                     <td><input type="checkbox" {% if data.hide %}checked{% endif %}></td>
                 </tr>
                 {% endfor %}
@@ -173,8 +180,7 @@ th, td {
                 {% for data in table_body_2_data %}
                 <tr data-id="{{ data.id }}">
                     <td>{{ forloop.counter }}</td>
-                    <td>{{ data.batch_no }}</td>
-                    <!-- Add more columns if needed -->
+                    <td><input type="text" value="{{ data.batch_no }}" class="no-outline" style="width: 100%;"></td>
                 </tr>
                 {% endfor %}
             </tbody>
@@ -195,8 +201,8 @@ th, td {
                 {% for data in table_body_3_data %}
                 <tr data-id="{{ data.id }}">
                     <td>{{ forloop.counter }}</td>
-                    <td>{{ data.machine_no }}</td>
-                    <td>{{ data.machine_name }}</td>
+                    <td><input type="text" value="{{ data.machine_no }}" class="no-outline" style="width: 100%;"></td>
+                    <td><input type="text" value="{{ data.machine_name }}" class="no-outline" style="width: 100%;"></td>
                 </tr>
                 {% endfor %}
             </tbody>
@@ -217,9 +223,8 @@ th, td {
                 {% for data in table_body_4_data%}
                 <tr data-id="{{ data.id }}">
                     <td>{{ forloop.counter }}</td>
-                    <td>{{ data.operator_no }}</td>
-                    <td>{{ data.operator_name }}</td>
-                    <!-- Add more columns if needed -->
+                    <td><input type="text" value="{{ data.operator_no }}" class="no-outline" style="width: 100%;"></td>
+                    <td><input type="text" value="{{ data.operator_name }}" class="no-outline" style="width: 100%;"></td>
                 </tr>
                 {% endfor %}
             </tbody>
@@ -240,9 +245,8 @@ th, td {
                 {% for data in table_body_5_data %}
                 <tr data-id="{{ data.id }}">
                     <td>{{ forloop.counter }}</td>
-                    <td>{{ data.vendor_code }}</td>
-                    <td>{{ data.email }}</td>
-                    <!-- Add more columns if needed -->
+                    <td><input type="text" value="{{ data.vendor_code }}" class="no-outline" style="width: 100%;"></td>
+                    <td><input type="text" value="{{ data.email }}" class="no-outline" style="width: 100%;"></td>
                 </tr>
                 {% endfor %}
             </tbody>
@@ -256,6 +260,8 @@ th, td {
 <a href="{% url 'index' %}" >
     <button type="button" id="cancel-btn"><b>Cancel</b></button>
 </a>
+
+
 
 
 <script>
@@ -336,7 +342,6 @@ th, td {
             cell.appendChild(input);
         }
 
-    
 // Conditionally add a checkbox in the last column for tableBody-1
 if (tableBodyId === 'tableBody-1') {
         var checkboxCell = newRow.insertCell(numColumns);
@@ -386,9 +391,46 @@ function saveData() {
         });
         tableData[key] = rows;
     });    
-        // Send the tableData object to the server
-        sendDataToServer(tableData);
+
+    // Send the tableData object to the server
+    sendDataToServer(tableData);
+
+
+    var selectedRow = document.querySelector('.selected');
+if (!selectedRow) {
+    console.error('No row selected.');
+    return;
+}
+
+var selectedTableBodyId = selectedRow.closest('tbody').id;
+
+var selectedRowId = selectedRow.getAttribute('data-id'); // Assuming data-id holds the row ID
+
+var selectedRowCells = selectedRow.querySelectorAll('td');
+var values = [];
+selectedRowCells.forEach(function(cell, index) {
+    if (cell.querySelector('input')) {
+        if (selectedTableBodyId === 'tableBody-1' && index === selectedRowCells.length - 1) { // Checkbox is only in the last column of tableBody-1
+            values.push(cell.querySelector('input').checked); // Push checkbox state (true/false) instead of its value
+        } else {
+            values.push(cell.querySelector('input').value);
+        }
     }
+});
+var dataToSend = {
+    tableBodyId: selectedTableBodyId,
+    rowId: selectedRowId,
+    values: values
+};
+
+console.log('Updated values:', values);
+console.log('Data to send:', dataToSend);
+
+sendDataToServer(dataToSend);
+}
+
+
+
     
     function sendDataToServer(data) {
         // Send the data to the server using AJAX
@@ -410,6 +452,8 @@ function saveData() {
             }
         });
     }
+ 
+
     
     
     // Function to get the CSRF token from the cookie
@@ -431,23 +475,69 @@ function saveData() {
 
 
 
-// Function to handle row selection
-function handleRowSelection(event) {
-    var selectedRow = event.currentTarget;
-    var allRows = document.querySelectorAll('table tbody tr');
 
-    // Remove 'selected' class and background color for all rows
-    allRows.forEach(row => {
-        row.classList.remove('selected');
-    });
+
+
+    ///////////////////////
+// Initialize variable to keep track of the currently selected row
+   var selectedRow = null;
+
+// Function to handle row and column selection
+function handleRowAndColumnSelection(event) {
+    var clickedElement = event.target;
+
+    // Check if clicked element is an input element
+    if (clickedElement.tagName === 'INPUT') {
+        // If it's an input element, get the corresponding td element
+        clickedElement = clickedElement.closest('td');
+    }
+    
+    var currentRow = clickedElement.parentElement;
+
+    // If a new row is selected, clear the selection from the previous row
+    if (selectedRow !== currentRow) {
+        // Remove 'selected' class and background color for all rows
+        if (selectedRow) {
+            selectedRow.classList.remove('selected');
+            selectedRow.querySelectorAll('td').forEach(cell => {
+                cell.classList.remove('selected-column');
+            });
+        }
+
+        // Update the selectedRow variable to the currently selected row
+        selectedRow = currentRow;
+    }
 
     // Toggle 'selected' class for the clicked row and set its background color
-    selectedRow.classList.add('selected');
+    currentRow.classList.add('selected');
 
     // Retrieve the ID from the 'data-id' attribute of the selected row
-    var rowId = selectedRow.getAttribute('data-id');
+    var rowId = currentRow.getAttribute('data-id');
     console.log('Selected Row ID:', rowId);
+
+    // Get index of selected column
+    var selectedColumnIndex = Array.from(currentRow.children).indexOf(clickedElement);
+    console.log("column :",selectedColumnIndex);
+
+    // Remove 'selected-column' class for all cells in the selected row
+    currentRow.querySelectorAll('td').forEach(cell => {
+        cell.classList.remove('selected-column');
+    });
+
+    // Add 'selected-column' class to the selected column cells in the row
+    currentRow.cells[selectedColumnIndex].classList.add('selected-column');
 }
+
+// Add event listener to each cell in the table body
+var tableCells = document.querySelectorAll('table tbody td');
+tableCells.forEach(cell => {
+    cell.addEventListener('click', handleRowAndColumnSelection);
+});
+
+
+
+
+
 
 function deleteSelectedRows() {
     var selectedRow = document.querySelector('.selected');
@@ -487,8 +577,7 @@ function deleteSelectedRows() {
     }
 }
 
-
-
+    
     document.addEventListener('DOMContentLoaded', function () {
         var rows = document.querySelectorAll('table tbody tr');
         rows.forEach(function (row) {
@@ -543,7 +632,4 @@ function deleteSelectedRows() {
 }
 
          </script>
-    {% endblock %}    
-        
-        
-    
+    {% endblock %}

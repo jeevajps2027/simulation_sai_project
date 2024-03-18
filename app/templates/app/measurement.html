@@ -112,21 +112,53 @@ th, td {
             background-color: rgb(233, 177, 73);
         }
 
+        .notification-container {
+        position: absolute;
+        top: 50%;
+        left: 40%;
+        transform: translate(-50%, -50%);
+        background-color: white;
+        height: 150px;
+        width: 350px;
+        z-index: 1000; 
+        border: 2px solid black;
+    }
+    #punch_textarea{
+        margin-top: 20px;
+        margin-left: 10px;
+        width: 330px;
+    }
+    .disabled {
+        display: none;
+    }
+    .exit-symbol-container {
+        position: absolute;
+        top: 5px;
+        right: 5px;
+        cursor: pointer;
+        background-color: red; 
+        padding: 5px; 
+        border-radius: 10%; 
+    }
+
+    /* Exit symbol */
+    .exit-symbol {
+        color: white; /* Set the color of the exit symbol to white */
+    }
+    
 </style>
+
 <div class="box-1" id="box1">
     
-    <label for="date"style="width: 50px; margin-left:50px;">DATE:</label>
-    <input type="text" id="date" style="width: 170px;">
-
-    
+    <label for="date"style="width: 50px; margin-left:30px;">DATE:</label>
+    <input type="text" id="date" style="width: 190px;background-color:#1a7d9e ;color: white;">
 
     <label for="operator">OPERATOR:</label>
-    <select id="operator" name="operator">
-    </select>
+    <input type="text" id="operator" >
 
-    <label for="shift">SHIFT:</label>
-    <select id="shift" name="shift">
-    </select>
+    <label for="shift" style="width: 70px;">SHIFT:</label>
+    <input type="text" id="shift" >
+    
     
     <label for="accept" style="width: 70px;">ACCEPT:</label>
     <input type="text" id="accept" style="background-color: green;width: 5%;">
@@ -138,8 +170,8 @@ th, td {
     <input type="text" id="rework" style="background-color: yellow;width: 5%;"><br>
 
     
-    <label for="cycle_mode" style="margin-left: 150px;" >CYCLE MODE:</label>
-    <input type="text" id="cycle_mode" >
+    <label for="machine" style="margin-left: 150px;" >MACHINE:</label>
+    <input type="text" id="machine" >
 
     <label for="partModel" style="width: 130px;" >PART MODEL:</label>
     <select id="partModel" name="partModel" style="width: 200px;" >
@@ -148,14 +180,16 @@ th, td {
         {% endfor %}
     </select>
 
-    <label for="comp_srno" style="width: 130px;">COMP SR.NO:</label>
-    <input type="text" id="comp_srno" style="width: 200px;">
-    
-    
-<br>
+    <label for="cycle_mode"style="margin-left: 50px;">CYCLE MODE:</label>
+    <input type="text" id="cycle_mode" ><br>
 
-    <label for="part_status" style="font-size: 20px; width: 150px;margin-left: 130px;" >PART STATUS</label>
-    <input type="text" id="part_status" style="width: 780px;height: 40px;" ><br>
+    <label for="part_status" style="font-size: 15px; width: 120px;margin-left: 130px;" >PART STATUS</label>
+    <input type="text" id="part_status" style="width: 170px;height: 40px;">
+    
+    <input type="text" id="customer_name" style="width: 300px;height: 40px; margin-left: 10px;" value="{{ customer_name_values }}">
+    
+    <label for="comp_srno" style="width: 130px;">COMP SR.NO:</label>
+    <input type="text" id="comp_srno" style="width: 200px;"><br>
 
     <input type="text" id="pre" style="width: 930px;height: 30px;margin-left: 140px;">
 
@@ -200,11 +234,97 @@ th, td {
         
       </table>
     </div>
-  </div>
+</div>
 
+
+<div class="notification-container" id="notification-container">
+    <div class="exit-symbol-container" onclick="closeNotification()">
+        <span class="exit-symbol">❌</span>
+    </div>
+    <pre style="margin-top: 10px;"><b>Enter Your Punch Number here:</b></pre>
+    <!-- Add event listener for Enter key press -->
+    <textarea id="punch_textarea" onkeydown="handleEnterKeyPress(event)"></textarea>
+</div>
+
+<script>
+
+window.onload = function() {
+    // Set focus on the textarea when the page loads
+    document.getElementById('punch_textarea').focus();
+};
+
+    function handleEnterKeyPress(event) {
+        if (event.key === 'Enter') {
+            // Get the value from the textarea
+            var punchValue = document.getElementById('punch_textarea').value;
+            
+            // Set the value in the COMP SR.NO input box
+            document.getElementById('comp_srno').value = punchValue;
+
+            
+            
+            // Disable the notification container
+            document.getElementById('notification-container').classList.add('disabled');
+        }
+    }
+    function closeNotification() {
+        // Disable the notification container
+        document.getElementById('notification-container').classList.add('disabled');
+    }
+
+        // Function to update the date and time in the input box
+        function updateDateTime() {
+        var currentDate = new Date();
+        var hours = currentDate.getHours();
+        var minutes = currentDate.getMinutes();
+        var seconds = currentDate.getSeconds();
+        var ampm = hours >= 12 ? 'PM' : 'AM';
+        hours = hours % 12;
+        hours = hours ? hours : 12; // Handle midnight (0 hours)
+        minutes = minutes < 10 ? '0' + minutes : minutes;
+        seconds = seconds < 10 ? '0' + seconds : seconds;
+        var currentTime = hours + ':' + minutes + ':' + seconds + ' ' + ampm;
+        var day = currentDate.getDate();
+        var month = currentDate.getMonth() + 1; // Month is zero-based
+        var year = currentDate.getFullYear();
+        var currentDateFormatted = day + '/' + month + '/' + year;
+        document.getElementById('date').value = currentDateFormatted + ' ' + currentTime;
+    }
+
+    // Update the date and time initially
+    updateDateTime();
+
+    // Update the date and time every second
+    setInterval(updateDateTime, 1000);
+
+
+    // Get URL parameters
+    var urlParams = new URLSearchParams(window.location.search);
+    var partModel = urlParams.get('partModel');
+    var operator = urlParams.get('operator');
+    var machine = urlParams.get('machine');
+    var shift = urlParams.get('shift');
+    var hiddenTextarea = urlParams.get('hiddenTextarea');
+    
+    // Do something with the values (e.g., display them on the page)
+    console.log("Part Model: " + partModel);
+    console.log("Operator: " + operator);
+    console.log("Machine: " + machine);
+    console.log("Shift: " + shift);
+    console.log("hidden-textarea :" + hiddenTextarea);
+
+    // Set values to the elements
+    document.getElementById('partModel').value = partModel;
+    document.getElementById('operator').value = operator;
+    document.getElementById('shift').value = shift;
+    document.getElementById('comp_srno').value = hiddenTextarea;
+    document.getElementById('machine').value = machine;
+
+    </script>
 
 
 
 
 
 {% endblock content %}
+

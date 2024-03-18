@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+      background-color: #1a7d9e;
+    }
+
+    .container {
+      text-align: center;
+      padding: 20px;
+      border: 2px solid black;
+      border-radius: 8px;
+      background-color: #f8f8f8;
+      height: 250px;
+      width: 500px;
+    }
+
+    label {
+            display: inline-block;
+            width: 150px; 
+            margin-top: 10px;
+            margin-left:0%;
+            text-align: center;
+            font-size: 20px;
+            font-weight: bold;
+        }
+
+    select {
+        box-sizing: border-box;
+        width: 10%; 
+        height: 30px;
+        width: 200px;
+        font-size: 15px;
+    } 
+
+    #select-btn{
+            width: 200px;
+            height: 40px;
+            background-color: rgb(48, 236, 48);
+            margin-left: 20px;
+            font-size: 20px; 
+        }
+        #cancel-btn{
+            width: 200px;
+            height:40px ;
+            margin-top: 30px; 
+            background-color: red;
+            font-size: 20px;      
+        }
+
+
+
+  </style>
+  <title>Centered Container</title>
+</head>
+<body>
+  <div class="container">
+    <label for="partModel" >PART MODEL:</label>
+    <select id="partModel" name="partModel" >
+        {% for value in part_model_values %}
+            <option value="{{ value }}">{{ value }}</option>
+        {% endfor %}
+    </select>
+
+    <label for="operator">OPERATOR:</label>
+    <select id="operator" name="operator">
+        {% for value in operator_values %}
+            <option value="{{ value }}">{{ value }}</option>
+        {% endfor %}
+    </select>
+
+    <label for="machine" >MACHINE:</label>
+    <select id="machine" name="machine" >
+        {% for value in machine_name_values %}
+            <option value="{{ value }}">{{ value }}</option>
+        {% endfor %}
+    </select>
+
+    <label for="shift">SHIFT:</label>
+    <select id="shift" name="shift">
+        {% for value in batch_no_values %}
+            <option value="{{ value }}">{{ value }}</option>
+        {% endfor %}
+    </select>
+
+    <div><button type="button" id="cancel-btn"><b>Cancel</b></button>
+    <button type="button" id="select-btn"><b>Select</b></button></div>
+    
+  </div>
+  <script>
+    document.getElementById("select-btn").addEventListener("click", function() {
+        var partModel = document.getElementById("partModel").value;
+        var operator = document.getElementById("operator").value;
+        var machine = document.getElementById("machine").value;
+        var shift = document.getElementById("shift").value;
+    
+        const url = `{% url 'measurement' %}?partModel=${partModel}&operator=${operator}&machine=${machine}&shift=${shift}`;
+        window.location.href = url;
+    });
+    </script>
+    
+    
+    
+</body>
+</html>
+
+
+  
