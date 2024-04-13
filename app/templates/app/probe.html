@@ -76,21 +76,34 @@ Selected Probe:
             <section class="container-f"><b>Reading</b></section>
         </div>
 
-        <div class="card" id="card-1">
-            <input type="radio" name="size" id="radio-1" onclick="setCurrentProbe('Probe-1')">
-            <label for="Probe-1"><b>Probe-1</b></label>
-            <textarea id="probe-A" style="max-height: 100px;"></textarea>
-            <input type="text" class="container-b" id="container-b-1" oninput="allowOnlyNumbers(this)">
-            <section class="container-c">1.0000</section>
-            <input type="text" class="container-d" id="container-d-1" oninput="allowOnlyNumbers(this)">
-            <input type="text" class="container-e" id="container-e-1" oninput="checkAndEnterValue('Probe-1', this.value),allowOnlyNumbers(this)">
-            <input type="text" readonly class="container-f" id="container-f-1" oninput="allowOnlyNumbers(this)">
-        </div>
+        
+            
+            <div class="card" id="card-1">
+                <input type="radio" name="size" id="radio-1" onclick="setCurrentProbe('Probe-1')">
+                <label for="Probe-1"><b>Probe-1</b></label>
+                <textarea id="probe-A" style="max-height: 100px;"></textarea>
+                {% for probe_id, coefficient in probe_coefficients.items %}
+                    {% if probe_id == 'probe-1' %}
+                        <input type="text" class="container-b" id="container-b-{{ probe_id }}" value="{{ coefficient }}" oninput="allowOnlyNumbers(this)">
+                    {% endif %}
+                {% endfor %}
+
+                <section class="container-c">1.0000</section>
+                <input type="text" class="container-d" id="container-d-1" oninput="allowOnlyNumbers(this)">
+                <input type="text" class="container-e" id="container-e-1"oninput="checkAndEnterValue('Probe-1', this.value),allowOnlyNumbers(this)">
+                <input type="text"readonly class="container-f" id="container-f-1" oninput="allowOnlyNumbers(this)">
+            </div>
+            
+            
         <div class="card" id="card-2">
             <input type="radio" name="size" id="radio-2" onclick="setCurrentProbe('Probe-2')">
             <label for="Probe-2"><b>Probe-2</b></label>
             <textarea id="probe-B" style="max-height: 100px;"></textarea>
-            <input type="text" class="container-b" id="container-b-2" oninput="allowOnlyNumbers(this)">
+            {% for probe_id, coefficient in probe_coefficients.items %}
+                    {% if probe_id == 'probe-2' %}
+                        <input type="text" class="container-b" id="container-b-{{ probe_id }}" value="{{ coefficient }}" oninput="allowOnlyNumbers(this)">
+                    {% endif %}
+                {% endfor %}
             <section class="container-c">1.0000</section>
             <input type="text" class="container-d" id="container-d-2" oninput="allowOnlyNumbers(this)">
             <input type="text" class="container-e" id="container-e-2"oninput="checkAndEnterValue('Probe-2', this.value),allowOnlyNumbers(this)">
@@ -100,7 +113,11 @@ Selected Probe:
             <input type="radio" name="size" id="radio-3" onclick="setCurrentProbe('Probe-3')">
             <label for="Probe-3"><b>Probe-3</b></label>
             <textarea id="probe-C" style="max-height: 100px;"></textarea>
-            <input type="text" class="container-b" id="container-b-3" oninput="allowOnlyNumbers(this)">
+            {% for probe_id, coefficient in probe_coefficients.items %}
+                    {% if probe_id == 'probe-3' %}
+                        <input type="text" class="container-b" id="container-b-{{ probe_id }}" value="{{ coefficient }}" oninput="allowOnlyNumbers(this)">
+                    {% endif %}
+                {% endfor %}
             <section class="container-c">1.0000</section>
             <input type="text" class="container-d" id="container-d-3" oninput="allowOnlyNumbers(this)">
             <input type="text" class="container-e" id="container-e-3"oninput="checkAndEnterValue('Probe-3', this.value),allowOnlyNumbers(this)" >
@@ -110,7 +127,11 @@ Selected Probe:
             <input type="radio" name="size" id="radio-4" onclick="setCurrentProbe('Probe-4')">
             <label for="Probe-4"><b>Probe-4</b></label>
             <textarea id="probe-D" style="max-height: 100px;"></textarea>
-            <input type="text" class="container-b" id="container-b-4" oninput="allowOnlyNumbers(this)">
+            {% for probe_id, coefficient in probe_coefficients.items %}
+                    {% if probe_id == 'probe-4' %}
+                        <input type="text" class="container-b" id="container-b-{{ probe_id }}" value="{{ coefficient }}" oninput="allowOnlyNumbers(this)">
+                    {% endif %}
+                {% endfor %}
             <section class="container-c">1.0000</section>
             <input type="text" class="container-d" id="container-d-4" oninput="allowOnlyNumbers(this)">
             <input type="text" class="container-e" id="container-e-4" oninput="checkAndEnterValue('Probe-4', this.value),allowOnlyNumbers(this)">
@@ -120,7 +141,11 @@ Selected Probe:
             <input type="radio" name="size" id="radio-5" onclick="setCurrentProbe('Probe-5')">
             <label for="Probe-5"><b>Probe-5</b></label>
             <textarea id="probe-E" style="max-height: 100px;"></textarea>
-            <input type="text" class="container-b" id="container-b-5" oninput="allowOnlyNumbers(this)">
+            {% for probe_id, coefficient in probe_coefficients.items %}
+                    {% if probe_id == 'probe-5' %}
+                        <input type="text" class="container-b" id="container-b-{{ probe_id }}" value="{{ coefficient }}" oninput="allowOnlyNumbers(this)">
+                    {% endif %}
+                {% endfor %}
             <section class="container-c">1.0000</section>
             <input type="text" class="container-d" id="container-d-5" oninput="allowOnlyNumbers(this)">
             <input type="text" class="container-e" id="container-e-5" oninput="checkAndEnterValue('Probe-5', this.value),allowOnlyNumbers(this)">
@@ -130,7 +155,11 @@ Selected Probe:
             <input type="radio" name="size" id="radio-6" onclick="setCurrentProbe('Probe-6')">
             <label for="Probe-6"><b>Probe-6</b></label>
             <textarea id="probe-F" style="max-height: 100px;"></textarea>
-            <input type="text" class="container-b" id="container-b-6" oninput="allowOnlyNumbers(this)">
+            {% for probe_id, coefficient in probe_coefficients.items %}
+                    {% if probe_id == 'probe-6' %}
+                        <input type="text" class="container-b" id="container-b-{{ probe_id }}" value="{{ coefficient }}" oninput="allowOnlyNumbers(this)">
+                    {% endif %}
+                {% endfor %}
             <section class="container-c">1.0000</section>
             <input type="text" class="container-d" id="container-d-6" oninput="allowOnlyNumbers(this)">
             <input type="text" class="container-e" id="container-e-6" oninput="checkAndEnterValue('Probe-6', this.value),allowOnlyNumbers(this)">
@@ -140,7 +169,11 @@ Selected Probe:
             <input type="radio" name="size" id="radio-7" onclick="setCurrentProbe('Probe-7')">
             <label for="Probe-7"><b>Probe-7</b></label>
             <textarea id="probe-G" style="max-height: 100px;"></textarea>
-            <input type="text" class="container-b" id="container-b-7" oninput="allowOnlyNumbers(this)">
+            {% for probe_id, coefficient in probe_coefficients.items %}
+                    {% if probe_id == 'probe-7' %}
+                        <input type="text" class="container-b" id="container-b-{{ probe_id }}" value="{{ coefficient }}" oninput="allowOnlyNumbers(this)">
+                    {% endif %}
+                {% endfor %}
             <section class="container-c">1.0000</section>
             <input type="text" class="container-d" id="container-d-7" oninput="allowOnlyNumbers(this)">
             <input type="text" class="container-e" id="container-e-7"oninput="checkAndEnterValue('Probe-7', this.value),allowOnlyNumbers(this)">
@@ -166,7 +199,11 @@ Selected Probe:
             <input type="radio" name="size" id="radio-8" onclick="setCurrentProbe('Probe-8')">
             <label for="Probe-8"><b>Probe-8</b></label>
             <textarea id="probe-H"  style="max-height: 100px;" ></textarea>
-            <input type="text" class="container-b" id="container-b-8" oninput="allowOnlyNumbers(this)">
+            {% for probe_id, coefficient in probe_coefficients.items %}
+                    {% if probe_id == 'probe-8' %}
+                        <input type="text" class="container-b" id="container-b-{{ probe_id }}" value="{{ coefficient }}" oninput="allowOnlyNumbers(this)">
+                    {% endif %}
+                {% endfor %}
             <section class="container-c">1.0000</section>
             <input type="text" class="container-d" id="container-d-8" oninput="allowOnlyNumbers(this)">
             <input type="text" class="container-e" id="container-e-8" oninput="checkAndEnterValue('Probe-8', this.value),allowOnlyNumbers(this)">
@@ -176,7 +213,11 @@ Selected Probe:
             <input type="radio" name="size" id="radio-9" onclick="setCurrentProbe('Probe-9')">
             <label for="Probe-9"><b>Probe-9</b></label>
             <textarea id="probe-I" style="max-height: 100px;"></textarea>
-            <input type="text" class="container-b" id="container-b-9" oninput="allowOnlyNumbers(this)">
+            {% for probe_id, coefficient in probe_coefficients.items %}
+                    {% if probe_id == 'probe-9' %}
+                        <input type="text" class="container-b" id="container-b-{{ probe_id }}" value="{{ coefficient }}" oninput="allowOnlyNumbers(this)">
+                    {% endif %}
+                {% endfor %}
             <section class="container-c">1.0000</section>
             <input type="text" class="container-d" id="container-d-9" oninput="allowOnlyNumbers(this)">
             <input type="text" class="container-e" id="container-e-9"oninput="checkAndEnterValue('Probe-9', this.value),allowOnlyNumbers(this)" >
@@ -186,7 +227,11 @@ Selected Probe:
             <input type="radio" name="size" id="radio-10" onclick="setCurrentProbe('Probe-10')">
             <label for="Probe-10"><b>Probe-10</b></label>
             <textarea id="probe-J" style="max-height: 100px;"></textarea>
-            <input type="text" class="container-b" id="container-b-10" oninput="allowOnlyNumbers(this)">
+            {% for probe_id, coefficient in probe_coefficients.items %}
+                    {% if probe_id == 'probe-10' %}
+                        <input type="text" class="container-b" id="container-b-{{ probe_id }}" value="{{ coefficient }}" oninput="allowOnlyNumbers(this)">
+                    {% endif %}
+                {% endfor %}
             <section class="container-c">1.0000</section>
             <input type="text" class="container-d" id="container-d-10" oninput="allowOnlyNumbers(this)">
             <input type="text" class="container-e" id="container-e-10"oninput="checkAndEnterValue('Probe-10', this.value),allowOnlyNumbers(this)" >
@@ -196,7 +241,11 @@ Selected Probe:
             <input type="radio" name="size" id="radio-11" onclick="setCurrentProbe('Probe-11')">
             <label for="Probe-11"><b>Probe-11</b></label>
             <textarea id="probe-K" style="max-height: 100px;"></textarea>
-            <input type="text" class="container-b" id="container-b-11" oninput="allowOnlyNumbers(this)">
+            {% for probe_id, coefficient in probe_coefficients.items %}
+                    {% if probe_id == 'probe-11' %}
+                        <input type="text" class="container-b" id="container-b-{{ probe_id }}" value="{{ coefficient }}" oninput="allowOnlyNumbers(this)">
+                    {% endif %}
+                {% endfor %}
             <section class="container-c">1.0000</section>
             <input type="text" class="container-d" id="container-d-11" oninput="allowOnlyNumbers(this)">
             <input type="text" class="container-e" id="container-e-11" oninput="checkAndEnterValue('Probe-11', this.value),allowOnlyNumbers(this)">
@@ -206,7 +255,9 @@ Selected Probe:
             <input type="radio" name="size" id="radio-12" onclick="setCurrentProbe('Probe-12')">
             <label for="Probe-12"><b>Probe-12</b></label>
             <textarea id="probe-L" style="max-height: 100px;"></textarea>
-            <input type="text" class="container-b" id="container-b-12" oninput="allowOnlyNumbers(this)">
+
+                        <input type="text" class="container-b" id="container-b-{{ probe_id }}" value="{{ coefficient }}" oninput="allowOnlyNumbers(this)">
+                   
             <section class="container-c">1.0000</section>
             <input type="text" class="container-d" id="container-d-12" oninput="allowOnlyNumbers(this)">
             <input type="text" class="container-e" id="container-e-12" oninput="checkAndEnterValue('Probe-12', this.value),allowOnlyNumbers(this)">
@@ -216,7 +267,9 @@ Selected Probe:
             <input type="radio" name="size" id="radio-13" onclick="setCurrentProbe('Probe-13')">
             <label for="Probe-13"><b>Probe-13</b></label>
             <textarea id="probe-M" style="max-height: 100px;"></textarea>
-            <input type="text" class="container-b" id="container-b-13" oninput="allowOnlyNumbers(this)">
+            
+                        <input type="text" class="container-b" id="container-b-{{ probe_id }}" value="{{ coefficient }}" oninput="allowOnlyNumbers(this)">
+                   
             <section class="container-c">1.0000</section>
             <input type="text" class="container-d" id="container-d-13" oninput="allowOnlyNumbers(this)">
             <input type="text" class="container-e" id="container-e-13" oninput="checkAndEnterValue('Probe-13', this.value),allowOnlyNumbers(this)">
@@ -226,10 +279,12 @@ Selected Probe:
             <input type="radio" name="size" id="radio-14" onclick="setCurrentProbe('Probe-14')">
             <label for="Probe-14"><b>Probe-14</b></label>
             <textarea id="probe-N" style="max-height: 100px;"></textarea>
-            <input type="text" class="container-b" id="container-b-14" oninput="allowOnlyNumbers(this)">
+         
+                        <input type="text" class="container-b" id="container-b-{{ probe_id }}" value="{{ coefficient }}" oninput="allowOnlyNumbers(this)">
+                  
             <section class="container-c">1.0000</section>
             <input type="text" class="container-d" id="container-d-14" oninput="allowOnlyNumbers(this)">
-            <input type="text" class="container-e" id="container-e-14"oninput="checkAndEnterValue('Probe-14', this.value),allowOnlyNumbers(this)">
+            <input type="text" class="container-e" id="container-e-14"  oninput="checkAndEnterValue('Probe-14', this.value),allowOnlyNumbers(this)">
             <input type="text" readonly class="container-f" id="container-f-14" oninput="allowOnlyNumbers(this)">
         </div>
     </div>
@@ -244,7 +299,6 @@ Selected Probe:
 <pre id="calibration-info" style="color:black; text-shadow: 2px 2px 4px white; margin-top: 5px; margin-left: 250px; font-size: 20px;">
 </pre>
 </div>
-
 
 
 
@@ -515,6 +569,57 @@ function calculateAndDisplayResult() {
     }
 }
 setInterval(calculateAndDisplayResult,0.5);
+
+
+let calculateEnabled = true;
+
+
+function calculateAndDisplay() {
+
+    if (!calculateEnabled) return;
+    // Get all cards
+    const cards = document.querySelectorAll('.card');
+
+    // Loop through each card
+    cards.forEach(card => {
+        if (card === currentSelectedCard) return;
+        // Find the real data element within the card
+        const realDataElement = card.querySelector('textarea');
+        if (realDataElement) {
+            // Get the count from the real data element
+            const count = parseFloat(realDataElement.value);
+
+            // Find the coefficient element within the card
+            const coefficientElement = card.querySelector('.container-b');
+            if (coefficientElement) {
+                // Get the coefficient value
+                const coefficient = parseFloat(coefficientElement.value);
+
+                // Calculate the output
+                const output = (count - 0) * coefficient;
+
+                // Update the container-f element with the calculated output
+                const containerFElement = card.querySelector('.container-f');
+                if (containerFElement) {
+                    containerFElement.value = output.toFixed(9);
+                }
+            }
+        }
+    });
+}
+
+// Call the function initially
+calculateAndDisplay();
+
+
+setInterval(calculateAndDisplay, 0.5);
+
+// Add an event listener to the textarea elements to call calculateAndDisplay() whenever they are changed
+document.querySelectorAll('textarea').forEach(textarea => {
+    textarea.addEventListener('input', calculateAndDisplay);
+});
+
+// Set interval to update the result every 1000 milliseconds (1 second)
 
 
 // Loop through each radio button to add event listeners

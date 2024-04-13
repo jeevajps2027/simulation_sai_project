@@ -39,6 +39,7 @@
         height: 30px;
         width: 200px;
         font-size: 15px;
+        font-family: 'Courier New', Courier, monospace;
     } 
 
     #select-btn{
@@ -91,7 +92,10 @@
         {% endfor %}
     </select>
 
-    <div><button type="button" id="cancel-btn"><b>Cancel</b></button>
+    <div>
+        <a href="{% url 'index' %}" >
+            <button type="button" id="cancel-btn"><b>Cancel</b></button>
+        </a>
     <button type="button" id="select-btn"><b>Select</b></button></div>
     
   </div>

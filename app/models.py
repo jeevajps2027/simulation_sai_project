@@ -114,3 +114,14 @@ class MasterData(models.Model):
 
     def __str__(self):
         return f"Probe No: {self.probe_no}, Parameter Name: {self.parameter_name}, DateTime: {self.date_time}"
+
+
+class comport_settings(models.Model):
+    com_port = models.CharField(max_length=50)
+    baud_rate = models.IntegerField()
+    bytesize = models.IntegerField()  
+    stopbits = models.IntegerField()
+    parity = models.CharField(max_length=50)
+
+    def __str__(self):
+        return f"COM Port: {self.com_port}, Baud Rate: {self.baud_rate}"

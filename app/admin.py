@@ -1,6 +1,6 @@
 
 from django.contrib import admin
-from.models import viewvalues,parameterValue,captValue,MasterData
+from.models import viewvalues,parameterValue,captValue,MasterData,comport_settings
 from.models import readings,find,TableOneData,TableTwoData,TableThreeData,TableFourData,TableFiveData
 # Register your models here.
 
@@ -15,3 +15,4 @@ admin.site.register(viewvalues)
 admin.site.register(parameterValue)
 admin.site.register(captValue)
 admin.site.register(MasterData)
+admin.site.register(comport_settings)

@@ -17,6 +17,7 @@ urlpatterns = [
     path('master/',views.master,name="master"), 
     path('measurement/',views.measurement,name="measurement"),
     path('measurebox/',views.measurebox,name="measurebox"), 
+     path('jeeva/',views.jeeva,name="jeeva"), 
 
 ]
 

@@ -943,8 +943,8 @@ function updateAllParameterValues(id, lsl, usl,preValue) {
         var selectedValue = document.getElementById('partModel').value;
         console.log('Selected Value: ' + selectedValue);
 
-        var selectedMastering = document.getElementById('mastering').value;
-        console.log('Selected mastering: ' + selectedMastering);
+        var mastering = document.getElementById('mastering').value;
+        console.log('Selected mastering: ' + mastering);
 
         
         // Make an AJAX request to the backend
@@ -956,7 +956,6 @@ function updateAllParameterValues(id, lsl, usl,preValue) {
             },
             body: JSON.stringify({
                 selectedValue: selectedValue,
-                selectedMastering:selectedMastering,
                 
             }),
         })
@@ -986,19 +985,7 @@ function updateAllParameterValues(id, lsl, usl,preValue) {
                     preElement.innerHTML = '';
                 }
             }
-            for (let i = parameter_names.length + 1; i <= 50; i++) {
-    const inputProbeNo = document.getElementById('container-' + i + '_input3'); 
-    const inputNominal = document.getElementById('container-' + i + '_input4'); 
-    const inputusl = document.getElementById('container-' + i + '_input6'); 
-    const inputlsl = document.getElementById('container-' + i + '_input5'); 
-    const inputMastering = document.getElementById('container-' + i + '_input7'); 
 
-    inputProbeNo.value = '';
-    inputNominal.value = '';
-    inputusl.value = '';
-    inputlsl.value = '';
-    inputMastering.value = '';
-            }
             
 
 ////////////////////////////////////////////////////////////
@@ -1045,58 +1032,10 @@ for (let i = 1; i <= Math.min(lsl.length, 50); i++) {
     const inputlsl = document.getElementById('container-' + i + '_input5'); // Assuming 'input3' is for nominal
     inputlsl.value = lsl[i - 1];
 }
-
-
 for (let i = 1; i <= Math.min(mastering.length, 50); i++) {
-    const inputmastering = document.getElementById('container-' + i + '_input7'); 
+    const inputmastering = document.getElementById('container-' + i + '_input7'); // Assuming 'input3' is for nominal
     inputmastering.value = mastering[i - 1];
-    const container = document.getElementById('container-' + i);
-        // Disable inputL
-    const inputL = document.getElementById('container-' + i + '_input1');
-    
-    // Disable inputH
-    const inputH = document.getElementById('container-' + i + '_input2');
-    
-
-    // Disable additional input
-    const additionalInput = document.getElementById('container-' + i + '_additional_input');
-
-    const radioButton = document.getElementById('container-' + i + '_radioButton');
-    
-
-
-    if (inputmastering.value === '') {
-        container.style.backgroundColor = ''; // Clear the background color
-        inputmastering.disabled = true; // Disable the input box
-        inputL.disabled = true;
-        inputH.disabled = true;
-        additionalInput.disabled = true;
-        radioButton.disabled = true;
-
-    } else if (inputmastering.value === selectedMastering) {
-        container.style.backgroundColor = 'pink';
-        inputmastering.disabled = false; // Enable the input box
-        inputL.disabled = false;
-        inputH.disabled = false;
-        additionalInput.disabled = false;
-        radioButton.disabled = false;
-    } else {
-        container.style.backgroundColor = '';
-        inputmastering.disabled = true; // Disable the input box
-        inputL.disabled = true;
-        inputH.disabled = true;
-        additionalInput.disabled = true;
-        radioButton.disabled = true;
-
-    }
-
-
-    
 }
-
-
-   
-
 /////////////////////////////////////////
 
             // Reset previous low_mv values
@@ -1145,15 +1084,7 @@ for (let i = 1; i <= Math.min(mastering.length, 50); i++) {
     }
 
     // Attach event listener to the partModel select element
-    document.getElementById('partModel').addEventListener('change', function() {
-    // When partModel changes, clear background color of all containers
-    for (let i = 1; i <= 50; i++) {
-        const container = document.getElementById('container-' + i);
-        container.style.backgroundColor = ''; // Clear the background color
-    }
-    updateValues(); // Call the updateValues function after clearing background colors
-});
-    document.getElementById('mastering').addEventListener('change', updateValues);
+    document.getElementById('partModel').addEventListener('change', updateValues);
 
     
     // Function to get CSRF token from cookies

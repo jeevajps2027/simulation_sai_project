@@ -14,9 +14,9 @@ Measurement Page
         border: 2px solid black;    
     }
     .box-2{
-        height: 420px;
-        width: 1100px;
-        background-color: lightblue;
+        height: 440px;
+        width: 1130px;
+        background-color:lightgrey;
         border: 1px solid black;    
     }
     label {
@@ -38,6 +38,7 @@ Measurement Page
             margin-top: 10px;
             box-sizing: border-box;
             width: 10%;
+            font-family: 'Courier New', Courier, monospace;
         }
         .center-image{
             margin-left: 1130px;
@@ -50,26 +51,30 @@ Measurement Page
        #box2{
         margin-top: -440px;
        }
-       .container{
-        height: 500px;
-        width: 1200px;
-        margin-top: 0px;
-        margin-left: 0;
-        background-color: lightgrey;
-       }
-
-
-
+    
        table {
         border-collapse: collapse;
         width: 100%;
     }
 
-th, td {
+    #my-table th,
+    #my-table td{
     border: 1px solid black;
     padding: 8px;
+    height: 30px;
     text-align: center;
 }
+#my-table th{
+    background-color:darkmagenta;
+    color: white;
+}
+
+.no-outline{
+        margin-top: 0px;
+        border: none;
+        outline: none;
+        background-color: lightgrey;
+    }   
 
 
 
@@ -145,6 +150,8 @@ th, td {
     .exit-symbol {
         color: white; /* Set the color of the exit symbol to white */
     }
+
+    
     
 </style>
 
@@ -186,7 +193,7 @@ th, td {
     <label for="part_status" style="font-size: 15px; width: 120px;margin-left: 130px;" >PART STATUS</label>
     <input type="text" id="part_status" style="width: 170px;height: 40px;">
     
-    <input type="text" id="customer_name" style="width: 300px;height: 40px; margin-left: 10px;" value="{{ customer_name_values }}">
+    <input type="text" id="customer_name" style="width: 300px;height: 40px; margin-left: 10px;text-align: center;font-weight: bold;" value="{{ customer_name_values }}">
     
     <label for="comp_srno" style="width: 130px;">COMP SR.NO:</label>
     <input type="text" id="comp_srno" style="width: 200px;"><br>
@@ -212,12 +219,12 @@ th, td {
   
 
 
-<div class="box-2" id="box2">
-    <div class="container" style="overflow-y: auto;">
-      <table border="1" style="width: 100%;">
+<div class="box-2" id="box2" style="overflow-y: auto;">
+    
+      <table border="1" style="width: 100%;"id="my-table">
         <thead>
           <tr>
-            <th style="width: 5%;">Sr.No</th>
+            <th style="width: 5%;height: 30px; ">Sr.No</th>
             <th style="width: 15%;" id="parameter_name">Parameter Name</th>
             <th style="width: 10%;" id="nominal">Nominal</th>
             <th style="width: 10%;" id="readings">Readings</th>
@@ -227,13 +234,11 @@ th, td {
             <th style="width: 15%;" id="status">Status</th>
           </tr>
         </thead>
-       
-        <tr>
-          
-        </tr>
-        
+        <tbody id="table-body">
+            
+        </tbody>
       </table>
-    </div>
+    
 </div>
 
 
@@ -247,81 +252,281 @@ th, td {
 </div>
 
 <script>
-
-window.onload = function() {
-    // Set focus on the textarea when the page loads
-    document.getElementById('punch_textarea').focus();
-};
-
-    function handleEnterKeyPress(event) {
-        if (event.key === 'Enter') {
-            // Get the value from the textarea
-            var punchValue = document.getElementById('punch_textarea').value;
+  $('#partModel').change(function() {
+    var selectedModel = $(this).val();
+    
+    // Create an object to hold the data to be sent
+    var data = {
+        partModel: selectedModel
+    };
+    
+    // Make the AJAX POST request
+    $.ajax({
+        url: '/measurement/', // Replace with your server URL
+        type: 'POST',
+        headers: {
+            'X-CSRFToken': getCookie('csrftoken') // Include CSRF token in the request headers
+        },
+        contentType: 'application/json',
+        data: JSON.stringify(data),
+        success: function(response) {
+            // Clear existing table rows
+            $('#table-body').empty();
             
-            // Set the value in the COMP SR.NO input box
-            document.getElementById('comp_srno').value = punchValue;
+            // Generate new rows dynamically based on retrieved values
+            for (var i = 0; i < response.parameterNameValues.length; i++) {
+                var row = document.createElement("tr");
 
-            
-            
-            // Disable the notification container
-            document.getElementById('notification-container').classList.add('disabled');
+                var srNoCell = document.createElement("td");
+                srNoCell.textContent = i + 1; // Since i starts from 0
+                row.appendChild(srNoCell);
+
+                var parameterNameCell = document.createElement("td");
+                parameterNameCell.textContent = response.parameterNameValues[i];
+                row.appendChild(parameterNameCell);
+
+                var nominalCell = document.createElement("td");
+                nominalCell.textContent = response.nominalValues[i];
+                row.appendChild(nominalCell);
+
+                var readingsCell = document.createElement("td");
+                var readingsInput = document.createElement("input");
+                readingsInput.type = "text";
+                readingsInput.className = "no-outline"; // Optional: Add class for styling
+                readingsInput.style.width = "100%"; // Optional: Set input width
+                readingsCell.appendChild(readingsInput);
+                row.appendChild(readingsCell);
+
+                var lslCell = document.createElement("td");
+                lslCell.textContent = response.lslValues[i];
+                row.appendChild(lslCell);
+
+                var indicatorCell = document.createElement("td");
+                indicatorCell.textContent = ""; // Placeholder for readings
+                row.appendChild(indicatorCell);
+
+                var uslCell = document.createElement("td");
+                uslCell.textContent = response.uslValues[i];
+                row.appendChild(uslCell);
+
+                var statusCell = document.createElement("td");
+                statusCell.textContent = ""; // Placeholder for status
+                row.appendChild(statusCell);
+
+                // Append the row to the table body
+                $('#table-body').append(row);
+            }
+        },
+        error: function(xhr, status, error) {
+            // Handle errors
+            console.error('Error:', error);
+        }
+    });
+});
+
+
+// Function to retrieve CSRF token from cookie
+function getCookie(name) {
+    var cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        var cookies = document.cookie.split(';');
+        for (var i = 0; i < cookies.length; i++) {
+            var cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
         }
     }
-    function closeNotification() {
-        // Disable the notification container
-        document.getElementById('notification-container').classList.add('disabled');
-    }
+    return cookieValue;
+}
+////////////////////////////////////////
 
-        // Function to update the date and time in the input box
-        function updateDateTime() {
-        var currentDate = new Date();
-        var hours = currentDate.getHours();
-        var minutes = currentDate.getMinutes();
-        var seconds = currentDate.getSeconds();
-        var ampm = hours >= 12 ? 'PM' : 'AM';
-        hours = hours % 12;
-        hours = hours ? hours : 12; // Handle midnight (0 hours)
-        minutes = minutes < 10 ? '0' + minutes : minutes;
-        seconds = seconds < 10 ? '0' + seconds : seconds;
-        var currentTime = hours + ':' + minutes + ':' + seconds + ' ' + ampm;
-        var day = currentDate.getDate();
-        var month = currentDate.getMonth() + 1; // Month is zero-based
-        var year = currentDate.getFullYear();
-        var currentDateFormatted = day + '/' + month + '/' + year;
-        document.getElementById('date').value = currentDateFormatted + ' ' + currentTime;
-    }
-
-    // Update the date and time initially
-    updateDateTime();
-
-    // Update the date and time every second
-    setInterval(updateDateTime, 1000);
+///////////////////////////////////////////
 
 
-    // Get URL parameters
-    var urlParams = new URLSearchParams(window.location.search);
-    var partModel = urlParams.get('partModel');
-    var operator = urlParams.get('operator');
-    var machine = urlParams.get('machine');
-    var shift = urlParams.get('shift');
-    var hiddenTextarea = urlParams.get('hiddenTextarea');
+    window.onload = function() {
+        // Set focus on the textarea when the page loads
+        document.getElementById('punch_textarea').focus();
+    };
     
-    // Do something with the values (e.g., display them on the page)
-    console.log("Part Model: " + partModel);
-    console.log("Operator: " + operator);
-    console.log("Machine: " + machine);
-    console.log("Shift: " + shift);
-    console.log("hidden-textarea :" + hiddenTextarea);
+        function handleEnterKeyPress(event) {
+            if (event.key === 'Enter') {
+                // Get the value from the textarea
+                var punchValue = document.getElementById('punch_textarea').value;
+                
+                // Set the value in the COMP SR.NO input box
+                document.getElementById('comp_srno').value = punchValue;
+    
+                
+                
+                // Disable the notification container
+                document.getElementById('notification-container').style.display = 'none';
+            }
+        }
+        function closeNotification() {
+            // Disable the notification container
+            document.getElementById('notification-container').style.display = 'none';
+    
+        }
+    
+            // Function to update the date and time in the input box
+            function updateDateTime() {
+            var currentDate = new Date();
+            var hours = currentDate.getHours();
+            var minutes = currentDate.getMinutes();
+            var seconds = currentDate.getSeconds();
+            var ampm = hours >= 12 ? 'PM' : 'AM';
+            hours = hours % 12;
+            hours = hours ? hours : 12; // Handle midnight (0 hours)
+            minutes = minutes < 10 ? '0' + minutes : minutes;
+            seconds = seconds < 10 ? '0' + seconds : seconds;
+            var currentTime = hours + ':' + minutes + ':' + seconds + ' ' + ampm;
+            var day = currentDate.getDate();
+            var month = currentDate.getMonth() + 1; // Month is zero-based
+            var year = currentDate.getFullYear();
+            var currentDateFormatted = day + '/' + month + '/' + year;
+            document.getElementById('date').value = currentDateFormatted + ' ' + currentTime;
+        }
+    
+        // Update the date and time initially
+        updateDateTime();
+    
+        // Update the date and time every second
+        setInterval(updateDateTime, 1000);
+    
+    
+        // Get URL parameters
+        var urlParams = new URLSearchParams(window.location.search);
+        var partModel = urlParams.get('partModel');
+        var operator = urlParams.get('operator');
+        var machine = urlParams.get('machine');
+        var shift = urlParams.get('shift');
+        var hiddenTextarea = urlParams.get('hiddenTextarea');
+        
+        // Do something with the values (e.g., display them on the page)
+        console.log("Part Model: " + partModel);
+        console.log("Operator: " + operator);
+        console.log("Machine: " + machine);
+        console.log("Shift: " + shift);
+        console.log("hidden-textarea :" + hiddenTextarea);
+    
+        // Set values to the elements
+        document.getElementById('partModel').value = partModel;
+        document.getElementById('operator').value = operator;
+        document.getElementById('shift').value = shift;
+        document.getElementById('comp_srno').value = hiddenTextarea;
+        document.getElementById('machine').value = machine;
+    
+    
+        // Log the is_selected_values to the console
+        var hide = "{{ hide }}"; // Assuming this is how you pass the value from Django template
+        console.log("hide:", hide);
+    
+    
+        // Conditionally display the notification container and textarea based on is_selected_values
+        if (hide === 'True') {
+            document.getElementById('notification-container').style.display = 'block';
+            document.getElementById('punch_textarea').style.display = 'block';
+        } else {
+            document.getElementById('notification-container').style.display = 'none';
+            document.getElementById('punch_textarea').style.display = 'none';
+        }
+    
+       
+// Assuming para_values is passed from Django template as a JavaScript array
+var para_values_str = "{{ para_values|safe }}";
 
-    // Set values to the elements
-    document.getElementById('partModel').value = partModel;
-    document.getElementById('operator').value = operator;
-    document.getElementById('shift').value = shift;
-    document.getElementById('comp_srno').value = hiddenTextarea;
-    document.getElementById('machine').value = machine;
+// Remove square brackets and single quotes
+var para_values_cleaned = para_values_str.replace(/[\[\]']+/g, '');
 
-    </script>
+// Split the cleaned string into an array of values
+var para_values = para_values_cleaned.split(',');
 
+// Assuming nominal_values is passed from Django template as a JavaScript array
+var nominal_values_str = "{{ nominal_values|safe }}";
+
+// Remove square brackets and single quotes
+var nominal_values_cleaned = nominal_values_str.replace(/[\[\]']+/g, '');
+
+// Split the cleaned string into an array of values
+var nominal_values = nominal_values_cleaned.split(',');
+
+var lsl_values_str = "{{ lsl_values|safe }}";
+
+var lsl_values_cleaned = lsl_values_str.replace(/[\[\]']+/g, '');
+
+var lsl_values = lsl_values_cleaned.split(',');
+
+var usl_values_str = "{{ usl_values|safe }}";
+
+var usl_values_cleaned = usl_values_str.replace(/[\[\]']+/g, '');
+
+var usl_values = usl_values_cleaned.split(',');
+
+
+// Log the para_values and nominal_values to console
+console.log("para_values:", para_values);
+console.log("nominal_values:", nominal_values);
+console.log("lsl:",lsl_values);
+console.log("usl:",usl_values)
+
+ 
+    // Select the table body
+var tableBody = document.getElementById("table-body");
+
+// Generate rows dynamically based on para_values length
+for (var i = 0; i < para_values.length; i++) {
+    // Create a new row
+    var row = document.createElement("tr");
+
+    // Create cells for each column and set their content
+    var srNoCell = document.createElement("td");
+    srNoCell.textContent = i + 1; // Since i starts from 0
+    row.appendChild(srNoCell);
+
+    var parameterNameCell = document.createElement("td");
+    parameterNameCell.textContent = para_values[i];
+    row.appendChild(parameterNameCell);
+
+    var nominalCell = document.createElement("td");
+    nominalCell.textContent = nominal_values[i];
+    row.appendChild(nominalCell);
+
+    // Placeholder for other cells
+
+    var readingsCell = document.createElement("td");
+    var readingsInput = document.createElement("input");
+    readingsInput.type = "text";
+    readingsInput.className = "no-outline"; // Optional: Add class for styling
+    readingsInput.style.width = "100%"; // Optional: Set input width
+    readingsCell.appendChild(readingsInput);
+    row.appendChild(readingsCell);
+
+    var lslCell = document.createElement("td");
+    lslCell.textContent = lsl_values[i];
+    row.appendChild(lslCell);
+
+    // Placeholder for indicator cell
+    var indicatorCell = document.createElement("td");
+    indicatorCell.textContent = ""; // Placeholder for readings
+    row.appendChild(indicatorCell);
+
+    var uslCell = document.createElement("td");
+    uslCell.textContent = usl_values[i];
+    row.appendChild(uslCell);
+
+    var statusCell = document.createElement("td");
+    statusCell.textContent = ""; // Placeholder for status
+    row.appendChild(statusCell);
+
+    // Append the row to the table body
+    tableBody.appendChild(row);
+}
+
+    
+</script>
+        
 
 
 

@@ -1,5 +1,5 @@
 import threading
-from django.http import JsonResponse
+from django.http import HttpResponseNotAllowed, JsonResponse
 from django.shortcuts import render
 from pyexpat.errors import messages
 import re
@@ -11,10 +11,11 @@ import threading
 import serial
 from django.views.decorators.csrf import csrf_exempt
 from django.core.cache import cache
-from.models import viewvalues,captValue,MasterData
+from.models import viewvalues,captValue,MasterData,comport_settings
 from.models import readings,find,TableOneData,TableTwoData,TableThreeData,TableFourData,TableFiveData
 import json
 from datetime import datetime
+from django.views.decorators.cache import never_cache
 
 def home(request):
     if request.method == 'POST':
@@ -31,8 +32,8 @@ def home(request):
     return render(request, "app/home.html")
 
 
+import threading
 
-# Use a lock to ensure thread safety when accessing serial_data
 serial_data = ""
 serial_data_lock = threading.Lock()
 
@@ -43,8 +44,13 @@ def read_serial_data(ser):
     while True:
         try:
             receive = ser.read().decode('ASCII')
-            with serial_data_lock:
-                serial_data += receive
+            if receive == '\n':  # Assuming newline indicates end of a message
+                with serial_data_lock:
+                    print("Current Serial Data:", serial_data, flush=True)  # Display only the current serial data
+                serial_data = ""  # Reset serial_data for the next message
+            else:
+                with serial_data_lock:
+                    serial_data += receive
         except Exception as e:
             # Handle exceptions or log errors here
             pass
@@ -56,9 +62,36 @@ def comport(request):
     if request.method == 'POST':
         selected_com_port = request.POST.get('com_port')
         selected_baud_rate = request.POST.get('baud_rate')
+        bytesize = 8
+        timeout = None
+        stopbits = 1
+        parity = 'N'
 
         try:
-            ser = serial.Serial(port=selected_com_port, baudrate=int(selected_baud_rate), bytesize=8, timeout=None, stopbits=1, parity='N')
+            comport_settings_obj, created = comport_settings.objects.get_or_create(
+                com_port=selected_com_port,
+                defaults={
+                    'baud_rate': selected_baud_rate,
+                    'bytesize': bytesize,
+                    'stopbits': stopbits,
+                    'parity': parity
+                }
+            )
+
+            # If the object already exists, update its fields with new values
+            if not created:
+                comport_settings_obj.com_port = selected_com_port
+                comport_settings_obj.baud_rate = selected_baud_rate
+                comport_settings_obj.bytesize = bytesize
+                comport_settings_obj.stopbits = stopbits
+                comport_settings_obj.parity = parity
+                comport_settings_obj.save()
+
+            ser = serial.Serial(port=selected_com_port, baudrate=int(selected_baud_rate), bytesize=bytesize, timeout=timeout, stopbits=stopbits, parity=parity)
+            print(f"COmport serial data is: {ser}")
+
+            command = "MMMMMMMMMM"
+            ser.write(command.encode('ASCII'))
 
             # Check if the serial thread is not running, then start it
             if serial_thread is None or not serial_thread.is_alive():
@@ -68,17 +101,29 @@ def comport(request):
 
         except Exception as e:
             return JsonResponse({'error': str(e)})
+        
+        
 
     com_ports = [port.device for port in serial.tools.list_ports.comports()]
     baud_rates = ["4800", "9600", "14400", "19200", "38400", "57600", "115200", "128000"]
 
-    with serial_data_lock:
-        data_to_display = serial_data
-
     if request.META.get('HTTP_X_REQUESTED_WITH') == 'XMLHttpRequest':
-        return JsonResponse({'serial_data': data_to_display})
+        with serial_data_lock:
+            if 'last_position' not in request.session:
+                request.session['last_position'] = 0
 
-    return render(request, 'app/comport.html', {'com_ports': com_ports, 'baud_rates': baud_rates, 'serial_data': data_to_display})
+            current_position = request.session['last_position']
+            formatted_data = "".join(serial_data[current_position:])
+            request.session['last_position'] = len(serial_data)
+
+            print("Current Serial Data:", formatted_data, flush=True)
+        
+        return JsonResponse({'serial_data': formatted_data})
+
+    return render(request, 'app/comport.html', {'com_ports': com_ports, 'baud_rates': baud_rates})
+
+
+
 
 def probe(request):
     if request.method == 'POST':
@@ -100,6 +145,8 @@ def probe(request):
         probe.coefficent = e_values[0] if e_values else None
 
         probe.save()
+        
+        return redirect('master_page', probe_id=probe_id)
 
     with serial_data_lock:
         data_to_display = serial_data
@@ -117,8 +164,34 @@ def probe(request):
 
         # Return the channel data as JSON response
         return JsonResponse({'serial_data': channel_data})
+    
+    # Retrieve the distinct probe IDs
+    probe_ids = find.objects.values_list('probe_id', flat=True).distinct()
+    
+    # Create a dictionary to store coefficient values for each probe ID
+    probe_coefficients = {}
+    low_count = {}
+    
+    for probe_id in probe_ids:
+        # Retrieve the latest coefficient value for the current probe ID
+        latest_calibration = find.objects.filter(probe_id=probe_id).latest('id')
+        
+        # Extract the coefficient value
+        coefficient_value = latest_calibration.coefficent
+        low_value = latest_calibration.low_count
+        
+        
+        # Store the coefficient value in the dictionary with the probe ID as the key
+        probe_coefficients[probe_id] = coefficient_value
+        low_count[probe_id] = low_count
 
-    return render(request, 'app/probe.html', {'serial_data': data_to_display})
+        print(f'Probe ID: {probe_id}, Coefficient: {coefficient_value}')
+        print(f'Probe ID: {probe_id}, Low values: {low_value}')
+    
+
+    return render(request, 'app/probe.html', {'serial_data': data_to_display ,'probe_coefficients': probe_coefficients ,'low_count':low_count })
+
+
  
 
  
@@ -267,6 +340,11 @@ def trace(request, row_id=None):
                 # Depending on the item_id, fetch the rows from the database
                 if item_id == 'tableBody-1':
                     rows = TableOneData.objects.filter(id__in=row_ids)
+                    # Print the column values of each row before deleting
+                    for row in rows:
+                        part_model_value = row.part_model
+                        delete = captValue.objects.filter(model_id=part_model_value).delete()
+
                 elif item_id == 'tableBody-2':
                     rows = TableTwoData.objects.filter(id__in=row_ids)
                 elif item_id == 'tableBody-3':
@@ -276,12 +354,7 @@ def trace(request, row_id=None):
                 elif item_id == 'tableBody-5':
                     rows = TableFiveData.objects.filter(id__in=row_ids)
 
-                # Print the column values of each row before deleting
-                for row in rows:
-                    part_model_value = row.part_model
-                    delete = captValue.objects.filter(model_id = part_model_value).delete()
-
-
+                
                 # Delete the rows
                 rows.delete()
 
@@ -303,6 +376,9 @@ from django.shortcuts import render, get_object_or_404
 
 @csrf_exempt
 def parameter(request):
+    """
+    
+    """
     if request.method == 'GET':
         try:
             table_body_1_data = TableOneData.objects.all()
@@ -580,7 +656,6 @@ def master(request):
             # Your filtering logic based on selected_value and selected_mastering
             filtered_data = captValue.objects.filter(
                 model_id=selected_value,
-                mastering=selected_mastering,
                 hide_checkbox=False
             ).values().distinct()
 
@@ -600,7 +675,8 @@ def master(request):
             print('lsl:',lsl)
             usl = [item['usl'] for item in filtered_data]
             print('usl:',usl)
-
+            selected_mastering = [item['mastering'] for item in filtered_data]
+            print('selected_mastering:',selected_mastering)
             # Save the received data into your database
 
             
@@ -650,12 +726,104 @@ def master(request):
 
 
 def measurement(request):
-    if request.method == 'GET':
+
+    if request.method == 'POST':
+        try:
+            # Parse the JSON data sent in the request
+            data = json.loads(request.body)
+            
+            # Extract the part model value from the data
+            part_model = data.get('partModel')
+            print('your data from frontend:',part_model)
+
+            additional_input_value = data.get('additionalInputValue')
+            parameter_name = data.get('preValue')
+            print('new values for this :',additional_input_value,parameter_name)
+
+            parameter_name_queryset = captValue.objects.filter(model_id=part_model).values_list('parameter_name', flat=True)
+
+            # Convert the queryset to a list to pass only the values
+            parameter_name_values = list(parameter_name_queryset)
+            print('parameter_name values are:',parameter_name_values)
+
+            lsl_values_queryset = captValue.objects.filter(model_id=part_model).values_list('lsl', flat=True)
+
+            # Convert the queryset to a list to pass only the values
+            lsl_values = list(lsl_values_queryset)
+            print('lsl values are:',lsl_values)
+
+            usl_values_queryset = captValue.objects.filter(model_id=part_model).values_list('usl', flat=True)
+
+            # Convert the queryset to a list to pass only the values
+            usl_values = list(usl_values_queryset)
+            print('usl values are:',usl_values)
+
+            
+
+            nominal_values_queryset = captValue.objects.filter(model_id=part_model).values_list('nominal', flat=True)
+            nominal_values = list(nominal_values_queryset)
+            print('your nominal values are:',nominal_values)
+
+            measurement_mode_values_queryset = captValue.objects.filter(model_id=part_model).values_list('measurement_mode', flat=True)
+            measurement_mode_values = list(measurement_mode_values_queryset)
+            print('your measurement_mode values are:',measurement_mode_values)
+
+            # Prepare the response data
+            response_data = {
+                'parameterNameValues': parameter_name_values,
+                'lslValues': lsl_values,
+                'uslValues': usl_values,
+                'nominalValues': nominal_values,
+                'measurementModeValues': measurement_mode_values,
+                'additionalInputValue': additional_input_value,
+                 
+            }
+
+            # Return a JSON response with the retrieved values
+            return JsonResponse(response_data)
+        except Exception as e:
+            # Return a JSON response indicating error
+            return JsonResponse({'error': str(e)}, status=500)
+
+    
+    elif request.method == 'GET':
         part_model = request.GET.get('partModel', None)
         operator = request.GET.get('operator', None)
         machine = request.GET.get('machine', None)
         shift = request.GET.get('shift', None)
         hiddenTextarea = request.GET.get('hiddenTextarea', None)
+
+        para_values_queryset = captValue.objects.filter(model_id=part_model).values_list('parameter_name', flat=True).distinct()
+
+        # Convert the queryset to a list to pass only the values
+        para_values = list(para_values_queryset)
+        print('para values are:',para_values)
+
+        lsl_values_queryset = captValue.objects.filter(model_id=part_model).values_list('lsl', flat=True)
+
+        # Convert the queryset to a list to pass only the values
+        lsl_values = list(lsl_values_queryset)
+        print('lsl values are:',lsl_values)
+
+        usl_values_queryset = captValue.objects.filter(model_id=part_model).values_list('usl', flat=True)
+
+        # Convert the queryset to a list to pass only the values
+        usl_values = list(usl_values_queryset)
+        print('usl values are:',usl_values)
+
+        
+
+        nominal_values_queryset = captValue.objects.filter(model_id=part_model).values_list('nominal', flat=True)
+        nominal_values = list(nominal_values_queryset)
+        print('your nominal values are:',nominal_values)
+
+        
+        if part_model:
+
+            hide = TableOneData.objects.filter(part_model = part_model).values_list('hide', flat=True).distinct()
+            if hide.exists():  # Check if queryset has any results
+                hide = hide[0]  # Access the first value
+                print('hide:', hide)
 
         # Your initial queryset for part_model_values
         part_model_values = TableOneData.objects.values_list('part_model', flat=True).distinct()
@@ -663,9 +831,8 @@ def measurement(request):
 
         if part_model:
             customer_name_values = TableOneData.objects.filter(part_model=part_model).values_list('customer_name', flat=True).distinct()
-            if customer_name_values.exists():
-                customer_name_values = customer_name_values[0]
-                print('customer_name_values:', customer_name_values)
+            if customer_name_values.exists():  # Check if queryset has any results
+                customer_name_values = customer_name_values[0]  # Access the first value
 
 
         # Do something with the retrieved values, such as passing them to the template
@@ -676,9 +843,13 @@ def measurement(request):
             'shift': shift,
             'hidden-textarea': hiddenTextarea,
             'part_model_values': part_model_values,
-            'customer_name_values':customer_name_values
+            'customer_name_values':customer_name_values,
+            'hide' : hide,
+            'para_values' : para_values,
+            'nominal_values' : nominal_values,
+            'lsl_values' : lsl_values,
+            'usl_values' : usl_values,
         }
-        print('context values are:',context)
         return render(request, 'app/measurement.html', context)
     else:
         # Handle other request methods if needed
@@ -719,5 +890,13 @@ def measurebox(request):
     return render(request,'app/measurebox.html',context)
 
 
+def jeeva(request):
+    if request.method == 'POST':
+        data = json.loads(request.body)
+        additional_input_value = data.get('additionalInputValue')
+        print("Received additional input value:", additional_input_value)  # Check the value received
+        return JsonResponse({'success': True, 'additional_input_value': additional_input_value})
 
-
+    else:
+        # Return an error response if the request method is not POST
+       return render(request, 'app/jeeva.html')
