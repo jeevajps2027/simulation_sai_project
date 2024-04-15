@@ -68,9 +68,11 @@ def comport(request):
         parity = 'N'
 
         try:
+            first_comport_settings_id = comport_settings.objects.first().id
             comport_settings_obj, created = comport_settings.objects.get_or_create(
-                com_port=selected_com_port,
+                id=first_comport_settings_id,
                 defaults={
+                    'com_port':selected_com_port,
                     'baud_rate': selected_baud_rate,
                     'bytesize': bytesize,
                     'stopbits': stopbits,
@@ -148,50 +150,31 @@ def probe(request):
         
         return redirect('master_page', probe_id=probe_id)
 
-    with serial_data_lock:
-        data_to_display = serial_data
+    elif request.method == 'GET':
+        comport_settings_obj = comport_settings.objects.first()  # Assuming you want the first object
+        selected_com_port = comport_settings_obj.com_port
+        selected_baud_rate = comport_settings_obj.baud_rate
+        bytesize = comport_settings_obj.bytesize
+        stopbits = comport_settings_obj.stopbits
+        parity = comport_settings_obj.parity
 
-    if request.META.get('HTTP_X_REQUESTED_WITH') == 'XMLHttpRequest':
-        # Split the serial data into 11 channels (A-K) using regular expressions
-        parts = re.split(r'([A-K])', data_to_display)
-        parts = [part for part in parts if part.strip()]  # Remove empty strings
+        # Get the list of available com ports
+        com_ports = [port.device for port in serial.tools.list_ports.comports()]
 
-        # Create a dictionary to store data for each channel
-        channel_data = {}
-        for channel_id, part in zip(parts[0::2], parts[1::2]):
-            part = part.replace('+', '')
-            channel_data[channel_id] = part
-
-        # Return the channel data as JSON response
-        return JsonResponse({'serial_data': channel_data})
-    
-    # Retrieve the distinct probe IDs
-    probe_ids = find.objects.values_list('probe_id', flat=True).distinct()
-    
-    # Create a dictionary to store coefficient values for each probe ID
-    probe_coefficients = {}
-    low_count = {}
-    
-    for probe_id in probe_ids:
-        # Retrieve the latest coefficient value for the current probe ID
-        latest_calibration = find.objects.filter(probe_id=probe_id).latest('id')
+        # Check if the selected com port is in the list of available com ports
+        if selected_com_port not in com_ports:
+            context = {'error_message': f"Selected COM port '{selected_com_port}' is not available"}
+            return render(request, 'app/probe.html', context)
         
-        # Extract the coefficient value
-        coefficient_value = latest_calibration.coefficent
-        low_value = latest_calibration.low_count
+        context = {
+            'com_port': selected_com_port,
+            'baud_rate': selected_baud_rate,
+            'bytesize': bytesize,
+            'stopbits': stopbits,
+            'parity': parity,
+        }
         
-        
-        # Store the coefficient value in the dictionary with the probe ID as the key
-        probe_coefficients[probe_id] = coefficient_value
-        low_count[probe_id] = low_count
-
-        print(f'Probe ID: {probe_id}, Coefficient: {coefficient_value}')
-        print(f'Probe ID: {probe_id}, Low values: {low_value}')
-    
-
-    return render(request, 'app/probe.html', {'serial_data': data_to_display ,'probe_coefficients': probe_coefficients ,'low_count':low_count })
-
-
+        return render(request, 'app/probe.html', context)
  
 
  
@@ -376,9 +359,6 @@ from django.shortcuts import render, get_object_or_404
 
 @csrf_exempt
 def parameter(request):
-    """
-    
-    """
     if request.method == 'GET':
         try:
             table_body_1_data = TableOneData.objects.all()
@@ -663,6 +643,7 @@ def master(request):
 
             # Extract necessary data from filtered_data
             parameter_names = [item['parameter_name'] for item in filtered_data]
+            print("parameter_names:",parameter_names)
             low_mv = [item['low_mv'] for item in filtered_data]
             print('low values:',low_mv)
             high_mv = [item['high_mv'] for item in filtered_data]
