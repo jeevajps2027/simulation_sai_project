@@ -1,134 +1,309 @@
-{% extends 'app/layouts/main.html' %}
+with serial_data_lock:
+        data_to_display = serial_data
+
+    if request.META.get('HTTP_X_REQUESTED_WITH') == 'XMLHttpRequest':
+        # Split the serial data into 11 channels (A-K) using regular expressions
+        parts = re.split(r'([A-K])', data_to_display)
+        parts = [part for part in parts if part.strip()]  # Remove empty strings
+
+        # Create a dictionary to store data for each channel
+        channel_data = {}
+        for channel_id, part in zip(parts[0::2], parts[1::2]):
+            part = part.replace('+', '')
+            channel_data[channel_id] = part
+
+        # Return the channel data as JSON response
+        return JsonResponse({'serial_data': channel_data})
+    
+    # Retrieve the distinct probe IDs
+    probe_ids = find.objects.values_list('probe_id', flat=True).distinct()
+    
+    # Create a dictionary to store coefficient values for each probe ID
+    probe_coefficients = {}
+    low_count = {}
+    
+    for probe_id in probe_ids:
+        # Retrieve the latest coefficient value for the current probe ID
+        latest_calibration = find.objects.filter(probe_id=probe_id).latest('id')
+        
+        # Extract the coefficient value
+        coefficient_value = latest_calibration.coefficent
+        low_value = latest_calibration.low_count
+        
+        
+        # Store the coefficient value in the dictionary with the probe ID as the key
+        probe_coefficients[probe_id] = coefficient_value
+        low_count[probe_id] = low_count
+
+        print(f'Probe ID: {probe_id}, Coefficient: {coefficient_value}')
+        print(f'Probe ID: {probe_id}, Low values: {low_value}')
+    
+
+    return render(request, 'app/probe.html', {'serial_data': data_to_display ,'probe_coefficients': probe_coefficients ,'low_count':low_count })
+
+
+
+
+
+
+    # Get the list of available com ports
+        com_ports = [port.device for port in serial.tools.list_ports.comports()]
+
+       # Check if the selected com port is in the list of available com ports
+        if selected_com_port not in com_ports:
+            error_message = f"Selected COM port '{selected_com_port}' is not available"
+            context = {'error_occurred': True, 'error_message': error_message}
+            print("error :",context)
+            return render(request, 'app/probe.html', context)
+
+
+
+
+            def probe(request):
+            if request.method == 'POST':
+                probe_id = request.POST.get('probeId')
+                a_values = [float(value) for value in request.POST.getlist('a[]')]
+                a1_values = [float(value) for value in request.POST.getlist('a1[]')]
+                b_values = [float(value) for value in request.POST.getlist('b[]')]
+                b1_values = [float(value) for value in request.POST.getlist('b1[]')]
+                e_values = [float(value) for value in request.POST.getlist('e[]')]
+        
+                print('THESE ARE THE DATA YOU WANT TO DISPLAY:', probe_id, a_values, a1_values, b_values, b1_values, e_values)
+        
+                probe, created = find.objects.get_or_create(probe_id=probe_id)
+        
+                probe.low_ref = a_values[0] if a_values else None
+                probe.low_count = a1_values[0] if a1_values else None
+                probe.high_ref = b_values[0] if b_values else None
+                probe.high_count = b1_values[0] if b1_values else None
+                probe.coefficent = e_values[0] if e_values else None
+        
+                probe.save()
+                
+                return redirect('master_page', probe_id=probe_id)
+        
+            elif request.method == 'GET':
+                comport_settings_obj = comport_settings.objects.first()  # Assuming you want the first object
+                selected_com_port = comport_settings_obj.com_port
+                selected_baud_rate = comport_settings_obj.baud_rate
+                bytesize = comport_settings_obj.bytesize
+                stopbits = comport_settings_obj.stopbits
+                parity = comport_settings_obj.parity
+        
+                # Get the list of available com ports
+                com_ports = [port.device for port in serial.tools.list_ports.comports()]
+        
+                # Check if the selected com port is in the list of available com ports
+                if selected_com_port not in com_ports:
+                    error_message = f"Selected COM port '{selected_com_port}' is not available"
+                    context = {'error_occurred': True, 'error_message': error_message}
+                    print("error :", context)
+                    return render(request, 'app/probe.html', context)
+        
+                # Open serial connection
+                ser = serial.Serial(
+                    port=selected_com_port,
+                    baudrate=selected_baud_rate,
+                    bytesize=bytesize,
+                    stopbits=stopbits,
+                    parity=parity
+                )
+        
+                command = "MMMMMMMMMM"
+                ser.write(command.encode('ASCII'))
+        
+                try:
+                    # Read and print data from serial port
+                    serial_data = ser.read(100)  # Adjust the number of bytes to read as per your requirement
+                    print("Received data in the probe:", serial_data.decode())  # Assuming the data is in UTF-8 encoding
+                except serial.SerialException as e:
+                    # Handle serial port read error
+                    print("Error reading from serial port:", e)
+                    serial_data = b''  # Set empty data if error occurs
+        
+                # Close the serial connection
+                ser.close()
+        
+             
+                data_to_display = serial_data
+        
+                if request.META.get('HTTP_X_REQUESTED_WITH') == 'XMLHttpRequest':
+                    # Split the serial data into 11 channels (A-K) using regular expressions
+                    parts = re.split(r'([A-K])', data_to_display.decode())
+                    parts = [part for part in parts if part.strip()]  # Remove empty strings
+        
+                    # Create a dictionary to store data for each channel
+                    channel_data = {}
+                    for channel_id, part in zip(parts[0::2], parts[1::2]):
+                        part = part.replace('+', '')
+                        channel_data[channel_id] = part
+        
+                    # Return the channel data as JSON response
+                    return JsonResponse({'serial_data': channel_data})
+        
+                # Retrieve the distinct probe IDs
+                probe_ids = find.objects.values_list('probe_id', flat=True).distinct()
+        
+                # Create a dictionary to store coefficient values for each probe ID
+                probe_coefficients = {}
+                low_count = {}
+        
+                for probe_id in probe_ids:
+                    # Retrieve the latest coefficient value for the current probe ID
+                    latest_calibration = find.objects.filter(probe_id=probe_id).latest('id')
+        
+                    # Extract the coefficient value
+                    coefficient_value = latest_calibration.coefficent
+                    low_value = latest_calibration.low_count
+        
+                    # Store the coefficient value in the dictionary with the probe ID as the key
+                    probe_coefficients[probe_id] = coefficient_value
+                    low_count[probe_id] = low_value
+        
+                    print(f'Probe ID: {probe_id}, Coefficient: {coefficient_value}')
+                    print(f'Probe ID: {probe_id}, Low values: {low_value}')
+        
+            return render(request, 'app/probe.html', {'serial_data': data_to_display,
+                                                           'probe_coefficients': probe_coefficients,
+                                                           'low_count': low_count})
+        
+ 
+                                                           
+ ////////////////////////////////////////////
+ 
+ 
+
+ {% extends 'app/layouts/main.html' %}
 {% block title %}
 Mastering Page
 {% endblock title %}
 {% block content %}
 <style>
-    .full-page-box {
-         display: flex;
-         flex-direction: column;
-         background-color: lightgrey;
-         padding: 20px; 
-         box-sizing: border-box;
-         
-     }
-     .input-box-container{
-         background-color: lightseagreen;
-     }
- 
-     .left-box {
-         width: 350px;
-         height: 100px;
-         background-color: white; 
-         margin-right: 10px;
-         border: 2px solid black; 
-     }
-     label {
-             display: inline-block;
-             width: 150px; 
-             margin-top: 15px;
-             text-align: center;
-             font-weight: bold;
-         }
- 
-         select {
-             margin-top: 10px;
-             box-sizing: border-box;
-             width: 50%; 
-             height: 30px;
-         } 
-         #cancel-btn{
-             background-color: orange;
-             color:black;
-             height: 40px;
-             width: 130px;
-             margin-left: 10px;
-             margin-top: 10px;
-               
-         }
-         #select-btn{
-             background-color: green;
-             color:black;           
-             height: 40px;
-             width: 130px; 
-             margin-left: 65px; 
-             margin-top: 10px;
-         }
-         #lowMasterBtn,#highMasterBtn{
-             width: 250px;
-             height: 40px;
-             margin-left: 950px;
-             margin-top: -60px;
-             background-color: blue;
-             color: white;
-         }
-         #highMasterBtn{    
-             margin-top: 10px;   
-         }
-         
-         .input-box-container {
-             border: 2px solid black;
-             padding: 10px;
-             width: 180px;
-             height: 140px;
-             margin: 30px;
-             box-sizing: border-box;
-             
-         }
-         .master_input {
-             margin-bottom: 10px;
-             width: 42%;
-             box-sizing: border-box;
-         }
- 
-         #container-wrapper {
-         display: flex;
-         flex-wrap: wrap;
-         }
- 
-         #probe-A,
-         #probe-B,
-         #probe-C,
-         #probe-D,
-         #probe-E,
-         #probe-F,
-         #probe-G,
-         #probe-H,
-         #probe-I,
-         #probe-J,
-         #probe-K {
-             display: inline-block;
-             max-height: 100px;
-             width: 100px;
-             margin-right: 10px; 
-             
-             
-         }
- 
+   .full-page-box {
+        display: flex;
+        flex-direction: column;
+        background-color: lightgrey;
+        padding: 20px; 
+        box-sizing: border-box;
         
- #pre{
-         margin-left: 400px;
-         margin-top: 30px;
-         color:red;
-         text-shadow: 2px 2px 4px white;
-         font-size: 20px;
- 
+    }
+    .input-box-container{
+        background-color: lightseagreen;
+    }
+
+    .left-box {
+        width: 350px;
+        height: 100px;
+        background-color: white; 
+        margin-right: 10px;
+        border: 2px solid black; 
+    }
+    label {
+            display: inline-block;
+            width: 150px; 
+            margin-top: 15px;
+            text-align: center;
+            font-weight: bold;
         }
-        #clock-box{
-         background-color:white;
-         border-radius: 5px;
-         max-width: 180px;
-         margin-left: 1000px;
- 
+
+        select {
+            margin-top: 10px;
+            box-sizing: border-box;
+            width: 50%; 
+            height: 30px;
+        } 
+        #cancel-btn{
+            background-color: orange;
+            color:black;
+            height: 40px;
+            width: 130px;
+            margin-left: 10px;
+            margin-top: 10px;
+              
+        }
+        #select-btn{
+            background-color: green;
+            color:black;           
+            height: 40px;
+            width: 130px; 
+            margin-left: 65px; 
+            margin-top: 10px;
+        }
+        #lowMasterBtn,#highMasterBtn{
+            width: 250px;
+            height: 40px;
+            margin-left: 950px;
+            margin-top: -60px;
+            background-color: blue;
+            color: white;
+        }
+        #highMasterBtn{    
+            margin-top: 10px;   
         }
         
-        
- </style>
- 
+        .input-box-container {
+            border: 2px solid black;
+            padding: 10px;
+            width: 180px;
+            height: 140px;
+            margin: 30px;
+            box-sizing: border-box;
+            
+        }
+        .master_input {
+            margin-bottom: 10px;
+            width: 42%;
+            box-sizing: border-box;
+        }
+
+        #container-wrapper {
+        display: flex;
+        flex-wrap: wrap;
+        }
+
+        #probe-A,
+        #probe-B,
+        #probe-C,
+        #probe-D,
+        #probe-E,
+        #probe-F,
+        #probe-G,
+        #probe-H,
+        #probe-I,
+        #probe-J,
+        #probe-K {
+            display: inline-block;
+            max-height: 100px;
+            width: 100px;
+            margin-right: 10px; 
+            
+            
+        }
+
+       
+#pre{
+        margin-left: 400px;
+        margin-top: 30px;
+        color:red;
+        text-shadow: 2px 2px 4px white;
+        font-size: 20px;
+
+       }
+       #clock-box{
+        background-color:white;
+        border-radius: 5px;
+        max-width: 180px;
+        margin-left: 1000px;
+
+       }
+       
+       
+</style>
+
 
 <div class="full-page-box" style="overflow-x: auto;overflow-y:auto;">
     <div id="clock">
-        <div class="box" id="clock-box"></div>
+        <div class="box" id="clock-box" style="border: 1px solid black;"></div>
     </div>
 
     <div class="left-box">
@@ -141,7 +316,8 @@ Mastering Page
         </select>
         <a href="{% url 'index' %}" >
             <button type="button" id="cancel-btn"><b>Cancel</b></button>
-            </a>
+        </a>
+          
         <button type="button" id="select-btn"><b>Select</b></button>
     </div>
     <label for="all_parameter" style="margin-left: 400px; margin-top: -80px;">
@@ -192,7 +368,6 @@ Mastering Page
 
 <script>
 
-
 function updateClock() {
     var now = new Date();
     var hours = now.getHours();
@@ -202,18 +377,21 @@ function updateClock() {
     var month = now.getMonth() + 1; // January is 0, so we add 1 to get the actual month
     var year = now.getFullYear();
 
+    // Determine AM or PM
+    var ampm = hours >= 12 ? 'PM' : 'AM';
+
+    // Convert hours to 12-hour format
+    hours = hours % 12;
+    hours = hours ? hours : 12; // The hour '0' should be '12' in 12-hour clock
+
     // Format the time string
-    var ampm = hours >= 12 ? 'PM' : 'AM'; // Determine if it's AM or PM
-    hours = hours % 12; // Convert to 12-hour format
-    hours = hours ? hours : 12; // Handle midnight (0 hours)
-    var timeString = hours + ":" + minutes + ":" + seconds + " " + ampm;
+    var timeString = hours + ":" + (minutes < 10 ? '0' : '') + minutes + ":" + (seconds < 10 ? '0' : '') + seconds + ' ' + ampm;
 
     // Format the date string
     var dateString = day + "-" + month + "-" + year;
 
-    var dateTimeString =  timeString  +  "/" +   dateString;
+    var dateTimeString = timeString + "/" + dateString;
 
-    // Update the clock display
     document.getElementById("clock-box").innerHTML = dateTimeString;
 
     // Call this function again after 1 second
@@ -222,7 +400,6 @@ function updateClock() {
 
 // Call the function to initially display the clock
 updateClock();
-
 
 function handleRadioClick(clickedRadio) {
 
@@ -280,15 +457,12 @@ document.getElementById('parameterwise').addEventListener('change', function() {
 });
 ///////////////////////////////////////////
 
-
-// Trigger click event on page load
+// Event listener for the page load
 window.addEventListener('load', function() {
-    // Select the radio button
-    setTimeout(function(){
+    // Simulate a click event on the "All Parameter" radio button after a short delay
+    setTimeout(function() {
         document.getElementById('all_parameter').click();
-    },100);
-    
-    
+    }, 100);
 });
 
 
@@ -297,6 +471,7 @@ window.addEventListener('load', function() {
 document.getElementById('all_parameter').addEventListener('change', function() {
     if (this.checked) {
         displayAllContainerValues();
+       
     }
     console.log("you are select the all parameter now");
 });
@@ -340,9 +515,6 @@ function displayAllContainerValues() {
     document.body.appendChild(container);
 
 
-    
-
-
     let probeNo;
 const a1 ={}; // lowcount
 const b1 ={}; // highcount
@@ -353,9 +525,18 @@ let e; // nominal
 let d; // coefficient
 let o1; // offset
 
+function calculateAllContainerValues() {
+    const containers = document.querySelectorAll('.input-box-container');
+    containers.forEach(container => {
+        displayValues(container);
+    });
+}
 
-
-////////////////////////////////////////////////////////////////
+// Event listener for the page load
+window.addEventListener('load', function() {
+    // Calculate values for all containers when the page loads
+    calculateAllContainerValues();
+});
 
 function displayValues(container) {
 
@@ -385,7 +566,6 @@ const e_values = parseFloat(values['e']);
 const d_values = parseFloat(values['d']);
 const o1_values = parseFloat(values['o1']);
 const probe_values = parseFloat(values['probe_values']);
-const digits = parseFloat(values['digits']);
 
 console.log("Container values:", values);
 console.log("e_values areeeeeee:",e_values);
@@ -409,7 +589,7 @@ if (probeNo) {
             // Function to handle serial data changes
             function handleSerialDataChange(newSerialData) {
                 // Call calculateMastering with the appropriate values and newSerialData
-                calculateDisplay(e_values, d_values, o1_values, newSerialData, container.id,lsl,usl,digits)
+                calculateDisplay(e_values, d_values, o1_values, newSerialData, container.id,lsl,usl)
                 
             }
 
@@ -426,12 +606,9 @@ if (probeNo) {
 }
 
 
-/////////////////////////////////////////////////////////////////
-
 
 
 function displayContainerValues(container) {
-
 
     var now = new Date();
     var dateTimeString = now.toLocaleString(); // Format the date and time as per your requirement
@@ -463,20 +640,22 @@ function displayContainerValues(container) {
     const e = parseFloat(values['nominal']);
     const lsl = parseFloat(values['lsl']);
     const usl = parseFloat(values['usl']);
-    const ltl = parseFloat(values['ltl']);
-    const utl = parseFloat(values['utl']);
-    const digits = parseFloat(values['digits']);
+    const e_values = parseFloat(values['e']);
+    const d_values = parseFloat(values['d']);
+    const o1_values = parseFloat(values['o1']);
+    const probe_values = parseFloat(values['probe_values']);
+    
 
     console.log("Container values:", values);
     console.log("a:", a);
     console.log("b:", b);
     console.log("e:", e);
-    console.log("lsl:",lsl);
-    console.log("usl:",usl);
-    console.log("ltl:",ltl);
-    console.log("utl:",utl);
-    console.log("digits:",digits);
-    
+    console.log("lsl:", lsl);
+    console.log("usl:", usl);
+    console.log("e_values:", e_values);
+    console.log("d_values:", d_values);
+    console.log("o1_values:", o1_values);
+    console.log("probe_values:", probe_values);
 
     // Map probe numbers to corresponding textarea IDs
     const probeNo = values['probe_no'];
@@ -500,12 +679,6 @@ function displayContainerValues(container) {
                 b1[container.id] = parseFloat(valueInTextarea);
                 console.log("Saving value as 'b1':", b1[container.id]);
 
-                // Check the difference between a1 and b1 values
-                const difference = Math.abs(b1[container.id] - a1[container.id]);
-                if (difference < 5000) {
-                    alert("Please do Proper Mastering");
-                }
-
                 // Perform calculations and display the output
                 const c = b - a;
                 const c1 = b1[container.id] - a1[container.id];
@@ -519,6 +692,7 @@ function displayContainerValues(container) {
                 console.log("o:", o);
                 console.log("offset value:", o1);
                 console.log("container value id:", container.id);
+
                 // Prepare data to send
                 
 
@@ -536,9 +710,8 @@ function displayContainerValues(container) {
         containerId: container.id,
         selectedValue:selectedValue,
         selectedMastering:selectedMastering,
-        dateTime: dateTimeString,
-
-
+        dateTime: dateTimeString // Include the captured date and time
+        // Add more parameters as needed
     };
     console.log('your value for this datatosend:',dataToSend);
 
@@ -565,8 +738,7 @@ function displayContainerValues(container) {
                 // Function to handle serial data changes
                 function handleSerialDataChange(newSerialData) {
                     // Call calculateMastering with the appropriate values and newSerialData
-                    calculateMastering(e, d, o1, newSerialData, container.id,lsl,usl,ltl,utl,digits,preValue);
-                    
+                    calculateMastering(e, d, o1, newSerialData, container.id,lsl,usl,preValue,e_values,d_values,o1_values);
                 }
 
                 // Get the initial serialData by calling displaySerialData
@@ -574,8 +746,7 @@ function displayContainerValues(container) {
 
                 if (initialSerialData !== null) {
                     // Call calculateMastering with the appropriate values and initialSerialData
-                    calculateMastering(e, d, o1, initialSerialData, container.id);
-
+                    calculateMastering(e, d, o1, initialSerialData, container.id,e_values,d_values,o1_values);
                 }
             }
         }
@@ -584,38 +755,15 @@ function displayContainerValues(container) {
 }
 
 
-
-
 function lowMasteringClick() {
 
-    console.log("lowMasteringClick");
+console.log("lowMasteringClick");
 
-        const preTag = document.getElementById('pre');
+    const preTag = document.getElementById('pre');
 
-        if (document.getElementById('all_parameter').checked) {
-            const containers = document.querySelectorAll('.input-box-container');
-            containers.forEach(container => {
-                callingFunction = 'lowMasteringClick';
-
-                // Capture the returned value of 'a' from displayContainerValues
-                const a = displayContainerValues(container);
-
-                // Assuming 'a' is the value you want to display
-                console.log("Value of 'a':", a);
-
-                const additionalInput = document.getElementById(container.id + '_additional_input');
-                if (additionalInput) {
-                    additionalInput.value = a;  // Set the value of the additional input field
-                } else {
-                    console.error('Additional input field not found for container:', container.id);
-                }
-            });
-
-            // Display notification for low mastering in the pre tag
-            preTag.innerText = 'All Parameter Low Mastering selected.';
-
-        } else if (document.getElementById('parameterwise').checked) {
-            const container = getSelectedContainer();
+    if (document.getElementById('all_parameter').checked) {
+        const containers = document.querySelectorAll('.input-box-container');
+        containers.forEach(container => {
             callingFunction = 'lowMasteringClick';
 
             // Capture the returned value of 'a' from displayContainerValues
@@ -630,51 +778,72 @@ function lowMasteringClick() {
             } else {
                 console.error('Additional input field not found for container:', container.id);
             }
-
-            // Display notification for low mastering in the pre tag
-            preTag.innerText = 'Parameterwise Low Mastering selected.';
-        }
-        executeUpdateParameterValues = false; // Disable the updateParameterValues function
-        executeupdateInputValue= false;
-        executeUpdateAllParameterValues = false;
-        executeupdateAdditionalInputValue = false;
-    }
-
-    function highMasteringClick() {
-    console.log("highMasteringClick");
-
-    const preTag = document.getElementById('pre');
-
-    if (document.getElementById('all_parameter').checked) {
-        const containers = document.querySelectorAll('.input-box-container');
-        containers.forEach(container => {
-            callingFunction = 'highMasteringClick';
-            displayContainerValues(container);
         });
 
-        // Enable updateAllParameterValues function
-        executeUpdateAllParameterValues = true;
-
-        // Assuming you want to update additional input values after all containers are processed
-        updateAllParameterValues();
-
-        // Display notification for high mastering in the pre tag
-        preTag.innerText = 'All Parameter High Mastering selected.';
+        // Display notification for low mastering in the pre tag
+        preTag.innerText = 'All Parameter Low Mastering selected.';
 
     } else if (document.getElementById('parameterwise').checked) {
         const container = getSelectedContainer();
+        callingFunction = 'lowMasteringClick';
+
+        // Capture the returned value of 'a' from displayContainerValues
+        const a = displayContainerValues(container);
+
+        // Assuming 'a' is the value you want to display
+        console.log("Value of 'a':", a);
+
+        const additionalInput = document.getElementById(container.id + '_additional_input');
+        if (additionalInput) {
+            additionalInput.value = a;  // Set the value of the additional input field
+        } else {
+            console.error('Additional input field not found for container:', container.id);
+        }
+
+        // Display notification for low mastering in the pre tag
+        preTag.innerText = 'Parameterwise Low Mastering selected.';
+    }
+    executeUpdateParameterValues = false; // Disable the updateParameterValues function
+    executeUpdateAllParameterValues = false;
+}
+
+function highMasteringClick() {
+console.log("highMasteringClick");
+
+const preTag = document.getElementById('pre');
+
+if (document.getElementById('all_parameter').checked) {
+    const containers = document.querySelectorAll('.input-box-container');
+    containers.forEach(container => {
         callingFunction = 'highMasteringClick';
         displayContainerValues(container);
+    });
 
-        // Enable updateAllParameterValues function
-        executeUpdateAllParameterValues = true;
+    // Enable updateAllParameterValues function
+    executeUpdateAllParameterValues = true;
 
-        updateAllParameterValues(container.id, container.lsl, container.usl);
+    // Assuming you want to update additional input values after all containers are processed
+    updateAllParameterValues();
 
-        // Display notification for high mastering in the pre tag
-        preTag.innerText = 'Parameterwise High Mastering selected.';
-    }
+    // Display notification for high mastering in the pre tag
+    preTag.innerText = 'All Parameter High Mastering selected.';
+
+} else if (document.getElementById('parameterwise').checked) {
+    const container = getSelectedContainer();
+    callingFunction = 'highMasteringClick';
+    displayContainerValues(container);
+
+    // Enable updateAllParameterValues function
+    executeUpdateAllParameterValues = true;
+
+    updateAllParameterValues(container.id, container.lsl, container.usl);
+
+    // Display notification for high mastering in the pre tag
+    preTag.innerText = 'Parameterwise High Mastering selected.';
 }
+}
+
+
 
 
 
@@ -690,7 +859,7 @@ function getSelectedContainer() {
 
 
 
-true
+
 
 
 
@@ -715,17 +884,18 @@ function mapInputIdToName(inputId) {
         case 'input8':
             return 'd';
         case 'input9':
-            return 'o1'; 
+            return 'o1';
         case 'input10':
-            return 'e';               
+            return 'e';
         case 'input11':
-            return 'probe_values'; 
+            return 'probe_values';
         case 'input12':
             return 'utl';
         case 'input13':
             return 'ltl';
         case 'input14':
-            return 'digits';       
+            return 'digits';
+        
         default:
             return inputType;
     }
@@ -765,6 +935,7 @@ document.querySelectorAll('input[name="radio-container"]').forEach(radioButton =
             const container = this.closest('.input-box-container');
             displayContainerValues(container);
             
+            
             // Clear the previous interval if exists
             clearInterval(intervalIdRadio);
 
@@ -783,6 +954,7 @@ const containers = document.querySelectorAll('.input-box-container');
 // Start a new interval to display serial data periodically for each container
 containers.forEach(container => {
     displayContainerValues(container);
+    
 // Clear the previous interval if exists
 clearInterval(intervalIdContainers);
     intervalIdContainers = setInterval(() => {
@@ -812,6 +984,7 @@ function displaySerialData(container, callback) {
         // Function to check for changes in serial data
         function checkSerialData() {
             const newSerialData = textarea.value;
+            console.log(`Serial Data for Probe ${probeInput}:`, newSerialData);
 
             // Call the callback function with the newSerialData
             callback(newSerialData);
@@ -829,24 +1002,23 @@ function displaySerialData(container, callback) {
             intervalId: intervalId,
         };
     } else {
-        
+        console.error('Textarea not found for Probe:', probeInput);
         return null;
     }
 }
 
-///////////////////////////////////////
 
 let k;
 
 
-function calculateDisplay(e_values, d_values, o1_values, serialData, id, lsl, usl,digits) {
+function calculateDisplay(e_values, d_values, o1_values, serialData, id, lsl, usl) {
     console.log('Entering calculateMastering');
     console.log('e values are akdfjcugabdkajdgaiu:', e_values);
     console.log('serialData:', serialData);
     console.log('d values are akduffgbaokeiuaodaiboasjdn:', d_values);
     console.log('o1 values areiiiiiiiiiiiiiiiiiiibbbbbbbbbbbbbikkkkkk:', o1_values);
     const rawMastering = parseFloat(e_values) + (serialData * d_values + o1_values);
-    k = rawMastering.toFixed(digits);
+    k = rawMastering.toFixed(4);
     console.log('kkkkkkkkkkkkkkkkkkkkkkkkkkkkkkk valllllllllllluuuuuuuuuuuuueeeeee:',k);
 
     if (document.getElementById('parameterwise').checked) {
@@ -880,7 +1052,7 @@ function updateParameterValues(id, lsl, usl) {
         } else if (k > usl) {
             additionalInput.style.backgroundColor = 'red';
         } else {
-            additionalInput.style.backgroundColor = '#00ff00';
+            additionalInput.style.backgroundColor = 'lightgreen';
         }
 
         
@@ -889,77 +1061,44 @@ function updateParameterValues(id, lsl, usl) {
     }
 }
 
-
-let executeupdateInputValue= true;
-
-function updateInputValue(value,lsl,usl) {
-    console.log("Updating additional input value:", value);
-    if (!executeupdateInputValue) return;
-
-    const container = getSelectedContainer();
-    const additionalInput = document.getElementById(container.id + '_additional_input');
-
-    if (additionalInput) {
-        additionalInput.value = value;
-
-        // Set background color based on 'm' value compared to 'lsl' and 'usl'
-        if (k < lsl) {
-            additionalInput.style.backgroundColor = 'yellow';
-        } else if (k > usl) {
-            additionalInput.style.backgroundColor = 'red';
-        } else {
-            additionalInput.style.backgroundColor = '#00ff00';
-        }
-
-        
-    } else {
-        console.error('Additional input field not found for container:', container.id);
-    }
-}
-
-
-//////////////////////////////////////////
-
 let m; // Declare m in the global scope
 
-function calculateMastering(e, d, o1, serialData,id,lsl,usl,ltl,utl,digits,preValue) {
+function calculateMastering(e, d, o1, serialData,id,lsl,usl,preValue) {
     console.log('Entering calculateMastering');
-    console.log('e values are:', e);
+    console.log('e:', e);
     console.log('serialData:', serialData);
-    console.log('d values are:', d);
-    console.log('o1 values are:', o1);
+    console.log('d:', d);
+    console.log('o1:', o1);
     console.log('lsl vsluesssss areeeeeeee:',lsl);
     console.log('usl valuessss areeeeeeeee:',usl);
     console.log('jjjj container id:',id);
-    console.log('ltl vsluesssss areeeeeeee:',ltl);
-    console.log('utl valuessss areeeeeeeee:',utl);
-    console.log('digits valuessss areeeeeeeee:',digits);
+    console.log('parameter name:',preValue);
+
 
     const rawMastering = parseFloat(e) + (serialData * d + o1);
 
     // Format the mastering value to 4 decimal places
-    m = rawMastering.toFixed(digits);
+    m = rawMastering.toFixed(4);
 
     console.log('Calculated Mastering:', m);
 
     if (document.getElementById('parameterwise').checked) {
         console.log('Updating additional input value in calculateMastering:', m);
-        updateAdditionalInputValue(m,lsl,usl,ltl,utl,preValue);
+        updateAdditionalInputValue(m,lsl,usl,preValue);
     } else if (document.getElementById('all_parameter').checked) {
         console.log('Updating all parameter values in calculateMastering:', m);
-        updateAllParameterValues(id,lsl,usl,ltl,utl,preValue);
+        updateAllParameterValues(id,lsl,usl,preValue);
     }
 
     // Return m if needed in other parts of your code
     return m;
 }
 
-let executeupdateAdditionalInputValue = true;
 
-function updateAdditionalInputValue(value,lsl,usl,ltl,utl,preValue) {
+
+function updateAdditionalInputValue(value,lsl,usl) {
+    console.log('Entering updateAdditionalInputValue');
     console.log("Updating additional input value:", value);
-
-     if (!executeupdateAdditionalInputValue) return;
 
     const container = getSelectedContainer();
     const additionalInput = document.getElementById(container.id + '_additional_input');
@@ -973,23 +1112,18 @@ function updateAdditionalInputValue(value,lsl,usl,ltl,utl,preValue) {
         } else if (m > usl) {
             additionalInput.style.backgroundColor = 'red';
         } else {
-            additionalInput.style.backgroundColor = '#00ff00';
-        }
+            additionalInput.style.backgroundColor = '#00FF00';
 
+        }
         
     } else {
         console.error('Additional input field not found for container:', container.id);
     }
 }
-
-
-let executeUpdateAllParameterValues = true;
-
-
-function updateAllParameterValues(id, lsl, usl,ltl,utl,preValue) {
-    if (!executeUpdateAllParameterValues) return;
+let executeupdateAllParameterValues = true;
+function updateAllParameterValues(id, lsl, usl,preValue) {
+    if(!executeupdateAllParameterValues)return;
     console.log("Updating all parameter values");
-    console.log("prevalues:",preValue);
 
     const containers = document.querySelectorAll('.input-box-container');
 
@@ -1005,21 +1139,22 @@ function updateAllParameterValues(id, lsl, usl,ltl,utl,preValue) {
         } else if (m > usl) {
             additionalInput.style.backgroundColor = 'red';
         } else {
-            additionalInput.style.backgroundColor = '#00ff00';
+            additionalInput.style.backgroundColor = '#00FF00';
         }
 
         // Prepare data to send
         const dataToSend = {
-            preValue:preValue,
+            id: id,
             additionalInputValue: additionalInput.value,
             lsl: lsl,
-            usl: usl
+            usl: usl,
+            preValue:preValue
         };
         console.log('your sended values from this page :',dataToSend);
 
         // Perform AJAX call to send data to the server
         $.ajax({
-            url: '/measurement/', // Adjust the URL as per your requirement
+            url: '/jeeva/', // Adjust the URL as per your requirement
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -1028,14 +1163,13 @@ function updateAllParameterValues(id, lsl, usl,ltl,utl,preValue) {
             contentType: 'application/json',
             data: JSON.stringify(dataToSend),
             success: function(data) {
-                console.log('Data successfully sent to next page jjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjj:', data);
+                console.log('Data successfully sent to next page:', data);
                 // Optionally, you can perform any actions after successful submission
             },
             error: function(xhr, status, error) {
                 console.error('There was a problem with your AJAX request:', error);
             }
         });
-        
     } else {
         console.error('Additional input field not found for container:', id);
     }
@@ -1045,10 +1179,13 @@ function updateAllParameterValues(id, lsl, usl,ltl,utl,preValue) {
 
 
 
-////////////////////////////////////
 
-        // Create L: input fields
-        container.appendChild(document.createTextNode('L:'));
+
+
+
+
+    // Create L: input fields
+    container.appendChild(document.createTextNode('L:'));
         for (let j = 1; j <= 1; j++) {
             const inputL = document.createElement('input');
             inputL.className = 'master_input';
@@ -1113,8 +1250,8 @@ function updateAllParameterValues(id, lsl, usl,ltl,utl,preValue) {
             inputPN.type = 'text';
             inputPN.id = 'container-' + i + '_input' + p;
             container.appendChild(inputPN);
-
             inputPN.style.display ='none';
+            
             
 
             // Add a small space after each inputPN
@@ -1131,46 +1268,18 @@ function updateAllParameterValues(id, lsl, usl,ltl,utl,preValue) {
             
         }
 
-        for (let p = 8; p <= 8; p++) {  // Update the d_values
+        for (let p = 8; p <= 11; p++) {  // Update the loop condition for additional input box
             const inputPN = document.createElement('input');
             inputPN.className = 'master_input';
             inputPN.type = 'text';
             inputPN.id = 'container-' + i + '_input' + p;
             container.appendChild(inputPN);
-            inputPN.style.display ='none';
+            
+           
             
         }
 
-        for (let p = 9; p <= 9; p++) {  // Update the loop condition for additional input box
-            const inputPN = document.createElement('input');
-            inputPN.className = 'master_input';
-            inputPN.type = 'text';
-            inputPN.id = 'container-' + i + '_input' + p;
-            container.appendChild(inputPN);
-            inputPN.style.display ='none';
-            
-        }
-
-        for (let p = 10; p <= 10; p++) {  // Update the loop condition for additional input box
-            const inputPN = document.createElement('input');
-            inputPN.className = 'master_input';
-            inputPN.type = 'text';
-            inputPN.id = 'container-' + i + '_input' + p;
-            container.appendChild(inputPN);
-            inputPN.style.display ='none';
-            
-        }
-
-        for (let p = 11; p <= 11; p++) {  // Update the loop condition for additional input box
-            const inputPN = document.createElement('input');
-            inputPN.className = 'master_input';
-            inputPN.type = 'text';
-            inputPN.id = 'container-' + i + '_input' + p;
-            container.appendChild(inputPN);
-            inputPN.style.display ='none';
-            
-        }
-
+        
         for (let p = 12; p <= 14; p++) {  // Update the loop condition for additional input box
             const inputPN = document.createElement('input');
             inputPN.className = 'master_input';
@@ -1181,8 +1290,6 @@ function updateAllParameterValues(id, lsl, usl,ltl,utl,preValue) {
             
             
         }
-
-        
 
 
         // Style the additional input box using CSS
@@ -1213,11 +1320,8 @@ function updateAllParameterValues(id, lsl, usl,ltl,utl,preValue) {
 
 
 
-
-
-
- // Function to fetch and update values based on selected options
- function updateValues() {
+    // Function to fetch and update values based on selected options
+    function updateValues() {
         var selectedValue = document.getElementById('partModel').value;
         console.log('Selected Value: ' + selectedValue);
 
@@ -1448,16 +1552,24 @@ for (let i = 1; i <= Math.min(mastering.length, 50); i++) {
     }
 
 
+    
 }
+// Clear input fields if data is not fetched from the backend
+if (o1_values.length === 0 || d_values.length === 0 || e_values.length === 0 || probe_values.length === 0) {
+    for (let i = 1; i <= 50; i++) {
+        const inputd = document.getElementById('container-' + i + '_input8');
+        const inputo1 = document.getElementById('container-' + i + '_input9');
+        const inpute = document.getElementById('container-' + i + '_input10');
+        const inputprobe = document.getElementById('container-' + i + '_input11');
 
-
-
-
-
-
-
-
-
+        // Clear input values
+        if (inputd) inputd.value = '';
+        if (inputo1) inputo1.value = '';
+        if (inpute) inpute.value = '';
+        if (inputprobe) inputprobe.value = '';
+    }
+} 
+   
 
 /////////////////////////////////////////
 
@@ -1499,7 +1611,6 @@ for (let i = 1; i <= Math.min(mastering.length, 50); i++) {
             } else {
                 console.error('No or empty high_mv values received from the backend.');
             }
-
         })
         .catch(error => {
             console.error('Error:', error);
@@ -1507,14 +1618,18 @@ for (let i = 1; i <= Math.min(mastering.length, 50); i++) {
         resetRadioButtons();
     }
 
-
-
     // Attach event listener to the partModel select element
-    document.getElementById('partModel').addEventListener('change', updateValues);
-
-    // Attach event listener to the mastering select element
+    document.getElementById('partModel').addEventListener('change', function() {
+    // When partModel changes, clear background color of all containers
+    for (let i = 1; i <= 50; i++) {
+        const container = document.getElementById('container-' + i);
+        container.style.backgroundColor = ''; // Clear the background color
+    }
+    updateValues(); // Call the updateValues function after clearing background colors
+});
     document.getElementById('mastering').addEventListener('change', updateValues);
 
+    
     // Function to get CSRF token from cookies
     function getCookie(name) {
         var cookieValue = null;
@@ -1543,9 +1658,9 @@ function resetRadioButtons() {
     });
 }
 
-//////////////////////////////////////////////
+////////////////////////////////
 
- 
+
 function updateSerialData() {
     // Make an AJAX request to your Django view
     $.ajax({
@@ -1578,24 +1693,20 @@ function updateSerialData() {
 setInterval(updateSerialData, 0.5); // Update every second (1000 ms)
 
 
+
+
+
+
+/////////////////////////////////////////////
+ 
+
 ///////////////////////////////////
 
 
-// Clear input fields if data is not fetched from the backend
-if (o1_values.length === 0 || d_values.length === 0 || e_values.length === 0 || probe_values.length === 0) {
-    for (let i = 1; i <= 50; i++) {
-        const inputd = document.getElementById('container-' + i + '_input8');
-        const inputo1 = document.getElementById('container-' + i + '_input9');
-        const inpute = document.getElementById('container-' + i + '_input10');
-        const inputprobe = document.getElementById('container-' + i + '_input11');
 
-        // Clear input values
-        if (inputd) inputd.value = '';
-        if (inputo1) inputo1.value = '';
-        if (inpute) inpute.value = '';
-        if (inputprobe) inputprobe.value = '';
-    }
-} 
+
+
+
 
 </script>
 

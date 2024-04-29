@@ -175,18 +175,15 @@ Parameter Settings
     
     
         <label for="probe_no">PROBE NO:</label>
-        <select id="probe_no" name="probe_no" oninput="validateInteger(this)">
-            <script>
-                for (var i = 1; i <= 11; i++) {
-                    document.write('<option value="' + i + '">' + i + '</option>');
-                }
-            </script>
-        </select>
+        <input type="number" id="probe_no" name="probe_no" oninput="validateInteger(this)" value="{{value.probe_no}}">
+        
 
-        <label for="probe_no">JOB DIA:</label>
-        <select id="probe_no" style="width: 10%;" name="probe_no" oninput="validateInteger(this)">
-            <option>ID</option>
-            <option>OD</option>
+        <label for="job_dia">JOB DIA:</label>
+        <select id="job_dia" style="width: 10%;" name="job_dia" >
+            <option value="OD" {% if value.job_dia == 'OD' %}selected{% endif %}>OD</option>
+            <option value="ID" {% if value.job_dia == 'ID' %}selected{% endif %}>ID</option>
+            
+
         </select>
 
         <label for="nominal"style="margin-left: 40px;">NOMINAL:</label>
@@ -222,10 +219,10 @@ Parameter Settings
 
 
         <label for="utl" style="margin-left: 65px;">UTL:</label>
-        <input type="text" id="utl" style="width: 10%;margin-left: -45px;" oninput="validateInteger(this)" >
+        <input type="text" id="utl" style="width: 10%;margin-left: -45px;" value="{{ value.utl }}" oninput="validateInteger(this)" >
                
         <label for="ltl" style="margin-left: 65px;">LTL:</label>
-        <input type="text" id="ltl" style="width: 10%;margin-left: -60px;" oninput="validateInteger(this)" ><br>
+        <input type="text" id="ltl" style="width: 10%;margin-left: -60px;" value="{{ value.ltl }}" oninput="validateInteger(this)" ><br>
     
         <label for="step_no">STEP NO:</label>
         <select id="step_no" style="width: 15%;" name="step_no" oninput="validateInteger(this)">
@@ -237,10 +234,10 @@ Parameter Settings
         </select>
 
         <label for="digits">NO OF DIGITS:</label>
-        <select id="digits" style="width: 10%;" name="digits" >
+        <select id="digits" style="width: 10%;" name="digits" oninput="validateInteger(this)" >
             <script>
                 for (var i = 1; i <= 4; i++) {
-                    document.write('<option value="' + i + '" {% if value.step_no == i %}selected{% endif %}>' + i + '</option>');
+                    document.write('<option value="' + i + '" {% if value.digits == i %}selected{% endif %}>' + i + '</option>');
                 }
             </script>
         </select>
@@ -368,7 +365,10 @@ function updateUI(data) {
 
                                 // Handle checkbox
                                 document.getElementById('hide').checked = details.parameter_details.hide_checkbox;
-
+                                document.getElementById('utl').value = details.parameter_details.utl;
+                                document.getElementById('ltl').value = details.parameter_details.ltl;
+                                document.getElementById('digits').value = details.parameter_details.digits;
+                                document.getElementById('job_dia').value = details.parameter_details.job_dia;
 
                         })
                         .catch(error => console.error('Error fetching details:', error));
@@ -477,8 +477,10 @@ function saveValues() {
     const stepNo = document.getElementById('step_no').value;
     const hideCheckbox = document.getElementById('hide').checked;
     const srNo = document.getElementById('sr_no').value; // Add this line
-
-    
+    const digits = document.getElementById('digits').value;
+    const utl = document.getElementById('utl').value;
+    const ltl = document.getElementById('ltl').value;
+    const job_dia = document.getElementById('job_dia').value;
 
 
 
@@ -515,6 +517,10 @@ function saveValues() {
             stepNo: stepNo,
             hideCheckbox: hideCheckbox,
             srNo: srNo,
+            digits:digits,
+            utl:utl,
+            ltl:ltl,
+            job_dia:job_dia,
         };
 
         console.log('your data is :', data);
@@ -643,7 +649,11 @@ function validateInteger(input) {
                 // Clear other dropdown selections if applicable
                 document.getElementById('probe_no').value = ''; // Set the default value or an empty string
                 document.getElementById('mastering').value = ''; // Set the default value or an empty string
-                document.getElementById('step_no').value = ''; // Set the default value or an empty string
+                document.getElementById('step_no').value = '';
+                document.getElementById('utl').value = '';
+                document.getElementById('ltl').value = '';
+                document.getElementById('digits').value = '';
+                document.getElementById('job_dia').value = '';
                 
                 if(lastSelectedParameterElement){
                     lastSelectedParameterElement.style.backgroundColor ='';

@@ -1,42 +1,54 @@
-with serial_data_lock:
-        data_to_display = serial_data
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jeeva Data</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+</head>
+<body>
+    <h1>Last Received Data</h1>
+    <textarea id="received-data" rows="10" cols="50"></textarea>
 
-    if request.META.get('HTTP_X_REQUESTED_WITH') == 'XMLHttpRequest':
-        # Split the serial data into 11 channels (A-K) using regular expressions
-        parts = re.split(r'([A-K])', data_to_display)
-        parts = [part for part in parts if part.strip()]  # Remove empty strings
+    <script>
+        // jeeva.js
 
-        # Create a dictionary to store data for each channel
-        channel_data = {}
-        for channel_id, part in zip(parts[0::2], parts[1::2]):
-            part = part.replace('+', '')
-            channel_data[channel_id] = part
+$(document).ready(function() {
+    // Function to update textarea with received data
+    function updateTextarea(data) {
+        var textarea = $('#received-data');
+        textarea.val('');
+        data.forEach(function(entry) {
+            textarea.val(textarea.val() +
+                'ID: ' + entry.preValue + '\n' +
+                'Additional Input: ' + entry.additional_input + '\n' +
+                'LSL: ' + entry.lsl + '\n' +
+                'USL: ' + entry.usl + '\n\n');
+        });
+    }
 
-        # Return the channel data as JSON response
-        return JsonResponse({'serial_data': channel_data})
-    
-    # Retrieve the distinct probe IDs
-    probe_ids = find.objects.values_list('probe_id', flat=True).distinct()
-    
-    # Create a dictionary to store coefficient values for each probe ID
-    probe_coefficients = {}
-    low_count = {}
-    
-    for probe_id in probe_ids:
-        # Retrieve the latest coefficient value for the current probe ID
-        latest_calibration = find.objects.filter(probe_id=probe_id).latest('id')
-        
-        # Extract the coefficient value
-        coefficient_value = latest_calibration.coefficent
-        low_value = latest_calibration.low_count
-        
-        
-        # Store the coefficient value in the dictionary with the probe ID as the key
-        probe_coefficients[probe_id] = coefficient_value
-        low_count[probe_id] = low_count
+    // Function to fetch data from the server
+    function fetchData() {
+        $.ajax({
+            url: '/jeeva/',  // URL of your Django view
+            type: 'GET',
+            dataType: 'json',
+            success: function(data) {
+                updateTextarea(data.last_received_data);
+            },
+            error: function(xhr, status, error) {
+                console.error('Error fetching data:', error);
+            }
+        });
+    }
 
-        print(f'Probe ID: {probe_id}, Coefficient: {coefficient_value}')
-        print(f'Probe ID: {probe_id}, Low values: {low_value}')
-    
+    // Fetch data initially when the page loads
+    fetchData();
 
-    return render(request, 'app/probe.html', {'serial_data': data_to_display ,'probe_coefficients': probe_coefficients ,'low_count':low_count })
+    // Fetch data periodically (every 5 seconds in this example)
+    setInterval(fetchData, 100);
+});
+
+    </script>
+</body>
+</html>

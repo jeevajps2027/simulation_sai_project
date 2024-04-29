@@ -16,8 +16,9 @@ urlpatterns = [
     path('parameter/', views.parameter, name='parameter'),
     path('master/',views.master,name="master"), 
     path('measurement/',views.measurement,name="measurement"),
-    path('measurebox/',views.measurebox,name="measurebox"), 
-     path('jeeva/',views.jeeva,name="jeeva"), 
+    path('measurebox/',views.measurebox,name="measurebox"),
+    path('report/',views.report,name="report"),  
+    path('jeeva/',views.jeeva,name="jeeva"), 
 
 ]
 

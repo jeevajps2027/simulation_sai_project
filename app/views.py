@@ -11,8 +11,8 @@ import threading
 import serial
 from django.views.decorators.csrf import csrf_exempt
 from django.core.cache import cache
-from.models import viewvalues,captValue,MasterData,comport_settings
-from.models import readings,find,TableOneData,TableTwoData,TableThreeData,TableFourData,TableFiveData
+from.models import MasterData,comport_settings,mastering_data,parameter_settings
+from.models import find,TableOneData,TableTwoData,TableThreeData,TableFourData,TableFiveData
 import json
 from datetime import datetime
 from django.views.decorators.cache import never_cache
@@ -161,9 +161,11 @@ def probe(request):
         # Get the list of available com ports
         com_ports = [port.device for port in serial.tools.list_ports.comports()]
 
-        # Check if the selected com port is in the list of available com ports
+       # Check if the selected com port is in the list of available com ports
         if selected_com_port not in com_ports:
-            context = {'error_message': f"Selected COM port '{selected_com_port}' is not available"}
+            error_message = f"Selected COM port '{selected_com_port}' is not available"
+            context = {'error_occurred': True, 'error_message': error_message}
+            
             return render(request, 'app/probe.html', context)
         
         context = {
@@ -174,7 +176,50 @@ def probe(request):
             'parity': parity,
         }
         
-        return render(request, 'app/probe.html', context)
+        with serial_data_lock:
+            data_to_display = serial_data
+
+        if request.META.get('HTTP_X_REQUESTED_WITH') == 'XMLHttpRequest':
+            # Split the serial data into 11 channels (A-K) using regular expressions
+            parts = re.split(r'([A-K])', data_to_display)
+            parts = [part for part in parts if part.strip()]  # Remove empty strings
+
+            # Create a dictionary to store data for each channel
+            channel_data = {}
+            for channel_id, part in zip(parts[0::2], parts[1::2]):
+                part = part.replace('+', '')
+                channel_data[channel_id] = part
+
+            # Return the channel data as JSON response
+            return JsonResponse({'serial_data': channel_data})
+        
+        # Retrieve the distinct probe IDs
+        probe_ids = find.objects.values_list('probe_id', flat=True).distinct()
+        
+        # Create a dictionary to store coefficient values for each probe ID
+        probe_coefficients = {}
+        low_count = {}
+        
+        for probe_id in probe_ids:
+            # Retrieve the latest coefficient value for the current probe ID
+            latest_calibration = find.objects.filter(probe_id=probe_id).latest('id')
+            
+            # Extract the coefficient value
+            coefficient_value = latest_calibration.coefficent
+            low_value = latest_calibration.low_count
+            
+            
+            # Store the coefficient value in the dictionary with the probe ID as the key
+            probe_coefficients[probe_id] = coefficient_value
+            low_count[probe_id] = low_count
+
+            print(f'Probe ID: {probe_id}, Coefficient: {coefficient_value}')
+            print(f'Probe ID: {probe_id}, Low values: {low_value}')
+        
+
+    return render(request, 'app/probe.html', {'serial_data': data_to_display ,'probe_coefficients': probe_coefficients ,'low_count':low_count })
+
+        
  
 
  
@@ -326,7 +371,7 @@ def trace(request, row_id=None):
                     # Print the column values of each row before deleting
                     for row in rows:
                         part_model_value = row.part_model
-                        delete = captValue.objects.filter(model_id=part_model_value).delete()
+                        delete = parameter_settings.objects.filter(model_id=part_model_value).delete()
 
                 elif item_id == 'tableBody-2':
                     rows = TableTwoData.objects.filter(id__in=row_ids)
@@ -377,7 +422,7 @@ def parameter(request):
 
             if selected_id:
                 # Fetch the parameter details by ID
-                parameter = get_object_or_404(captValue, id=selected_id)
+                parameter = get_object_or_404(parameter_settings, id=selected_id)
 
                 # Convert parameter details to a dictionary
                 parameter_details = {
@@ -398,6 +443,10 @@ def parameter(request):
                     'mastering': parameter.mastering,
                     'step_no': parameter.step_no,
                     'hide_checkbox': parameter.hide_checkbox,
+                    'utl':parameter.utl,
+                    'ltl':parameter.ltl,
+                    'digits':parameter.digits,
+                    'job_dia':parameter.job_dia,
                 }
 
                 # Print the parameter details in the terminal
@@ -408,7 +457,7 @@ def parameter(request):
 
             elif model_id:
                 # Filter constvalue objects based on the model_id
-                paraname = captValue.objects.filter(model_id=model_id).values('parameter_name','id')
+                paraname = parameter_settings.objects.filter(model_id=model_id).values('parameter_name','id')
                 print('your filtered values are:', paraname)
 
                 # Return filtered parameter names as JSON
@@ -443,7 +492,7 @@ def parameter(request):
             print('Parameter Name:', parameter_value)
             
             
-            existing_instance = captValue.objects.filter(model_id=model_id, sr_no=sr_no).first()
+            existing_instance = parameter_settings.objects.filter(model_id=model_id, sr_no=sr_no).first()
 
             if existing_instance:
                 # Update the existing instance with the received values
@@ -474,6 +523,10 @@ def parameter(request):
                 existing_instance.hide_checkbox = data.get('hideCheckbox')
 
                 existing_instance.parameter_name = data.get('parameterValue')
+                existing_instance.utl = data.get('utl')
+                existing_instance.ltl = data.get('ltl')
+                existing_instance.digits = data.get('digits')
+                existing_instance.job_dia = data.get('job_dia')
 
                 existing_instance.save()
 
@@ -504,10 +557,14 @@ def parameter(request):
                 mastering = data.get('mastering')
                 step_no = data.get('stepNo')
                 hide_checkbox = data.get('hideCheckbox')
+                utl = data.get('utl')
+                ltl = data.get('ltl')
+                digits = data.get('digits')
+                job_dia = data.get('job_dia')
                 
 
                 # Create an instance of your model with the received values
-                const_value_instance = captValue.objects.create(
+                const_value_instance = parameter_settings.objects.create(
                     model_id=model_id,
                     parameter_name=parameter_value,
                     sr_no=sr_no, 
@@ -524,7 +581,11 @@ def parameter(request):
                     lsl=lsl,
                     mastering=mastering,
                     step_no=step_no,
-                    hide_checkbox=hide_checkbox
+                    hide_checkbox=hide_checkbox,
+                    utl=utl,
+                    ltl=ltl,
+                    digits=digits,
+                    job_dia=job_dia
                 )
 
                 print("Your values in the server:", const_value_instance)
@@ -543,7 +604,7 @@ def parameter(request):
 
             if selected_id:
                 # Fetch the parameter details by ID
-                parameter = get_object_or_404(captValue, id=selected_id)
+                parameter = get_object_or_404(parameter_settings, id=selected_id)
 
                 # Get the model_id and sr_no before deletion
                 model_id = parameter.model_id
@@ -554,7 +615,7 @@ def parameter(request):
 
                 print(f'Parameter with ID {selected_id} deleted successfully.')
                 # Adjust sr_no values for the remaining parameters of the same model
-                remaining_parameters = captValue.objects.filter(model_id=model_id).order_by('sr_no')
+                remaining_parameters = parameter_settings.objects.filter(model_id=model_id).order_by('sr_no')
                 for index, remaining_param in enumerate(remaining_parameters, start=1):
                     if remaining_param.sr_no != index:
                         remaining_param.sr_no = index
@@ -576,48 +637,54 @@ def parameter(request):
     return render(request, 'app/parameter.html')
 
 
-def master(request):
-    context = {}  
-    
 
+def master(request):
     if request.method == 'POST':
         try:
+            
             # Retrieve the selected values from the request body
             data = json.loads(request.body.decode('utf-8'))
 
-             # Process the data as needed
+            # Process the data as needed
             probeNo = data.get('probeNo')
             a = data.get('a')
             b = data.get('b')
+            e = data.get('e')
+            d = data.get('d')
+            o1 = data.get('o1')
             parameterName = data.get('parameterName')
             selectedValue = data.get('selectedValue')
             selectedMastering = data.get('selectedMastering')
             date_time_str = data.get('dateTime')
-            if date_time_str:
-                dateTime = datetime.strptime(date_time_str, "%m/%d/%Y, %I:%M:%S %p")
-                formatted_dateTime = dateTime.strftime("%Y-%m-%d %H:%M:%S%z")
-            else:
-                formatted_dateTime = None  # Let auto_now_add handle it
 
+            
 
-            if None not in [probeNo, a, b, parameterName, selectedValue, selectedMastering, formatted_dateTime]:
-                probe_data_instance = MasterData(
-                    probe_no=probeNo,
-                    a=a,
-                    b=b,
-                    parameter_name=parameterName,
-                    selected_value=selectedValue,
-                    selected_mastering=selectedMastering,
-                    date_time=formatted_dateTime
-                )
-                probe_data_instance.save()
+            if None not in [probeNo, a, b, e, d, o1, parameterName, selectedValue, selectedMastering, date_time_str]:
+
+                if date_time_str:
+                    # Parse the date and time string
+                    dateTime = datetime.strptime(date_time_str, "%m/%d/%Y, %I:%M:%S %p")
+
+                    # Create and save the instance
+                    probe_data_instance = mastering_data(
+                        probe_no=probeNo,
+                        a=a,
+                        b=b,
+                        e=e,
+                        d=d,
+                        o1=o1,
+                        parameter_name=parameterName,
+                        selected_value=selectedValue,
+                        selected_mastering=selectedMastering,
+                        date_time=dateTime
+                    )
+                    probe_data_instance.save()
+                else:
+                    print("DateTime field is missing.")
+    
             else:
                 print("Some required fields are missing or set to None.")
 
-            
-            
-
-            
             # Now, you can use the received data as required
             print('Probe No:', probeNo)
             print('a:', a)
@@ -625,67 +692,114 @@ def master(request):
             print('Parameter Name:', parameterName)
             print('selectedValue :',selectedValue)
             print('selectedMastering :',selectedMastering)
-            print('dateTime:',formatted_dateTime)
-            
-            
+            print('dateTime:',date_time_str)
+
             # Assuming you want to save the received data into your database
             selected_value = data.get('selectedValue')
             selected_mastering = data.get('selectedMastering')
             print('Selected values from the client side:', selected_value, selected_mastering)
 
             # Your filtering logic based on selected_value and selected_mastering
-            filtered_data = captValue.objects.filter(
+            filtered_data = parameter_settings.objects.filter(
                 model_id=selected_value,
                 hide_checkbox=False
-            ).values().distinct()
+            ).values()
 
-            
+            filter_my = mastering_data.objects.filter(
+                selected_value=selected_value,
+            ).values()
 
             # Extract necessary data from filtered_data
             parameter_names = [item['parameter_name'] for item in filtered_data]
-            print("parameter_names:",parameter_names)
             low_mv = [item['low_mv'] for item in filtered_data]
-            print('low values:',low_mv)
             high_mv = [item['high_mv'] for item in filtered_data]
-            print('high values:',high_mv)
             probe_no = [item['probe_no'] for item in filtered_data]
-            print('probe no:',probe_no)
             nominal = [item['nominal'] for item in filtered_data]
-            print('nominal:',nominal)
-            lsl = [item['lsl'] for item in filtered_data]
-            print('lsl:',lsl)
             usl = [item['usl'] for item in filtered_data]
-            print('usl:',usl)
+            print('usl values is:',usl)
+            lsl = [item['lsl'] for item in filtered_data]
+            print('lsl value is :',lsl)
             selected_mastering = [item['mastering'] for item in filtered_data]
-            print('selected_mastering:',selected_mastering)
-            # Save the received data into your database
+            print('mastering value is :',selected_mastering)
+            utl = [item['utl'] for item in filtered_data]
+            print('utl values is:',utl)
+            ltl = [item['ltl'] for item in filtered_data]
+            print('ltl value is :',ltl)
+            digits = [item['digits'] for item in filtered_data]
+            print('digits value is :',digits)
+            d = [item['d'] for item in filter_my]
+            
+            o1 = [item['o1'] for item in filter_my]
+
+            e = [item['e'] for item in filter_my]
+            
+            
+            # Initialize an empty dictionary to store last_stored_parameter
+            last_stored_parameter = {}
+
+            # Iterate over items in filter_my and populate last_stored_parameter
+            for item in filter_my:
+                last_stored_parameter[item['parameter_name']] = item
+
+            # Initialize empty lists to store o1 and d values
+            o1_values = []
+            d_values = []
+            e_values = []
+            probe_values = []
+
+            # Iterate over last_stored_parameter to extract o1 and d values
+            for parameter_name, item in last_stored_parameter.items():
+                o1_values.append(item['o1'])
+                d_values.append(item['d'])
+                e_values.append(item['e'])
+                probe_values.append(item['probe_no'])
+                print('Last stored parameter_name for', parameter_name, 'is:', item)
+
+            # Print o1 and d values
+            print('o1 values:', o1_values)
+            print('d values:', d_values)
+            print('e_values :',e_values)
+            print('probe_values :',probe_values)
+
+
 
             
 
+
+            
             response_data = {
                 'message': 'Successfully received the selected values.',
                 'selectedValue': selected_value,
                 'parameter_names': parameter_names,
                 'low_mv': low_mv,
                 'high_mv': high_mv,
-                'mastering': selected_mastering,
-                'probe_no':probe_no,
-                'nominal':nominal,
-                'lsl':lsl,
-                'usl':usl,
+                'probe_no': probe_no,
+                'mastering':selected_mastering,
+                'nominal': nominal,
+                'lsl' : lsl,
+                'usl' :usl,
+                'e' : e,
+                'd' : d,
+                'o1' : o1,
+                'last_stored_parameter' : last_stored_parameter,
+                'o1_values': o1_values,
+                'd_values': d_values,
+                'e_values' : e_values,
+                'probe_values' : probe_values,
+                'utl':utl,
+                'ltl':ltl,
+                'digits':digits,
+
             }
 
-
-            
             return JsonResponse(response_data)
         
-            
-
         except json.JSONDecodeError as e:
             return JsonResponse({'error': 'Invalid JSON format in the request body'}, status=400)
 
     elif request.method == 'GET':
         try:
+
             # Your initial queryset for part_model_values
             part_model_values = TableOneData.objects.values_list('part_model', flat=True).distinct()
             print('part_model_values:', part_model_values)
@@ -721,19 +835,19 @@ def measurement(request):
             parameter_name = data.get('preValue')
             print('new values for this :',additional_input_value,parameter_name)
 
-            parameter_name_queryset = captValue.objects.filter(model_id=part_model).values_list('parameter_name', flat=True)
+            parameter_name_queryset = parameter_settings.objects.filter(model_id=part_model).values_list('parameter_name', flat=True)
 
             # Convert the queryset to a list to pass only the values
             parameter_name_values = list(parameter_name_queryset)
             print('parameter_name values are:',parameter_name_values)
 
-            lsl_values_queryset = captValue.objects.filter(model_id=part_model).values_list('lsl', flat=True)
+            lsl_values_queryset = parameter_settings.objects.filter(model_id=part_model).values_list('lsl', flat=True)
 
             # Convert the queryset to a list to pass only the values
             lsl_values = list(lsl_values_queryset)
             print('lsl values are:',lsl_values)
 
-            usl_values_queryset = captValue.objects.filter(model_id=part_model).values_list('usl', flat=True)
+            usl_values_queryset = parameter_settings.objects.filter(model_id=part_model).values_list('usl', flat=True)
 
             # Convert the queryset to a list to pass only the values
             usl_values = list(usl_values_queryset)
@@ -741,11 +855,11 @@ def measurement(request):
 
             
 
-            nominal_values_queryset = captValue.objects.filter(model_id=part_model).values_list('nominal', flat=True)
+            nominal_values_queryset = parameter_settings.objects.filter(model_id=part_model).values_list('nominal', flat=True)
             nominal_values = list(nominal_values_queryset)
             print('your nominal values are:',nominal_values)
 
-            measurement_mode_values_queryset = captValue.objects.filter(model_id=part_model).values_list('measurement_mode', flat=True)
+            measurement_mode_values_queryset = parameter_settings.objects.filter(model_id=part_model).values_list('measurement_mode', flat=True)
             measurement_mode_values = list(measurement_mode_values_queryset)
             print('your measurement_mode values are:',measurement_mode_values)
 
@@ -774,19 +888,19 @@ def measurement(request):
         shift = request.GET.get('shift', None)
         hiddenTextarea = request.GET.get('hiddenTextarea', None)
 
-        para_values_queryset = captValue.objects.filter(model_id=part_model).values_list('parameter_name', flat=True).distinct()
+        para_values_queryset = parameter_settings.objects.filter(model_id=part_model).values_list('parameter_name', flat=True).distinct()
 
         # Convert the queryset to a list to pass only the values
         para_values = list(para_values_queryset)
         print('para values are:',para_values)
 
-        lsl_values_queryset = captValue.objects.filter(model_id=part_model).values_list('lsl', flat=True)
+        lsl_values_queryset = parameter_settings.objects.filter(model_id=part_model).values_list('lsl', flat=True)
 
         # Convert the queryset to a list to pass only the values
         lsl_values = list(lsl_values_queryset)
         print('lsl values are:',lsl_values)
 
-        usl_values_queryset = captValue.objects.filter(model_id=part_model).values_list('usl', flat=True)
+        usl_values_queryset = parameter_settings.objects.filter(model_id=part_model).values_list('usl', flat=True)
 
         # Convert the queryset to a list to pass only the values
         usl_values = list(usl_values_queryset)
@@ -794,7 +908,7 @@ def measurement(request):
 
         
 
-        nominal_values_queryset = captValue.objects.filter(model_id=part_model).values_list('nominal', flat=True)
+        nominal_values_queryset = parameter_settings.objects.filter(model_id=part_model).values_list('nominal', flat=True)
         nominal_values = list(nominal_values_queryset)
         print('your nominal values are:',nominal_values)
 
@@ -871,13 +985,52 @@ def measurebox(request):
     return render(request,'app/measurebox.html',context)
 
 
-def jeeva(request):
-    if request.method == 'POST':
-        data = json.loads(request.body)
-        additional_input_value = data.get('additionalInputValue')
-        print("Received additional input value:", additional_input_value)  # Check the value received
-        return JsonResponse({'success': True, 'additional_input_value': additional_input_value})
 
-    else:
-        # Return an error response if the request method is not POST
-       return render(request, 'app/jeeva.html')
+
+
+
+def report(request):
+    return render(request,'app/report.html')
+
+
+
+from django.shortcuts import render
+from django.http import JsonResponse
+import json
+
+last_received_data = []
+
+def jeeva(request):
+    global last_received_data
+
+    if request.method == 'POST':
+        try:
+            # Retrieve data from the POST request
+            data = json.loads(request.body)
+
+            # Extract relevant parameters from the received data
+            preValue = data.get('preValue')
+            additional_input = data.get('additionalInputValue')
+            lsl = data.get('lsl')
+            usl = data.get('usl')
+
+            # Store the received data in the global variable
+            last_received_data.append ({
+                'preValue': preValue,
+                'additional_input': additional_input,
+                'lsl': lsl,
+                'usl': usl
+            })
+
+            print('context values are:', last_received_data)
+
+        except Exception as e:
+            # Return a JSON response indicating error
+            return JsonResponse({'error': str(e)}, status=500)
+
+    # Check if the request is AJAX
+    if request.META.get('HTTP_X_REQUESTED_WITH') == 'XMLHttpRequest':
+        return JsonResponse({'last_received_data': last_received_data})
+
+    # Render the HTML template for regular requests
+    return render(request, 'app/jeeva.html', {'last_received_data': last_received_data})
