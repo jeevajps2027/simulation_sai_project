@@ -17,7 +17,8 @@ urlpatterns = [
     path('master/',views.master,name="master"), 
     path('measurement/',views.measurement,name="measurement"),
     path('measurebox/',views.measurebox,name="measurebox"),
-    path('report/',views.report,name="report"),  
+    path('report/',views.report,name="report"), 
+    path('utility/',views.utility,name="utility"),  
     path('jeeva/',views.jeeva,name="jeeva"), 
 
 ]

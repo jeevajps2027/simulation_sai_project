@@ -830,10 +830,12 @@ def measurement(request):
             # Extract the part model value from the data
             part_model = data.get('partModel')
             print('your data from frontend:',part_model)
-
-            additional_input_value = data.get('additionalInputValue')
-            parameter_name = data.get('preValue')
-            print('new values for this :',additional_input_value,parameter_name)
+            if part_model:
+                customer_name_values = TableOneData.objects.filter(part_model=part_model).values_list('customer_name', flat=True).distinct()
+                if customer_name_values.exists():  # Check if queryset has any results
+                    customer_name_values = customer_name_values[0]  # Access the first value
+            print("customer_name_values:",customer_name_values)
+           
 
             parameter_name_queryset = parameter_settings.objects.filter(model_id=part_model).values_list('parameter_name', flat=True)
 
@@ -853,6 +855,19 @@ def measurement(request):
             usl_values = list(usl_values_queryset)
             print('usl values are:',usl_values)
 
+            ltl_values_queryset = parameter_settings.objects.filter(model_id=part_model).values_list('ltl', flat=True)
+
+            # Convert the queryset to a list to pass only the values
+            ltl_values = list(ltl_values_queryset)
+            print('ltl values are:',ltl_values)
+
+
+            utl_values_queryset = parameter_settings.objects.filter(model_id=part_model).values_list('utl', flat=True)
+            # Convert the queryset to a list to pass only the values
+            utl_values = list(utl_values_queryset)
+            print('utl values are:',utl_values)
+
+
             
 
             nominal_values_queryset = parameter_settings.objects.filter(model_id=part_model).values_list('nominal', flat=True)
@@ -863,15 +878,66 @@ def measurement(request):
             measurement_mode_values = list(measurement_mode_values_queryset)
             print('your measurement_mode values are:',measurement_mode_values)
 
+            step_no_values_queryset = parameter_settings.objects.filter(model_id=part_model).values_list('step_no', flat=True)
+            step_no_values = list(step_no_values_queryset)
+            print('your step_no values are:',step_no_values)
+
+
+
+            filter_my = mastering_data.objects.filter(
+                selected_value=part_model,
+            ).values()
+
+            d = [item['d'] for item in filter_my]
+            
+            o1 = [item['o1'] for item in filter_my]
+
+            e = [item['e'] for item in filter_my]
+            
+            
+            # Initialize an empty dictionary to store last_stored_parameter
+            last_stored_parameter = {}
+
+            # Iterate over items in filter_my and populate last_stored_parameter
+            for item in filter_my:
+                last_stored_parameter[item['parameter_name']] = item
+
+            # Initialize empty lists to store o1 and d values
+            o1_values = []
+            d_values = []
+            e_values = []
+            probe_values = []
+
+            # Iterate over last_stored_parameter to extract o1 and d values
+            for parameter_name, item in last_stored_parameter.items():
+                o1_values.append(item['o1'])
+                d_values.append(item['d'])
+                e_values.append(item['e'])
+                probe_values.append(item['probe_no'])
+                print('Last stored parameter_name for meeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeemmmmmmm', parameter_name, 'is:', item)
+
+            # Print o1 and d values
+            print('o1 values meeeeeeeeeeeeeeeeeeeeeeeeeeAAAAAAAAAAAAAAAA:', o1_values)
+            print('d values meeeeeeeeeeeeeeeeeeeeeeeeeeAAAAAAAAAAAAAAAA:', d_values)
+            print('e_values meeeeeeeeeeeeeeeeeeeeeeeeeeAAAAAAAAAAAAAAAA:',e_values)
+            print('probe_values meeeeeeeeeeeeeeeeeeeeeeeeeeAAAAAAAAAAAAAAAA :',probe_values)
+
+
             # Prepare the response data
             response_data = {
                 'parameterNameValues': parameter_name_values,
                 'lslValues': lsl_values,
                 'uslValues': usl_values,
+                'ltlValues': ltl_values,
+                'utlValues': utl_values,
                 'nominalValues': nominal_values,
                 'measurementModeValues': measurement_mode_values,
-                'additionalInputValue': additional_input_value,
-                 
+                'o1_values': o1_values,
+                'd_values': d_values,
+                'e_values' : e_values,
+                'probe_values' : probe_values,
+                'step_no_values' : step_no_values,
+                'customer_name_values':customer_name_values,
             }
 
             # Return a JSON response with the retrieved values
@@ -906,11 +972,27 @@ def measurement(request):
         usl_values = list(usl_values_queryset)
         print('usl values are:',usl_values)
 
+        ltl_values_queryset = parameter_settings.objects.filter(model_id=part_model).values_list('ltl', flat=True)
+
+        # Convert the queryset to a list to pass only the values
+        ltl_values = list(ltl_values_queryset)
+        print('ltl values are:',ltl_values)
+
+        utl_values_queryset = parameter_settings.objects.filter(model_id=part_model).values_list('utl', flat=True)
+
+        # Convert the queryset to a list to pass only the values
+        utl_values = list(utl_values_queryset)
+        print('utl values are:',utl_values)
+
         
 
         nominal_values_queryset = parameter_settings.objects.filter(model_id=part_model).values_list('nominal', flat=True)
         nominal_values = list(nominal_values_queryset)
         print('your nominal values are:',nominal_values)
+
+        step_no_values_queryset = parameter_settings.objects.filter(model_id=part_model).values_list('step_no', flat=True)
+        step_no_values = list(step_no_values_queryset)
+        print('your step_no values are:',step_no_values)
 
         
         if part_model:
@@ -944,7 +1026,13 @@ def measurement(request):
             'nominal_values' : nominal_values,
             'lsl_values' : lsl_values,
             'usl_values' : usl_values,
+            'ltl_values' : ltl_values,
+            'utl_values' : utl_values,
+            'step_no_values' : step_no_values,
         }
+        global serial_data
+        with serial_data_lock:
+            context['serial_data']=serial_data
         return render(request, 'app/measurement.html', context)
     else:
         # Handle other request methods if needed
@@ -992,45 +1080,12 @@ def measurebox(request):
 def report(request):
     return render(request,'app/report.html')
 
+def utility(request):
+    return render(request,'app/utility.html')
 
 
-from django.shortcuts import render
-from django.http import JsonResponse
-import json
 
-last_received_data = []
+
 
 def jeeva(request):
-    global last_received_data
-
-    if request.method == 'POST':
-        try:
-            # Retrieve data from the POST request
-            data = json.loads(request.body)
-
-            # Extract relevant parameters from the received data
-            preValue = data.get('preValue')
-            additional_input = data.get('additionalInputValue')
-            lsl = data.get('lsl')
-            usl = data.get('usl')
-
-            # Store the received data in the global variable
-            last_received_data.append ({
-                'preValue': preValue,
-                'additional_input': additional_input,
-                'lsl': lsl,
-                'usl': usl
-            })
-
-            print('context values are:', last_received_data)
-
-        except Exception as e:
-            # Return a JSON response indicating error
-            return JsonResponse({'error': str(e)}, status=500)
-
-    # Check if the request is AJAX
-    if request.META.get('HTTP_X_REQUESTED_WITH') == 'XMLHttpRequest':
-        return JsonResponse({'last_received_data': last_received_data})
-
-    # Render the HTML template for regular requests
-    return render(request, 'app/jeeva.html', {'last_received_data': last_received_data})
+    return render(request, 'app/jeeva.html')

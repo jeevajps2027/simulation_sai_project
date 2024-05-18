@@ -13,7 +13,7 @@ Mastering Page
          
      }
      .input-box-container{
-         background-color: lightseagreen;
+         background-color:rgb(178, 178, 226);
      }
  
      .left-box {
@@ -62,6 +62,15 @@ Mastering Page
              background-color: blue;
              color: white;
          }
+
+         #measureBtn{
+            width: 120px;
+             height: 70px;
+             margin-left: 800px;
+             margin-top: -50px;
+             background-color: rgb(255, 0, 76);
+             color: white;
+         }
          #highMasterBtn{    
              margin-top: 10px;   
          }
@@ -101,17 +110,18 @@ Mastering Page
              max-height: 100px;
              width: 100px;
              margin-right: 10px; 
-             
+             display: none;
              
          }
  
         
  #pre{
-         margin-left: 400px;
-         margin-top: 30px;
-         color:red;
-         text-shadow: 2px 2px 4px white;
+         margin-top: 10px;
+         color:white;
          font-size: 20px;
+         font-weight: bold;
+         text-align: center;
+         background-color: rgb(250, 106, 54)
  
         }
         #clock-box{
@@ -144,34 +154,34 @@ Mastering Page
             </a>
         <button type="button" id="select-btn"><b>Select</b></button>
     </div>
-    <label for="all_parameter" style="margin-left: 400px; margin-top: -80px;">
+    <label for="all_parameter" style="margin-left: 370px; margin-top: -80px;">
         All Parameter
         <input type="radio" style="margin-left: 10px;" id="all_parameter" onclick="handleRadioClick(this)">
     </label>
     
-    <label for="parameterwise" style="margin-left: 400px;">
+    <label for="parameterwise" style="margin-left: 370px;">
         Parameterwise
         <input type="radio" style="margin-left: 7px;" id="parameterwise" onclick="handleRadioClick(this)">
     </label><br>
     
-    <label for="mastering" style="margin-left: 570px;margin-top: -80px;">MASTERING GROUP:</label>
-    <select id="mastering"  style="width: 15%;margin-left: 700px;margin-top: -40px;" name="mastering" >
+    <label for="mastering" style="margin-left: 510px;margin-top: -80px;">MASTERING GROUP:</label>
+    <select id="mastering"  style="width: 10%;margin-left: 650px;margin-top: -40px;" name="mastering" >
         <script>
             for (var i = 1; i <= 30; i++) {
                 document.write('<option value="' + i + '">' + i + '</option>');
             }
         </script>
     </select>
+    <button id="measureBtn" type="button" onclick="MeasureBtnClick()"><b>Measurement</b></button>
     <button id="lowMasterBtn" type="button" onclick="lowMasteringClick()"><b>Low Mastering</b></button>
     <button id="highMasterBtn" type="button" onclick="highMasteringClick()"><b>High Mastering</b></button>
 
 
 
 
-    <pre id="pre"></pre>
+    <pre id="pre" style="border: 2px solid black;"></pre>
 
-    <div style="border-bottom: 2px solid black; margin-top: 0px;"></div>
-
+  
    
     <textarea id="probe-A"></textarea>
     <textarea id="probe-B"></textarea>
@@ -386,6 +396,8 @@ const d_values = parseFloat(values['d']);
 const o1_values = parseFloat(values['o1']);
 const probe_values = parseFloat(values['probe_values']);
 const digits = parseFloat(values['digits']);
+const ltl = parseFloat(values['ltl']);
+const utl = parseFloat(values['utl']);
 
 console.log("Container values:", values);
 console.log("e_values areeeeeee:",e_values);
@@ -409,7 +421,7 @@ if (probeNo) {
             // Function to handle serial data changes
             function handleSerialDataChange(newSerialData) {
                 // Call calculateMastering with the appropriate values and newSerialData
-                calculateDisplay(e_values, d_values, o1_values, newSerialData, container.id,lsl,usl,digits)
+                calculateDisplay(e_values, d_values, o1_values, newSerialData, container.id,lsl,usl,digits,ltl,utl)
                 
             }
 
@@ -839,7 +851,7 @@ function displaySerialData(container, callback) {
 let k;
 
 
-function calculateDisplay(e_values, d_values, o1_values, serialData, id, lsl, usl,digits) {
+function calculateDisplay(e_values, d_values, o1_values, serialData, id, lsl, usl,digits,ltl,utl) {
     console.log('Entering calculateMastering');
     console.log('e values are akdfjcugabdkajdgaiu:', e_values);
     console.log('serialData:', serialData);
@@ -851,10 +863,10 @@ function calculateDisplay(e_values, d_values, o1_values, serialData, id, lsl, us
 
     if (document.getElementById('parameterwise').checked) {
         console.log('Updating additional input value in calculateMastering:', k);
-        updateInputValue(k,lsl,usl);
+        updateInputValue(k,lsl,usl,ltl,utl);
     } else if (document.getElementById('all_parameter').checked) {
         console.log('Updating all parameter values in calculateMastering:', k);
-        updateParameterValues(id,lsl,usl);
+        updateParameterValues(id,lsl,usl,ltl,utl);
     }
     return k;
 }
@@ -862,7 +874,7 @@ function calculateDisplay(e_values, d_values, o1_values, serialData, id, lsl, us
 
 let executeUpdateParameterValues = true;
 
-function updateParameterValues(id, lsl, usl) {
+function updateParameterValues(id, lsl, usl,ltl, utl) {
     if (!executeUpdateParameterValues) return;
     console.log("Updating all parameter values");
 
@@ -874,14 +886,14 @@ function updateParameterValues(id, lsl, usl) {
         // Set the value of the additional input field with the global 'm' value
         additionalInput.value = k;
 
-        // Set background color based on 'm' value compared to 'lsl' and 'usl'
-        if (k < lsl) {
+        if (k >= lsl && k <= usl) {
+            additionalInput.style.backgroundColor = '#00ff00'; // Green
+        } else if ((k > usl && k <= utl) || (k >= ltl && k < lsl)) {
             additionalInput.style.backgroundColor = 'yellow';
-        } else if (k > usl) {
+        } else if (k > utl || k < ltl) {
             additionalInput.style.backgroundColor = 'red';
-        } else {
-            additionalInput.style.backgroundColor = '#00ff00';
         }
+
 
         
     } else {
@@ -892,7 +904,7 @@ function updateParameterValues(id, lsl, usl) {
 
 let executeupdateInputValue= true;
 
-function updateInputValue(value,lsl,usl) {
+function updateInputValue(value,lsl,usl,ltl,utl) {
     console.log("Updating additional input value:", value);
     if (!executeupdateInputValue) return;
 
@@ -902,14 +914,14 @@ function updateInputValue(value,lsl,usl) {
     if (additionalInput) {
         additionalInput.value = value;
 
-        // Set background color based on 'm' value compared to 'lsl' and 'usl'
-        if (k < lsl) {
+        if (k >= lsl && k <= usl) {
+            additionalInput.style.backgroundColor = '#00ff00'; // Green
+        } else if ((k > usl && k <= utl) || (k >= ltl && k < lsl)) {
             additionalInput.style.backgroundColor = 'yellow';
-        } else if (k > usl) {
+        } else if (k > utl || k < ltl) {
             additionalInput.style.backgroundColor = 'red';
-        } else {
-            additionalInput.style.backgroundColor = '#00ff00';
         }
+
 
         
     } else {
@@ -967,14 +979,14 @@ function updateAdditionalInputValue(value,lsl,usl,ltl,utl,preValue) {
     if (additionalInput) {
         additionalInput.value = value;
 
-        // Set background color based on 'm' value compared to 'lsl' and 'usl'
-        if (m < lsl) {
+        if (m >= lsl && m <= usl) {
+            additionalInput.style.backgroundColor = '#00ff00'; // Green
+        } else if ((m > usl && m <= utl) || (m >= ltl && m < lsl)) {
             additionalInput.style.backgroundColor = 'yellow';
-        } else if (m > usl) {
+        } else if (m > utl || m < ltl) {
             additionalInput.style.backgroundColor = 'red';
-        } else {
-            additionalInput.style.backgroundColor = '#00ff00';
         }
+
 
         
     } else {
@@ -999,42 +1011,14 @@ function updateAllParameterValues(id, lsl, usl,ltl,utl,preValue) {
         // Set the value of the additional input field with the global 'm' value
         additionalInput.value = m;
 
-        // Set background color based on 'm' value compared to 'lsl' and 'usl'
-        if (m < lsl) {
+        if (m >= lsl && m <= usl) {
+            additionalInput.style.backgroundColor = '#00ff00'; // Green
+        } else if ((m > usl && m <= utl) || (m >= ltl && m < lsl)) {
             additionalInput.style.backgroundColor = 'yellow';
-        } else if (m > usl) {
+        } else if (m > utl || m < ltl) {
             additionalInput.style.backgroundColor = 'red';
-        } else {
-            additionalInput.style.backgroundColor = '#00ff00';
         }
 
-        // Prepare data to send
-        const dataToSend = {
-            preValue:preValue,
-            additionalInputValue: additionalInput.value,
-            lsl: lsl,
-            usl: usl
-        };
-        console.log('your sended values from this page :',dataToSend);
-
-        // Perform AJAX call to send data to the server
-        $.ajax({
-            url: '/measurement/', // Adjust the URL as per your requirement
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRFToken': getCookie('csrftoken'), // If you're using CSRF protection
-            },
-            contentType: 'application/json',
-            data: JSON.stringify(dataToSend),
-            success: function(data) {
-                console.log('Data successfully sent to next page jjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjj:', data);
-                // Optionally, you can perform any actions after successful submission
-            },
-            error: function(xhr, status, error) {
-                console.error('There was a problem with your AJAX request:', error);
-            }
-        });
         
     } else {
         console.error('Additional input field not found for container:', id);

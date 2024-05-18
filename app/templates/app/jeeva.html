@@ -1,54 +1,41 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Jeeva Data</title>
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
-</head>
-<body>
-    <h1>Last Received Data</h1>
-    <textarea id="received-data" rows="10" cols="50"></textarea>
+// Function to handle back button click
+document.getElementById("back-btn").addEventListener("click", function() {
+    if (currentStep > 1) {
+        currentStep--; // Decrement current step
+        // Clear status cell
+        var prevStep = currentStep - 1;
+        var statusCell = document.getElementById('status_cell-' + prevStep);
+        console.clear();
+        console.log("statusCell:",statusCell);
+        if (statusCell) {
+            statusCell.textContent = ""; // Clear status cell content
+            statusCell.style.backgroundColor = "";
+        }
+        
+        var readingsInput = document.getElementById('readingsInput-' + prevStep);
+        if (readingsInput) {
+            readingsInput.textContent = ""; // Clear status cell content
+            readingsInput.style.backgroundColor = "";
+        }
 
-    <script>
-        // jeeva.js
+        // Clear indicator boxes
+        var indicatorBox = document.getElementById('indicator-box-' + prevStep);
+        var indicatorBox1 = document.getElementById('indicator-box1-' + prevStep);
+        if (indicatorBox) {
+            indicatorBox.textContent = ""; // Clear indicator box content
+            indicatorBox.style.backgroundColor = white;
+        }
+        if (indicatorBox1) {
+            indicatorBox1.textContent = ""; // Clear indicator box 1 content
+            indicatorBox1.style.backgroundColor = white;
+        }
 
-$(document).ready(function() {
-    // Function to update textarea with received data
-    function updateTextarea(data) {
-        var textarea = $('#received-data');
-        textarea.val('');
-        data.forEach(function(entry) {
-            textarea.val(textarea.val() +
-                'ID: ' + entry.preValue + '\n' +
-                'Additional Input: ' + entry.additional_input + '\n' +
-                'LSL: ' + entry.lsl + '\n' +
-                'USL: ' + entry.usl + '\n\n');
-        });
+        // Show notification for going back
+        showNotification(`Going back to step ${currentStep}.`);
+        
+        // Start calculation for the current step
+        startContinuousUpdate();
+    } else {
+        showNotification("Already at the first step.");
     }
-
-    // Function to fetch data from the server
-    function fetchData() {
-        $.ajax({
-            url: '/jeeva/',  // URL of your Django view
-            type: 'GET',
-            dataType: 'json',
-            success: function(data) {
-                updateTextarea(data.last_received_data);
-            },
-            error: function(xhr, status, error) {
-                console.error('Error fetching data:', error);
-            }
-        });
-    }
-
-    // Fetch data initially when the page loads
-    fetchData();
-
-    // Fetch data periodically (every 5 seconds in this example)
-    setInterval(fetchData, 100);
 });
-
-    </script>
-</body>
-</html>

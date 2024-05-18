@@ -69,7 +69,7 @@ Measurement Page
     color: white;
 }
 
-.no-outline{
+.readingInputs{
         margin-top: 0px;
         border: none;
         outline: none;
@@ -78,7 +78,8 @@ Measurement Page
 
 
 
-#reset-btn{
+#save-btn{
+    margin-top: 10px;
             width: 100px;
             height: 80px;
             margin-left: 1150px;
@@ -89,7 +90,6 @@ Measurement Page
             width: 100px;
             height: 80px;
             margin-left: 1150px;
-            margin-top: 10px;
             background-color: rgb(240, 96, 240);
             
         }
@@ -128,6 +128,7 @@ Measurement Page
         z-index: 1000; 
         border: 2px solid black;
     }
+    
     #punch_textarea{
         margin-top: 20px;
         margin-left: 10px;
@@ -151,6 +152,71 @@ Measurement Page
         color: white; /* Set the color of the exit symbol to white */
     }
 
+    .indicator-box, .indicator-box1 {
+    width: 50%; /* Adjust width as needed */
+    height: 25px; /* Adjust height as needed */
+    border: 1px solid #000; /* Border */
+    margin-left: 0px;
+  
+}
+
+.reset-button {
+  position: relative;
+  background-color: #007bff;
+  border: none;
+  border-radius: 30%;
+  width: 40px;
+  height: 40px;
+  margin-left: 10px;
+  padding: 0;
+  cursor: pointer;
+  overflow: hidden;
+}
+
+.reset-symbol {
+  font-size: 20px;
+  color: white;
+  position: relative;
+  z-index: 1;
+}
+
+.reset-button:before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 120%;
+  height: 120%;
+  background-color: rgba(255, 255, 255, 0.2);
+  border-radius: 50%;
+  transform: translate(-50%, -50%) rotateX(55deg) rotateY(30deg);
+  transition: transform 0.5s ease;
+}
+
+.reset-button:hover:before {
+  transform: translate(-50%, -50%) rotateX(0deg) rotateY(0deg);
+}
+
+.notification-container1 {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  height: 300px;
+  width: 350px;
+  transform: translate(-50%, -50%);
+  background-color:lightblue;
+  border: 2px solid black;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+}
+
+input[type=checkbox] {
+        transform: scale(1.5); /* Increase the size of the checkbox */
+        margin-right: 5px; /* Add some spacing between checkbox and label */
+    }
+
+
     
     
 </style>
@@ -168,13 +234,19 @@ Measurement Page
     
     
     <label for="accept" style="width: 70px;">ACCEPT:</label>
-    <input type="text" id="accept" style="background-color: green;width: 5%;">
+    <input type="text" id="accept" value="0" style="background-color: green;width: 5%;">
 
     <label for="reject"style="width: 70px;">REJECT:</label>
-    <input type="text" id="reject" style="background-color: red;width: 5%;">
+    <input type="text" id="reject" value="0" style="background-color: red;width: 5%;">
 
     <label for="rework" style="width: 70px;">REWORK:</label>
-    <input type="text" id="rework" style="background-color: yellow;width: 5%;"><br>
+    <input type="text" id="rework" value="0" style="background-color: yellow;width: 5%;">
+    
+    <button class="reset-button" id="reset-button">
+        <span class="reset-symbol">&#8634;</span>
+    </button>
+      
+<br>
 
     
     <label for="machine" style="margin-left: 150px;" >MACHINE:</label>
@@ -211,10 +283,11 @@ Measurement Page
             </div>    
 </div>
 
-    <div><button type="button" id="reset-btn"><b> Reset</b></button></div>
+    
   <div><button type="button" id="master-btn"><b>Master<br>[F1]</b></button></div>
   <div><button type="button" id="start-btn"><b> Start<br>[F4]</b></button></div>
   <div><button type="button" id="stop-btn"><b>Stop<br>[F5]</b></button></div>
+  <div><button type="button" id="save-btn"><b> Save</b></button></div>
   <div><button type="button" id="back-btn"><b>Back<br>[F7]</b></button></div>
   
 
@@ -251,15 +324,129 @@ Measurement Page
     <textarea id="punch_textarea" onkeydown="handleEnterKeyPress(event)"></textarea>
 </div>
 
-<script>
-  $('#partModel').change(function() {
-    var selectedModel = $(this).val();
+<div class="notification-container1" id="notification-container1" style="display:none;">
+    <div class="exit-symbol-container" onclick="closeNotification()">
+        <span class="exit-symbol">❌</span>
+    </div>
+    <center style="color: white;">
+        <div style="border: 2px solid black;width: 200px;background-color: rgb(167, 27, 167);"><b>RESET VALUES</b></div>
+    </center>
+    <div style="margin-top: 20px;"id="notificationDiv" >
+        <label><input type="checkbox" name="accept"style="margin-left: 5px;"><span style="background-color: green;margin-left: 5px; padding: 3px 8px; color: white;">ACCEPT</span></label><br>
+        <label><input type="checkbox" name="reject"style="margin-left: 3px;"><span style="background-color: red;margin-left: 3px; padding: 3px 8px; color: white;">REJECT</span></label><br>
+        <label><input type="checkbox" name="rework"style="margin-left: 4px;"><span style="background-color: yellow; padding: 3px 8px; color: black;">REWORK</span></label><br>    
+        <button onclick="handleOk()"style="margin-left: 70%;width: 100px; background-color: orangered;"><b>OK</b></button><br><br>
+    </div>
+    <div style="margin-top: 20px;display: none;"id="notificationDiv1" >
+        <label for="userid">USER ID:</label>
+        <input type="text" id="userid" style="width: 150px;"><br>
+        <label for="password">PASSWORD:</label>
+        <input type="text" id="password" style="width: 150px;"><br><br>
+        <button style="margin-left: 70%;width: 100px; background-color: orangered;"><b>OK</b></button><br><br>
+    </div>
+</div>
+
+
+
+
+
+<textarea id="probe-A"></textarea>
+    <textarea id="probe-B"></textarea>
+    <textarea id="probe-C"></textarea>
+    <textarea id="probe-D"></textarea>
+    <textarea id="probe-E"></textarea>
+    <textarea id="probe-F"></textarea>
+    <textarea id="probe-G"></textarea>
+    <textarea id="probe-H"></textarea>
+    <textarea id="probe-I"></textarea>
+    <textarea id="probe-J"></textarea>
+    <textarea id="probe-K"></textarea>
     
+
+<script>
+    
+function redirectToMasterPage() {
+        if (event.key === 'F1') {
+            window.location.href = 'http://localhost:8000/master/';
+            event.preventDefault();
+        }
+    }
+    document.addEventListener('keydown', redirectToMasterPage);
+
+
+
+document.addEventListener('keydown', function(event) {
+    console.log("Key pressed:", event.key);
+    // Check if the pressed key is F4 or F5
+    if (event.key === 'F4' || event.key === 'F5') {
+        // Prevent the default action of the pressed key
+        event.preventDefault();
+        if (event.key === 'F4') {
+            startAction();
+        } else if (event.key === 'F5') {
+            stopAction();
+        }
+    }
+});
+
+function startAction() {
+    document.getElementById('start-btn').click();
+}
+
+function stopAction() {
+    document.getElementById('stop-btn').click();
+}
+///////////////////////////////////////////////////////////
+ // Get references to the buttons
+ var startBtn = document.getElementById("start-btn");
+ var stopBtn = document.getElementById("stop-btn");
+
+    // Function to enable start button and disable stop button
+    function enableStartBtn() {
+        startBtn.disabled = false;
+        stopBtn.disabled = true;
+    }
+
+    // Function to enable stop button and disable start button
+    function enableStopBtn() {
+        startBtn.disabled = true;
+        stopBtn.disabled = false;
+    }
+    enableStartBtn();
+
+    // Add event listener for start button click
+    startBtn.addEventListener("click", function() {
+        enableStopBtn(); // Enable stop button
+    });
+
+    // Add event listener for stop button click
+    stopBtn.addEventListener("click", function() {
+        enableStartBtn(); // Enable start button
+    });
+
+///////////////////////////////////////////////////////////
+document.getElementById("reset-button").addEventListener("click", function() {
+  document.getElementById("notification-container1").style.display = "block";
+});
+
+function closeNotification() {
+        document.getElementById("notification-container1").style.display = "none";
+    }
+
+    function handleOk() {
+        document.getElementById("notificationDiv").style.display = "none";
+        document.getElementById("notificationDiv1").style.display = "block";
+    }
+//////////////////////////////////////////////////   
+
+$(document).ready(function(){
+// Function to display serial data
+function fetchData(selectedModel) {
     // Create an object to hold the data to be sent
     var data = {
         partModel: selectedModel
     };
-    
+
     // Make the AJAX POST request
     $.ajax({
         url: '/measurement/', // Replace with your server URL
@@ -272,7 +459,7 @@ Measurement Page
         success: function(response) {
             // Clear existing table rows
             $('#table-body').empty();
-            
+
             // Generate new rows dynamically based on retrieved values
             for (var i = 0; i < response.parameterNameValues.length; i++) {
                 var row = document.createElement("tr");
@@ -292,7 +479,8 @@ Measurement Page
                 var readingsCell = document.createElement("td");
                 var readingsInput = document.createElement("input");
                 readingsInput.type = "text";
-                readingsInput.className = "no-outline"; // Optional: Add class for styling
+                readingsInput.id = 'readings-input-' + i; // Assign a unique ID to readings input
+                readingsInput.className = "readingInputs"; // Optional: Add class for styling
                 readingsInput.style.width = "100%"; // Optional: Set input width
                 readingsCell.appendChild(readingsInput);
                 row.appendChild(readingsCell);
@@ -301,20 +489,67 @@ Measurement Page
                 lslCell.textContent = response.lslValues[i];
                 row.appendChild(lslCell);
 
+                // Placeholder for indicator cell
                 var indicatorCell = document.createElement("td");
-                indicatorCell.textContent = ""; // Placeholder for readings
+                var indicatorBox = document.createElement("div");
+                indicatorBox.className = "indicator-box"; // Apply CSS class for styling
+                indicatorBox.textContent = ""; // Placeholder for content
+                indicatorBox.id='indicator-box-' + i;
+
+                var indicatorBox1 = document.createElement("div");
+                indicatorBox1.className = "indicator-box1"; // Apply CSS class for styling
+                indicatorBox1.textContent = ""; // Placeholder for content
+                indicatorBox1.id='indicator-box1-' + i;
+              
+                // Apply CSS for inline-block display to make them appear side by side
+                indicatorBox.style.display = "inline-block";
+                indicatorBox1.style.display = "inline-block";
+
+                indicatorCell.appendChild(indicatorBox);
+                indicatorCell.appendChild(indicatorBox1);
                 row.appendChild(indicatorCell);
+
+
 
                 var uslCell = document.createElement("td");
                 uslCell.textContent = response.uslValues[i];
                 row.appendChild(uslCell);
 
                 var statusCell = document.createElement("td");
-                statusCell.textContent = ""; // Placeholder for status
+                statusCell.textContent = " "; // Placeholder for status
+                statusCell.className = "status_cell";
+                statusCell.id = 'status_cell-' + i;
                 row.appendChild(statusCell);
 
                 // Append the row to the table body
                 $('#table-body').append(row);
+
+                // Log values to console
+                // Assuming response.customer_name_values holds the customer's name
+document.getElementById('customer_name').value = response.customer_name_values;
+
+                
+                console.log("customer_name_values:",response.customer_name_values),
+                console.log("Parameter Name:", response.parameterNameValues[i]);
+                console.log("Nominal Value:", response.nominalValues[i]);
+                console.log("LSL Value:", response.lslValues[i]);
+                console.log("USL Value:", response.uslValues[i]);
+                console.log("LTL Value:", response.ltlValues[i]);
+                console.log("UTL Value:", response.utlValues[i]);
+                console.log("measurementModeValues Value:", response.measurementModeValues[i]);
+                console.log("o1_values Value:", response.o1_values[i]);
+                console.log("d_values Value:", response.d_values[i]);
+                console.log("e_values Value:", response.e_values[i]);
+                console.log("probe_values Value:", response.probe_values[i]);
+                console.log("step_no Value:", response.step_no_values[i]);
+                
+                // Call displaySerialData function to update readings
+                // Call displaySerialData function to update readings
+                displaySerialData(response.probe_values[i], response.e_values[i], response.d_values[i], 
+                response.o1_values[i], readingsInput, response.measurementModeValues[i],response.step_no_values[i],
+                response.lslValues[i], response.uslValues[i],response.ltlValues[i],response.utlValues[i],
+                indicatorBox,indicatorBox1,statusCell
+                );
             }
         },
         error: function(xhr, status, error) {
@@ -322,7 +557,430 @@ Measurement Page
             console.error('Error:', error);
         }
     });
+}
+
+// Call the function initially on page load
+fetchData($('#partModel').val());
+
+// Bind change event to #partModel element
+$('#partModel').change(function() {
+    var selectedModel = $(this).val();
+    // Call the function when partModel changes
+    fetchData(selectedModel);
 });
+});
+
+
+/////////////////////////////////////////////////////////////////////////////
+
+var continuousUpdateInterval; // Variable to store the interval ID for continuous update
+var maxValue;
+var minValue;
+var currentStep = 1; // Initialize current step
+
+// Function to start the continuous update
+function startContinuousUpdate() {
+    continuousUpdateInterval = setInterval(updateDisplayOutput, 500); // Adjust the interval as needed
+
+}
+
+// Function to stop the continuous update
+function stopContinuousUpdate() {
+    clearInterval(continuousUpdateInterval);
+}
+
+// Function to handle start button click
+document.getElementById("start-btn").addEventListener("click", function() {
+    if (currentStep <= totalSteps) {
+        showNotification(` measurement is starting for step ${currentStep}.`);
+    }
+    
+    // Start calculation for the current step
+    startContinuousUpdate();
+});
+
+
+document.getElementById("stop-btn").addEventListener("click", function() {
+    setTimeout(function(){
+    var statusCells = document.querySelectorAll('.status_cell');
+    var partStatusInput = document.getElementById("part_status");
+    
+    if (currentStep === totalSteps) {
+        var hasRed = false;
+        var hasYellow = false;
+        var hasGreen = false;
+        statusCell.style.backgroundColor = ""; // Clear text content
+        statusCells.forEach(function(statusCell) {
+            var color = statusCell.style.backgroundColor;
+            if (color === 'red') {
+                hasRed = true;
+            } else if (color === 'yellow') {
+                hasYellow = true;
+            } else if (color === '#00ff00') {
+                hasGreen = true;
+            }
+            console.clear();
+
+            console.log("statusCells:",statusCell);
+        });
+
+        if (hasRed) {
+            partStatusInput.style.backgroundColor = 'Red';
+            partStatusInput.value = "REJECT";
+            partStatusInput.style.fontWeight = "bold";
+            partStatusInput.style.textAlign = "center";
+
+        } else if (hasYellow) {
+            partStatusInput.style.backgroundColor = 'Yellow';
+            partStatusInput.value = "REWORK";
+            partStatusInput.style.fontWeight = "bold";
+            partStatusInput.style.textAlign = "center";
+
+        } else {
+            partStatusInput.style.backgroundColor = '#00ff00';
+            partStatusInput.value = "ACCEPT";
+            partStatusInput.style.fontWeight = "bold";
+            partStatusInput.style.textAlign = "center";
+            
+        }
+
+        // Display notification to the client
+        
+        showNotification("You have completed the measurement for this job.");
+
+       
+    }
+
+    // Stop calculation for the current step
+    stopContinuousUpdate();
+    // Move to the next step
+    moveToNextStep();
+},500);
+
+});
+
+document.getElementById("save-btn").addEventListener("click", function() {
+            var partStatusInput = document.getElementById("part_status");
+            var partStatus = partStatusInput.value;
+            var acceptInput = document.getElementById("accept");
+            var rejectInput = document.getElementById("reject");
+            var reworkInput = document.getElementById("rework");
+
+            if (partStatus === "ACCEPT") {
+                acceptInput.value = parseInt(acceptInput.value) + 1;
+            } else if (partStatus === "REJECT") {
+                rejectInput.value = parseInt(rejectInput.value) + 1;
+            } else if (partStatus === "REWORK") {
+                reworkInput.value = parseInt(reworkInput.value) + 1;
+            }
+            var statusCells = document.querySelectorAll('.status_cell');
+            statusCells.forEach(function(statusCell) {
+                statusCell.textContent = ""; // Clear text content
+                statusCell.style.backgroundColor = ""; // Clear text content
+
+            });
+
+            var readingInputs = document.querySelectorAll('.readingInputs');
+            readingInputs.forEach(function(readingInput) {
+                readingInput.value = ""; // Clear the value of the input
+            });
+
+            partStatusInput.value = "";
+            partStatusInput.style.backgroundColor = "";
+
+            var compSrNo = document.getElementById("comp_srno");
+            compSrNo.value = "";
+
+            var punchTextarea = document.getElementById("punch_textarea");
+            punchTextarea.value = "";
+
+    
+            var indicatorBoxes = document.querySelectorAll('.indicator-box, .indicator-box1');
+            indicatorBoxes.forEach(function(indicatorBox) {
+            indicatorBox.style.background = "";
+            });
+
+            if (hide === 'True') {
+            document.getElementById('notification-container').style.display = 'block';
+            document.getElementById('punch_textarea').style.display = 'block';
+            document.getElementById('punch_textarea').focus();
+        }
+        currentStep = 1;
+        
+        });
+
+
+
+
+
+
+
+
+
+// Function to handle back button click
+document.getElementById("back-btn").addEventListener("click", function() {
+    if (currentStep > 1) {
+        currentStep--; // Decrement current step
+        
+        // Array to store indices where value equals currentStep
+        var indices = [];
+        
+        // Loop through step_no_values array
+        for (var i = 0; i < step_no_values.length; i++) {
+            if (step_no_values[i] === currentStep) {
+                indices.push(i); // Push index to indices array
+            }
+        }
+        
+        // Clear readingsCell and statusCell values at indices
+        indices.forEach(function(index) {
+            // Clear readingsCell value
+            var readingsInput = document.getElementById('readings-input-' + index);
+            if (readingsInput) {
+                readingsInput.value = ""; // Clear input value
+            }
+
+            // Clear statusCell value
+            var statusCell = document.getElementById('status_cell-' + index);
+            if (statusCell) {
+                statusCell.textContent = ""; // Clear text content
+                statusCell.style.backgroundColor = ""; // Clear text content
+            }
+        });
+      
+        if (currentStep === totalSteps) {
+            var partStatus = document.getElementById('part_status');
+            partStatus.value = ""; // Clear text content
+            partStatus.style.backgroundColor = ""; // Clear text content
+        }
+        
+        console.clear();
+        // Display indices in console
+        console.log("Indices where value equals currentStep:", indices);
+    }
+});
+
+
+
+
+// Function to move to the next step
+function moveToNextStep() {
+    currentStep++;
+    if (currentStep > totalSteps) {
+        console.log("All steps completed.");
+        
+        return;
+    }
+    
+    console.log("Moving to step:", currentStep);
+    var statusCells = document.querySelectorAll(".status_cell");
+    statusCells.forEach(function(cell) {
+        console.log(cell.textContent);
+    });
+    if (currentStep < step_no_values.length + 1) {
+        showNotification(`Step ${currentStep - 1} completed. Please proceed to step ${currentStep}.`);
+    }   // Start calculation for the next step
+    startContinuousUpdate();
+
+}
+
+function displaySerialData(probe_value, e_value, d_value, o1_value, readingsInput, measurementMode, step_no, lsl, 
+usl, ltl, utl,indicatorBox,indicatorBox1,statusCell) {
+
+
+    console.log("step_no:", step_no);
+    console.log("indicatorBox,indicatorBox1:",indicatorBox,indicatorBox1,readingsInput);
+    // Retrieve textarea ID based on probeValue
+    var textareaId = mapProbeToTextareaId(probe_value);
+    var textarea = document.getElementById(textareaId);
+
+    // Check if textarea exists
+    if (textarea) {
+        // Function to calculate and update the displayOutput
+        function updateDisplayOutput() {
+            const newSerialData = parseFloat(textarea.value);
+            // Log the new serial data to the console
+            console.log("Serial Data for Probe Value " + probe_value + ":", newSerialData);
+
+            // Calculate displayOutput separately for each input
+            const displayOutput = e_value + (newSerialData * d_value + o1_value);
+            console.log("displayOutput values are:", displayOutput);
+
+            // Update the readings input only when the continuous update is active and step_no matches
+            if (continuousUpdateInterval && step_no === currentStep) {
+                // Update the readings input based on measurement mode
+                if (measurementMode === "MAX" || measurementMode === "MIN" || measurementMode === "CUR" || measurementMode === "TIR") {
+                    // Update only if the new value is greater than or less than the current value
+                    var currentValue = parseFloat(readingsInput.value);
+                    if (isNaN(currentValue) || (measurementMode === "MAX" && displayOutput > currentValue) ||
+                        (measurementMode === "MIN" && displayOutput < currentValue) ||
+                        (measurementMode === "CUR" || measurementMode === "TIR")) {
+                        readingsInput.value = displayOutput.toFixed(4);
+                        if (measurementMode === "TIR") {
+            // Update max and min values
+            if (isNaN(maxValue) || displayOutput > maxValue) {
+                maxValue = displayOutput;
+            }
+            else if (isNaN(minValue) || displayOutput < minValue) {
+                minValue = displayOutput;
+            }
+
+            // Calculate TIR value
+            var tirValue = (maxValue - minValue) / 2;
+            // Log values to console
+            console.log("Max Value:", maxValue);
+            console.log("Min Value:", minValue);
+            console.log("TIR Value:", tirValue);
+            readingsInput.value = tirValue.toFixed(4);
+        }
+
+                        // Calculate total length and colored portion length
+                        var totalLength, coloredPortionLength, coloredPortion, uncoloredPortion;
+                        var coloredWidth, defaultWidth, color;
+
+                        if (displayOutput > e_value) {
+                            totalLength = usl - e_value;
+                            coloredPortionLength = displayOutput - e_value;
+                        } else if (displayOutput < e_value){
+                            totalLength = e_value - lsl;
+                            coloredPortionLength = e_value - displayOutput;
+                        }
+
+                        coloredPortion = coloredPortionLength / totalLength;
+                        uncoloredPortion = 1 - coloredPortion;
+                        coloredWidth = coloredPortion * 100;
+                        defaultWidth = uncoloredPortion * 100;
+
+                        // Set background color based on measurement mode and displayOutput ranges
+                        if ((measurementMode === "MAX" && displayOutput >= lsl && displayOutput <= usl) ||
+                            (measurementMode === "MIN" && displayOutput >= lsl && displayOutput <= usl) ||
+                            (measurementMode === "CUR" && displayOutput >= lsl && displayOutput <= usl) ||
+                            (measurementMode === "TIR" && tirValue >= lsl && tirValue <= usl)) {
+                            color = '#00ff00'; // Green
+                        } else if ((measurementMode === "MAX" &&((displayOutput > usl && displayOutput <= utl) || 
+                                                                    (displayOutput >= ltl && displayOutput < lsl))) || 
+                                    (measurementMode === "MIN" &&((displayOutput > usl && displayOutput <= utl) || 
+                                                                    (displayOutput >= ltl && displayOutput < lsl))) || 
+                                    (measurementMode === "CUR" && ((displayOutput > usl && displayOutput <= utl) || 
+                                                                    (displayOutput >= ltl && displayOutput < lsl))) ||
+                                    (measurementMode === "TIR" && ((tirValue > usl && tirValue <= utl) || 
+                                                                  (tirValue >= ltl && tirValue < lsl)))) 
+                                    {
+                            color = 'yellow';
+                        } else if ((measurementMode === "MAX" && displayOutput > utl || displayOutput <ltl) ||
+                            (measurementMode === "MIN" && displayOutput > utl || displayOutput <ltl) ||
+                            (measurementMode === "CUR" && displayOutput > utl || displayOutput <ltl) ||
+                            (measurementMode === "TIR" && tirValue > utl || tirValue <ltl)) {
+                            color = 'red'; // Green
+                        }
+                        
+                        readingsInput.style.color = color;
+                        readingsInput.style.textShadow = (color === 'red') ? '0 0 2px white' : '0 0 2px black';
+
+document.getElementById('stop-btn').addEventListener('click', function() {   
+   var indices = [];
+   // Assuming step_no_values and currentStep are defined somewhere
+   for (var i = 0; i < step_no_values.length; i++) {
+       if (step_no_values[i] === currentStep) {
+           indices.push(i);
+       }
+   }
+
+   indices.forEach(function(index) {
+       var statusCell = document.getElementById('status_cell-' + index); // Assuming 'status-cell' is the class of your status cells
+       statusCell.style.backgroundColor = color;
+       if (color === "#00ff00") {
+           statusCell.textContent = "ACCEPT";
+           statusCell.style.fontWeight = "bold";
+       } else if (color === "red") {
+           statusCell.textContent = "REJECT";
+           statusCell.style.fontWeight = "bold";
+       } else if (color === "yellow") {
+           statusCell.textContent = "REWORK";
+           statusCell.style.fontWeight = "bold";
+       }
+   });
+});
+
+
+
+
+
+
+
+                        if (displayOutput > e_value) {
+    var indicatorBoxElement = document.getElementById(indicatorBox.id);
+    var indicatorBox1Element = document.getElementById(indicatorBox1.id);
+    
+    // Set indicatorBoxElement to default color
+    indicatorBoxElement.style.background = 'white';
+
+    // Set indicatorBox1Element to colored gradient
+    indicatorBox1Element.style.background = `linear-gradient(to right, ${color} ${coloredWidth}%, white ${coloredWidth}% ${defaultWidth}%, white 100%)`;
+} else if (displayOutput < e_value) {
+    var indicatorBoxElement = document.getElementById(indicatorBox.id);
+    var indicatorBox1Element = document.getElementById(indicatorBox1.id);
+    
+    // Set indicatorBox1Element to default color
+    indicatorBox1Element.style.background = 'white';
+
+    // Set indicatorBoxElement to colored gradient
+    indicatorBoxElement.style.background = `linear-gradient(to left, ${color} ${coloredWidth}%, white ${coloredWidth}% ${defaultWidth}%, white 100%)`;
+}
+
+                    }
+                }
+            }
+        }
+
+        // Attach an event listener to the textarea for changes
+        textarea.addEventListener('input', updateDisplayOutput);
+
+        // Function to start continuous update
+        function startContinuousUpdate() {
+            continuousUpdateInterval = setInterval(updateDisplayOutput, 500); // Update every half a second
+        }
+
+        // Function to stop continuous update
+        function stopContinuousUpdate() {
+            clearInterval(continuousUpdateInterval);
+            continuousUpdateInterval = null; // Reset continuousUpdateInterval
+        }
+
+        // Event listener for start-btn
+        document.getElementById('start-btn').addEventListener('click', startContinuousUpdate);
+
+        // Event listener for stop-btn
+        document.getElementById('stop-btn').addEventListener('click', stopContinuousUpdate);
+
+        // Call the function once to initially display the value
+        updateDisplayOutput();
+    } else {
+        console.log("Textarea not found for Probe Value:", probe_value);
+    }
+}
+
+function showNotification(message) {
+    // Get the input element
+    var inputBox = document.getElementById('pre');
+
+    // Set the value of the input box with the notification message
+    inputBox.value = message;
+
+    // Apply styling to the input box
+    inputBox.style.fontWeight = 'bold';
+    inputBox.style.textAlign = 'center';
+    inputBox.style.color = 'red';
+
+    // Apply highlighting to the input box
+    inputBox.style.backgroundColor = 'pink'; // Or any other background color
+    inputBox.style.border = '2px solid blue'; // Or any other border style
+}
+
+
+
+
+
 
 
 // Function to retrieve CSRF token from cookie
@@ -367,6 +1025,7 @@ function getCookie(name) {
         function closeNotification() {
             // Disable the notification container
             document.getElementById('notification-container').style.display = 'none';
+            document.getElementById('notification-container1').style.display = 'none';
     
         }
     
@@ -436,40 +1095,55 @@ function getCookie(name) {
        
 // Assuming para_values is passed from Django template as a JavaScript array
 var para_values_str = "{{ para_values|safe }}";
-
 // Remove square brackets and single quotes
 var para_values_cleaned = para_values_str.replace(/[\[\]']+/g, '');
-
 // Split the cleaned string into an array of values
 var para_values = para_values_cleaned.split(',');
 
+
 // Assuming nominal_values is passed from Django template as a JavaScript array
 var nominal_values_str = "{{ nominal_values|safe }}";
-
 // Remove square brackets and single quotes
 var nominal_values_cleaned = nominal_values_str.replace(/[\[\]']+/g, '');
-
 // Split the cleaned string into an array of values
 var nominal_values = nominal_values_cleaned.split(',');
 
 var lsl_values_str = "{{ lsl_values|safe }}";
-
 var lsl_values_cleaned = lsl_values_str.replace(/[\[\]']+/g, '');
-
 var lsl_values = lsl_values_cleaned.split(',');
 
+
 var usl_values_str = "{{ usl_values|safe }}";
-
 var usl_values_cleaned = usl_values_str.replace(/[\[\]']+/g, '');
-
 var usl_values = usl_values_cleaned.split(',');
 
+
+var ltl_values_str = "{{ ltl_values|safe }}";
+var ltl_values_cleaned = ltl_values_str.replace(/[\[\]']+/g, '');
+var ltl_values = ltl_values_cleaned.split(',');
+
+
+
+var utl_values_str = "{{ utl_values|safe }}";
+var utl_values_cleaned = utl_values_str.replace(/[\[\]']+/g, '');
+var utl_values = utl_values_cleaned.split(',');
+
+var step_no_values_str = "{{ step_no_values|safe }}";
+var step_no_values_cleaned = step_no_values_str.replace(/[\[\]']+/g, '');
+var step_no_values = step_no_values_cleaned.split(',');
+// Convert string array elements to numbers
+step_no_values = step_no_values.map(Number);
+// Find the maximum value among the step_no_values
+var totalSteps = Math.max(...step_no_values);
 
 // Log the para_values and nominal_values to console
 console.log("para_values:", para_values);
 console.log("nominal_values:", nominal_values);
 console.log("lsl:",lsl_values);
 console.log("usl:",usl_values)
+console.log("ltl:",ltl_values);
+console.log("utl:",utl_values);
+console.log("step_no_values:",step_no_values);
 
  
     // Select the table body
@@ -523,8 +1197,64 @@ for (var i = 0; i < para_values.length; i++) {
     // Append the row to the table body
     tableBody.appendChild(row);
 }
+/////////////////////////////////////////////////////////////////////////////////
 
-    
+
+function mapProbeToTextareaId(probeNumber) {
+    const probeMap = {
+        '1': 'probe-A',
+        '2': 'probe-B',
+        '3': 'probe-C',
+        '4': 'probe-D',
+        '5': 'probe-E',
+        '6': 'probe-F',
+        '7': 'probe-G',
+        '8': 'probe-H',
+        '9': 'probe-I',
+        '10': 'probe-J',
+        '11': 'probe-K',
+
+    };
+   
+
+    return probeMap[probeNumber];
+}
+
+
+/////////////////////////////////////////////////////////////////////////////////
+
+function updateSerialData() {
+    // Make an AJAX request to your Django view
+    $.ajax({
+        url: '/probe/',  // Replace with the correct URL
+        type: 'GET',
+        dataType: 'json',
+        success: function (data) {
+            var serialData = data.serial_data;
+
+            // Iterate over the probe keys in serialData
+            for (var probeKey in serialData) {
+                if (serialData.hasOwnProperty(probeKey)) {
+                    // Update the corresponding textarea based on probeKey
+                    $('#probe-' + probeKey).text(serialData[probeKey]);
+                }
+            }
+
+            // Scroll the textarea to view the last line
+            $('.textarea').each(function () {
+                $(this).scrollTop($(this)[0].scrollHeight);
+            });
+        },
+        error: function(error) {
+          console.error('Error updating serial data:', error);
+        }
+    });
+}
+
+// Update the serial data every 1 second (adjust the interval as needed)
+setInterval(updateSerialData, 0.5); // Update every second (1000 ms)
+
+
 </script>
         
 
