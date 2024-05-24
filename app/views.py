@@ -1,3 +1,4 @@
+from collections import defaultdict
 import threading
 from django.http import HttpResponseNotAllowed, JsonResponse
 from django.shortcuts import render
@@ -11,7 +12,7 @@ import threading
 import serial
 from django.views.decorators.csrf import csrf_exempt
 from django.core.cache import cache
-from.models import MasterData,comport_settings,mastering_data,parameter_settings
+from.models import MasterData,comport_settings,mastering_data,parameter_settings,MeasurementData
 from.models import find,TableOneData,TableTwoData,TableThreeData,TableFourData,TableFiveData
 import json
 from datetime import datetime
@@ -818,16 +819,61 @@ def master(request):
 
     return render(request, 'app/master.html', context)
 
-
+from collections import defaultdict
+from django.db.models import Count
 
 def measurement(request):
 
     if request.method == 'POST':
+        
         try:
             # Parse the JSON data sent in the request
             data = json.loads(request.body)
-            
-            # Extract the part model value from the data
+            print("Received data:", data)
+            print("Request body:", request.body)
+
+
+            # Save data to database
+            table_data = data.get('tableData', {}).get('formDataArray', [])
+            for row in table_data:
+                # Convert date string to proper format
+                date_str = row.get('date')
+                date_obj = datetime.strptime(date_str, '%d/%m/%Y %I:%M:%S %p').date()
+
+                print("Creating MeasurementData object with the following values:")
+                print(f"Parameter Name: {row.get('parameterName')}")
+                print(f"Readings: {row.get('readings')}")
+                print(f"Nominal: {row.get('nominal')}")
+                print(f"LSL: {row.get('lsl')}")
+                print(f"USL: {row.get('usl')}")
+                print(f"Status Cell: {row.get('statusCell')}")
+                print(f"Date: {date_obj}")
+                print(f"Operator: {row.get('operator')}")
+                print(f"Shift: {row.get('shift')}")
+                print(f"Machine: {row.get('machine')}")
+                print(f"Part Model: {row.get('partModel')}")
+                print(f"Part Status: {row.get('partStatus')}")
+                print(f"Customer Name: {row.get('customerName')}")
+                print(f"Component Serial Number: {row.get('compSrNo')}")
+
+                data_values = MeasurementData.objects.create(
+                    parameter_name=row.get('parameterName'),
+                    readings=row.get('readings'),
+                    nominal=row.get('nominal'),
+                    lsl=row.get('lsl'),
+                    usl=row.get('usl'),
+                    status_cell=row.get('statusCell'),
+                    date=date_obj,
+                    operator=row.get('operator'),
+                    shift=row.get('shift'),
+                    machine=row.get('machine'),
+                    part_model=row.get('partModel'),
+                    part_status=row.get('partStatus'),
+                    customer_name=row.get('customerName'),
+                    comp_sr_no=row.get('compSrNo')
+                )
+                data_values.save()
+
             part_model = data.get('partModel')
             print('your data from frontend:',part_model)
             if part_model:
@@ -914,13 +960,13 @@ def measurement(request):
                 d_values.append(item['d'])
                 e_values.append(item['e'])
                 probe_values.append(item['probe_no'])
-                print('Last stored parameter_name for meeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeemmmmmmm', parameter_name, 'is:', item)
+                print('Last stored parameter_name for ', parameter_name, 'is:', item)
 
             # Print o1 and d values
-            print('o1 values meeeeeeeeeeeeeeeeeeeeeeeeeeAAAAAAAAAAAAAAAA:', o1_values)
-            print('d values meeeeeeeeeeeeeeeeeeeeeeeeeeAAAAAAAAAAAAAAAA:', d_values)
-            print('e_values meeeeeeeeeeeeeeeeeeeeeeeeeeAAAAAAAAAAAAAAAA:',e_values)
-            print('probe_values meeeeeeeeeeeeeeeeeeeeeeeeeeAAAAAAAAAAAAAAAA :',probe_values)
+            print('o1 values :', o1_values)
+            print('d values :', d_values)
+            print('e_values :',e_values)
+            print('probe_values  :',probe_values)
 
 
             # Prepare the response data
@@ -949,6 +995,34 @@ def measurement(request):
     
     elif request.method == 'GET':
         part_model = request.GET.get('partModel', None)
+        print("part_model:",part_model)
+        # Retrieve distinct component serial numbers
+        comp_sr_no_list = MeasurementData.objects.filter(part_model=part_model).values_list('comp_sr_no', flat=True).distinct()
+        print('Distinct component_serial_number:', comp_sr_no_list)
+
+        # Initialize a dictionary to store part statuses for each component serial number
+        part_status_dict = defaultdict(set)
+
+        # Populate the dictionary with distinct part statuses for each component serial number
+        for comp_sr_no in comp_sr_no_list:
+            part_statuses = MeasurementData.objects.filter(comp_sr_no=comp_sr_no).values_list('part_status', flat=True).distinct()
+            part_status_dict[comp_sr_no].update(part_statuses)
+
+        # Initialize a dictionary to count each part status
+        part_status_count = defaultdict(int)
+
+        # Print the component serial numbers along with their distinct part statuses
+        for comp_sr_no, part_statuses in part_status_dict.items():
+            print(f'Component Serial Number: {comp_sr_no}, Part Statuses: {list(part_statuses)}')
+            for status in part_statuses:
+                part_status_count[status] += 1
+
+        # Print the counts for each part status
+        print("\nPart Status Counts:")
+        for status, count in part_status_count.items():
+            print(f'{status}: {count}')
+
+        
         operator = request.GET.get('operator', None)
         machine = request.GET.get('machine', None)
         shift = request.GET.get('shift', None)
@@ -1029,6 +1103,7 @@ def measurement(request):
             'ltl_values' : ltl_values,
             'utl_values' : utl_values,
             'step_no_values' : step_no_values,
+            'part_status_counts': dict(part_status_count), 
         }
         global serial_data
         with serial_data_lock:
@@ -1077,8 +1152,106 @@ def measurebox(request):
 
 
 
+from openpyxl import Workbook  # type: ignore
+from django.http import HttpResponse
+from django.template.loader import render_to_string
+
+
 def report(request):
-    return render(request,'app/report.html')
+    if request.method == 'POST':
+        from_date = request.POST.get('from_date')
+        to_date = request.POST.get('to_date')
+        selected_model = request.POST.get('selected_model')
+        selected_machine = request.POST.get('selected_machine')
+        selected_shift = request.POST.get('selected_shift')
+        selected_operator = request.POST.get('selected_operator')
+        selected_punch = request.POST.get('selected_punch')
+
+        print('your from date:', from_date)
+        print('your to_date:', to_date)
+        print('your selected_model:',selected_model)
+        print('your selected_operator:',selected_operator)
+        print('your selected_shift:',selected_shift)
+        print('your selected_machine:',selected_machine)
+        print('your selected_punch:',selected_punch)
+
+        # Query your database to get the data based on the date range
+        date_data = list(MeasurementData.objects.filter(
+            date__range=[from_date, to_date],
+            part_model=selected_model,
+            machine=selected_machine,
+            shift=selected_shift,
+            operator=selected_operator,
+            comp_sr_no = selected_punch
+
+        ).values())
+        print('your values are:',date_data)
+
+        if 'excel' in request.POST:
+            # Generate Excel report (existing code)
+            wb = Workbook()
+            ws = wb.active
+            ws.title = 'Report'
+
+            if date_data:
+                headers = list(date_data[0].keys())
+                ws.append(headers)
+                for data in date_data:
+                    ws.append(list(data.values()))
+            else:
+                ws.append(['No data available'])
+
+            response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+            response['Content-Disposition'] = 'attachment; filename="report.xlsx"'
+            wb.save(response)
+            return response
+
+        return JsonResponse(date_data, safe=False)
+
+
+       
+        
+    if request.method == 'GET':
+        try:
+
+            measurement_data = MeasurementData.objects.values_list('parameter_name', flat=True).distinct()
+            print('your parameter_name from that views:',measurement_data)
+
+            model_data = MeasurementData.objects.values_list('part_model', flat=True).distinct()
+            print('your part_model from that views:',model_data)
+            
+            machine_data = MeasurementData.objects.values_list('machine', flat=True).distinct()
+            print('your part_model from that views:',machine_data)
+            
+            shift_data = MeasurementData.objects.values_list('shift', flat=True).distinct()
+            print('your part_model from that views:',shift_data)
+            
+            operator_data = MeasurementData.objects.values_list('operator', flat=True).distinct()
+            print('your part_model from that views:',operator_data)
+            
+            punch_data = MeasurementData.objects.values_list('comp_sr_no', flat=True).distinct()
+            print('your component_serial_number from that views:',punch_data)
+            
+
+            vendor_data = TableFiveData.objects.values_list('vendor_code', flat=True).distinct()
+            print('your vendor from that views:',vendor_data)
+            
+            # Create a context dictionary to pass the data to the template
+            context = {
+                'measurement_data': measurement_data,
+                'model_data' : model_data,
+                'machine_data' : machine_data,
+                'shift_data' : shift_data,
+                'operator_data' : operator_data,
+                'vendor_data' : vendor_data,
+                'punch_data' : punch_data,
+
+            }
+        except json.JSONDecodeError as e:
+            return JsonResponse({'error': 'Invalid JSON format in the request body'}, status=400)    
+    # Render the template with the context
+    return render(request, 'app/report.html', context)
+
 
 def utility(request):
     return render(request,'app/utility.html')

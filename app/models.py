@@ -120,3 +120,29 @@ class parameter_settings(models.Model):
 
 def __str__(self):
         return f'{self.model_id} - {self.parameter_name}'
+
+
+class MeasurementData(models.Model):
+    parameter_name = models.CharField(max_length=100)
+    readings = models.FloatField()
+    nominal = models.FloatField()
+    lsl = models.FloatField()
+    usl = models.FloatField()
+    status_cell = models.CharField(max_length=100)
+    date = models.CharField(max_length=100)
+    operator = models.CharField(max_length=100)
+    shift = models.CharField(max_length=100)
+    machine = models.CharField(max_length=100)
+    part_model = models.CharField(max_length=100)
+    part_status = models.CharField(max_length=100)
+    customer_name = models.CharField(max_length=100)
+    comp_sr_no = models.CharField(max_length=100)
+
+    def __str__(self):
+        return f"{self.parameter_name} - {self.date}"
+    
+    def save(self, *args, **kwargs):
+        if self.date:  # Format the date and time string with AM/PM information
+            self.date = self.date.strftime("%m/%d/%Y, %I:%M:%S %p")
+        super().save(*args, **kwargs)
+

@@ -265,7 +265,7 @@ input[type=checkbox] {
     <label for="part_status" style="font-size: 15px; width: 120px;margin-left: 130px;" >PART STATUS</label>
     <input type="text" id="part_status" style="width: 170px;height: 40px;">
     
-    <input type="text" id="customer_name" style="width: 300px;height: 40px; margin-left: 10px;text-align: center;font-weight: bold;" value="{{ customer_name_values }}">
+    <input type="text" id="customer_name" style="width: 300px;height: 40px; margin-left: 10px;text-align: center;font-weight: bold;">
     
     <label for="comp_srno" style="width: 130px;">COMP SR.NO:</label>
     <input type="text" id="comp_srno" style="width: 200px;"><br>
@@ -287,7 +287,7 @@ input[type=checkbox] {
   <div><button type="button" id="master-btn"><b>Master<br>[F1]</b></button></div>
   <div><button type="button" id="start-btn"><b> Start<br>[F4]</b></button></div>
   <div><button type="button" id="stop-btn"><b>Stop<br>[F5]</b></button></div>
-  <div><button type="button" id="save-btn"><b> Save</b></button></div>
+  <div><button type="button" id="save-btn"><b> Save<br></b></button></div>
   <div><button type="button" id="back-btn"><b>Back<br>[F7]</b></button></div>
   
 
@@ -364,7 +364,9 @@ input[type=checkbox] {
     
 
 <script>
-    
+
+/////////////////////////////////////////////
+
 function redirectToMasterPage() {
         if (event.key === 'F1') {
             window.location.href = 'http://localhost:8000/master/';
@@ -437,137 +439,252 @@ function closeNotification() {
         document.getElementById("notificationDiv").style.display = "none";
         document.getElementById("notificationDiv1").style.display = "block";
     }
-//////////////////////////////////////////////////   
+
+
 
 $(document).ready(function(){
-// Function to display serial data
-function fetchData(selectedModel) {
-    // Create an object to hold the data to be sent
-    var data = {
-        partModel: selectedModel
-    };
-
-    // Make the AJAX POST request
-    $.ajax({
-        url: '/measurement/', // Replace with your server URL
-        type: 'POST',
-        headers: {
-            'X-CSRFToken': getCookie('csrftoken') // Include CSRF token in the request headers
-        },
-        contentType: 'application/json',
-        data: JSON.stringify(data),
-        success: function(response) {
-            // Clear existing table rows
-            $('#table-body').empty();
-
-            // Generate new rows dynamically based on retrieved values
-            for (var i = 0; i < response.parameterNameValues.length; i++) {
-                var row = document.createElement("tr");
-
-                var srNoCell = document.createElement("td");
-                srNoCell.textContent = i + 1; // Since i starts from 0
-                row.appendChild(srNoCell);
-
-                var parameterNameCell = document.createElement("td");
-                parameterNameCell.textContent = response.parameterNameValues[i];
-                row.appendChild(parameterNameCell);
-
-                var nominalCell = document.createElement("td");
-                nominalCell.textContent = response.nominalValues[i];
-                row.appendChild(nominalCell);
-
-                var readingsCell = document.createElement("td");
-                var readingsInput = document.createElement("input");
-                readingsInput.type = "text";
-                readingsInput.id = 'readings-input-' + i; // Assign a unique ID to readings input
-                readingsInput.className = "readingInputs"; // Optional: Add class for styling
-                readingsInput.style.width = "100%"; // Optional: Set input width
-                readingsCell.appendChild(readingsInput);
-                row.appendChild(readingsCell);
-
-                var lslCell = document.createElement("td");
-                lslCell.textContent = response.lslValues[i];
-                row.appendChild(lslCell);
-
-                // Placeholder for indicator cell
-                var indicatorCell = document.createElement("td");
-                var indicatorBox = document.createElement("div");
-                indicatorBox.className = "indicator-box"; // Apply CSS class for styling
-                indicatorBox.textContent = ""; // Placeholder for content
-                indicatorBox.id='indicator-box-' + i;
-
-                var indicatorBox1 = document.createElement("div");
-                indicatorBox1.className = "indicator-box1"; // Apply CSS class for styling
-                indicatorBox1.textContent = ""; // Placeholder for content
-                indicatorBox1.id='indicator-box1-' + i;
-              
-                // Apply CSS for inline-block display to make them appear side by side
-                indicatorBox.style.display = "inline-block";
-                indicatorBox1.style.display = "inline-block";
-
-                indicatorCell.appendChild(indicatorBox);
-                indicatorCell.appendChild(indicatorBox1);
-                row.appendChild(indicatorCell);
+    $("#save-btn").click(function(){
+        // Get form data
 
 
 
-                var uslCell = document.createElement("td");
-                uslCell.textContent = response.uslValues[i];
-                row.appendChild(uslCell);
+        // Loop through each table row
+        var formDataArray = [];
+        $("table tbody tr").each(function(index) {
+            var parameterName = $(this).find("td:nth-child(2)").text();
+            var readings = $(this).find(".readingInputs").val();
+            var nominal = $(this).find("td:nth-child(3)").text();
+            var lsl = $(this).find("td:nth-child(5)").text();
+            var usl = $(this).find("td:nth-child(7)").text();
+            var statusCell = $(this).find("td:nth-child(8)").text();
+            var date = $("#date").val();
+            var operator = $("#operator").val();
+            var shift = $("#shift").val();
+            var machine = $("#machine").val();
+            var partModel = $("#partModel").val();
+            var partStatus = $("#part_status").val();
+            var customerName = $("#customer_name").val();
+            var compSrNo = $("#comp_srno").val();
 
-                var statusCell = document.createElement("td");
-                statusCell.textContent = " "; // Placeholder for status
-                statusCell.className = "status_cell";
-                statusCell.id = 'status_cell-' + i;
-                row.appendChild(statusCell);
+            // Create an object with the data from each row
+            var rowFormData = {
+                parameterName: parameterName,
+                readings: readings,
+                nominal: nominal,
+                lsl: lsl,
+                usl: usl,
+                statusCell: statusCell,
+                date: date,
+                operator: operator,
+                shift: shift,
+                machine: machine,
+                partModel: partModel,
+                partStatus: partStatus,
+                customerName: customerName,
+                compSrNo: compSrNo,
 
-                // Append the row to the table body
-                $('#table-body').append(row);
+            };
 
-                // Log values to console
-                // Assuming response.customer_name_values holds the customer's name
-document.getElementById('customer_name').value = response.customer_name_values;
+            // Add the object to the array
+            formDataArray.push(rowFormData);
+        });
 
-                
-                console.log("customer_name_values:",response.customer_name_values),
-                console.log("Parameter Name:", response.parameterNameValues[i]);
-                console.log("Nominal Value:", response.nominalValues[i]);
-                console.log("LSL Value:", response.lslValues[i]);
-                console.log("USL Value:", response.uslValues[i]);
-                console.log("LTL Value:", response.ltlValues[i]);
-                console.log("UTL Value:", response.utlValues[i]);
-                console.log("measurementModeValues Value:", response.measurementModeValues[i]);
-                console.log("o1_values Value:", response.o1_values[i]);
-                console.log("d_values Value:", response.d_values[i]);
-                console.log("e_values Value:", response.e_values[i]);
-                console.log("probe_values Value:", response.probe_values[i]);
-                console.log("step_no Value:", response.step_no_values[i]);
-                
-                // Call displaySerialData function to update readings
-                // Call displaySerialData function to update readings
-                displaySerialData(response.probe_values[i], response.e_values[i], response.d_values[i], 
-                response.o1_values[i], readingsInput, response.measurementModeValues[i],response.step_no_values[i],
-                response.lslValues[i], response.uslValues[i],response.ltlValues[i],response.utlValues[i],
-                indicatorBox,indicatorBox1,statusCell
-                );
+        // Prepare data to be sent for the table
+        var tableData = {
+            formDataArray: formDataArray
+        };
+console.clear();
+        console.log('Table data to be sent:', tableData);
+
+        // Send data to the server
+        $.ajax({
+            type: "POST",
+            url: "/measurement/", // Update with your actual endpoint URL
+            contentType: "application/json",
+            dataType: "json",
+            data: JSON.stringify({
+                tableData: tableData
+            }),
+            beforeSend: function(xhr, settings) {
+                xhr.setRequestHeader("X-CSRFToken", "{{ csrf_token }}");
+            },
+            success: function(response){
+                // Handle success response
+                console.log("Data saved successfully: ", response);
+            },
+            error: function(xhr, status, error){
+                // Handle error
+                console.error("Error occurred while saving data: ", error);
             }
-        },
-        error: function(xhr, status, error) {
-            // Handle errors
-            console.error('Error:', error);
-        }
+        });
     });
-}
-
-// Call the function initially on page load
-fetchData($('#partModel').val());
-
-// Bind change event to #partModel element
-$('#partModel').change(function() {
-    var selectedModel = $(this).val();
-    // Call the function when partModel changes
-    fetchData(selectedModel);
 });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+//////////////////////////////////////////////////////
+
+
+document.getElementById("reset-button").addEventListener("click", function() {
+  document.getElementById("notification-container1").style.display = "block";
+});
+
+function closeNotification() {
+        document.getElementById("notification-container1").style.display = "none";
+    }
+
+    function handleOk() {
+        document.getElementById("notificationDiv").style.display = "none";
+        document.getElementById("notificationDiv1").style.display = "block";
+    }
+    
+// Function to display serial data
+$(document).ready(function() {
+    // Function to display serial data
+    function fetchData(selectedModel) {
+        var data = {
+            partModel: selectedModel
+        };
+
+        $.ajax({
+            url: '/measurement/', // Replace with your server URL
+            type: 'POST',
+            headers: {
+                'X-CSRFToken': getCookie('csrftoken') // Include CSRF token in the request headers
+            },
+            contentType: 'application/json',
+            data: JSON.stringify(data),
+            success: function(response) {
+                console.log('Response received:', response); // Log the response for debugging
+
+                if (!response.parameterNameValues || !response.nominalValues || !response.lslValues || !response.uslValues) {
+                    console.error('Invalid response format:', response);
+                    return;
+                }
+
+                $('#table-body').empty();
+
+                for (var i = 0; i < response.parameterNameValues.length; i++) {
+                    var row = document.createElement("tr");
+
+                    var srNoCell = document.createElement("td");
+                    srNoCell.textContent = i + 1;
+                    row.appendChild(srNoCell);
+
+                    var parameterNameCell = document.createElement("td");
+                    parameterNameCell.textContent = response.parameterNameValues[i];
+                    row.appendChild(parameterNameCell);
+
+                    var nominalCell = document.createElement("td");
+                    nominalCell.textContent = response.nominalValues[i];
+                    row.appendChild(nominalCell);
+
+                    var readingsCell = document.createElement("td");
+                    var readingsInput = document.createElement("input");
+                    readingsInput.type = "text";
+                    readingsInput.id = 'readings-input-' + i;
+                    readingsInput.className = "readingInputs";
+                    readingsInput.style.width = "100%";
+                    readingsCell.appendChild(readingsInput);
+                    row.appendChild(readingsCell);
+
+                    var lslCell = document.createElement("td");
+                    lslCell.textContent = response.lslValues[i];
+                    row.appendChild(lslCell);
+
+                    var indicatorCell = document.createElement("td");
+                    var indicatorBox = document.createElement("div");
+                    indicatorBox.className = "indicator-box";
+                    indicatorBox.textContent = "";
+                    indicatorBox.id = 'indicator-box-' + i;
+
+                    var indicatorBox1 = document.createElement("div");
+                    indicatorBox1.className = "indicator-box1";
+                    indicatorBox1.textContent = "";
+                    indicatorBox1.id = 'indicator-box1-' + i;
+
+                    indicatorBox.style.display = "inline-block";
+                    indicatorBox1.style.display = "inline-block";
+
+                    indicatorCell.appendChild(indicatorBox);
+                    indicatorCell.appendChild(indicatorBox1);
+                    row.appendChild(indicatorCell);
+
+                    var uslCell = document.createElement("td");
+                    uslCell.textContent = response.uslValues[i];
+                    row.appendChild(uslCell);
+
+                    var statusCell = document.createElement("td");
+                    statusCell.textContent = "";
+                    statusCell.className = "status_cell";
+                    statusCell.id = 'status_cell-' + i;
+                    row.appendChild(statusCell);
+
+                    $('#table-body').append(row);
+
+                    var customerName = response.customer_name_values;
+
+                    // Update the input box with the value
+                    document.getElementById("customer_name").value = customerName;
+
+                    console.log("Parameter Name:", response.parameterNameValues[i]);
+                    console.log("Nominal Value:", response.nominalValues[i]);
+                    console.log("LSL Value:", response.lslValues[i]);
+                    console.log("USL Value:", response.uslValues[i]);
+                    console.log("LTL Value:", response.ltlValues[i]);
+                    console.log("UTL Value:", response.utlValues[i]);
+                    console.log("Measurement Mode Value:", response.measurementModeValues[i]);
+                    console.log("O1 Value:", response.o1_values[i]);
+                    console.log("D Value:", response.d_values[i]);
+                    console.log("E Value:", response.e_values[i]);
+                    console.log("Probe Value:", response.probe_values[i]);
+                    console.log("Step No Value:", response.step_no_values[i]);
+                    console.log("customer_name_values:", response.customer_name_values);
+
+                    displaySerialData(
+                        response.probe_values[i], 
+                        response.e_values[i], 
+                        response.d_values[i], 
+                        response.o1_values[i], 
+                        readingsInput, 
+                        response.measurementModeValues[i],
+                        response.step_no_values[i],
+                        response.lslValues[i], 
+                        response.uslValues[i],
+                        response.ltlValues[i],
+                        response.utlValues[i],
+                        indicatorBox, 
+                        indicatorBox1, 
+                        statusCell
+                    );
+                }
+            },
+            error: function(xhr, status, error) {
+                console.error('Error:', error);
+            }
+        });
+    }
+
+    // Call fetchData initially on page load with the selected value
+    fetchData($('#partModel').val());
+
+    // Bind change event to #partModel element
+    $('#partModel').change(function() {
+        var selectedModel = $(this).val();
+        fetchData(selectedModel);
+    });
 });
 
 
@@ -659,7 +776,9 @@ document.getElementById("stop-btn").addEventListener("click", function() {
 
 });
 
+
 document.getElementById("save-btn").addEventListener("click", function() {
+            function clearValues() {
             var partStatusInput = document.getElementById("part_status");
             var partStatus = partStatusInput.value;
             var acceptInput = document.getElementById("accept");
@@ -677,7 +796,6 @@ document.getElementById("save-btn").addEventListener("click", function() {
             statusCells.forEach(function(statusCell) {
                 statusCell.textContent = ""; // Clear text content
                 statusCell.style.backgroundColor = ""; // Clear text content
-
             });
 
             var readingInputs = document.querySelectorAll('.readingInputs');
@@ -694,13 +812,15 @@ document.getElementById("save-btn").addEventListener("click", function() {
             var punchTextarea = document.getElementById("punch_textarea");
             punchTextarea.value = "";
 
-    
             var indicatorBoxes = document.querySelectorAll('.indicator-box, .indicator-box1');
             indicatorBoxes.forEach(function(indicatorBox) {
-            indicatorBox.style.background = "";
+                indicatorBox.style.background = "";
             });
+        }
 
-            if (hide === 'True') {
+        setTimeout(clearValues, 1000); // Execute clearValues function after 1 second (1000 milliseconds)
+           
+        if (hide === 'True') {
             document.getElementById('notification-container').style.display = 'block';
             document.getElementById('punch_textarea').style.display = 'block';
             document.getElementById('punch_textarea').focus();
@@ -710,55 +830,61 @@ document.getElementById("save-btn").addEventListener("click", function() {
         });
 
 
+ 
 
-
-
-
-
-
-
-// Function to handle back button click
+        
 document.getElementById("back-btn").addEventListener("click", function() {
     if (currentStep > 1) {
         currentStep--; // Decrement current step
         
-        // Array to store indices where value equals currentStep
         var indices = [];
-        
-        // Loop through step_no_values array
+
         for (var i = 0; i < step_no_values.length; i++) {
             if (step_no_values[i] === currentStep) {
-                indices.push(i); // Push index to indices array
+                indices.push(i);
             }
         }
-        
-        // Clear readingsCell and statusCell values at indices
+
+
+        // Clear the text content of the status cells
         indices.forEach(function(index) {
-            // Clear readingsCell value
-            var readingsInput = document.getElementById('readings-input-' + index);
-            if (readingsInput) {
-                readingsInput.value = ""; // Clear input value
+
+            var readingInput = document.getElementById('readings-input-' + index);
+            if (readingInput) {
+                readingInput.value = "";
+                
             }
 
-            // Clear statusCell value
+
             var statusCell = document.getElementById('status_cell-' + index);
             if (statusCell) {
-                statusCell.textContent = ""; // Clear text content
-                statusCell.style.backgroundColor = ""; // Clear text content
+                statusCell.textContent = "";
+                statusCell.style.backgroundColor = "";
             }
         });
-      
+
         if (currentStep === totalSteps) {
-            var partStatus = document.getElementById('part_status');
-            partStatus.value = ""; // Clear text content
-            partStatus.style.backgroundColor = ""; // Clear text content
-        }
-        
-        console.clear();
-        // Display indices in console
-        console.log("Indices where value equals currentStep:", indices);
+    var partStatusInput = document.getElementById("part_status");
+    if (partStatusInput) {
+        partStatusInput.value = "";
+        partStatusInput.style.backgroundColor = "";
+    }
+
+}
+        // Show notification for going back
+        showNotification(`Going back to step ${currentStep}.`);
+
+        // Start calculation for the current step
+        startContinuousUpdate();
+    } else {
+        showNotification("Already at the first step.");
     }
 });
+
+
+
+
+
 
 
 
@@ -771,7 +897,7 @@ function moveToNextStep() {
         
         return;
     }
-    
+    console.clear();
     console.log("Moving to step:", currentStep);
     var statusCells = document.querySelectorAll(".status_cell");
     statusCells.forEach(function(cell) {
@@ -877,29 +1003,31 @@ usl, ltl, utl,indicatorBox,indicatorBox1,statusCell) {
                         readingsInput.style.color = color;
                         readingsInput.style.textShadow = (color === 'red') ? '0 0 2px white' : '0 0 2px black';
 
-document.getElementById('stop-btn').addEventListener('click', function() {   
-   var indices = [];
-   // Assuming step_no_values and currentStep are defined somewhere
-   for (var i = 0; i < step_no_values.length; i++) {
-       if (step_no_values[i] === currentStep) {
-           indices.push(i);
-       }
-   }
 
-   indices.forEach(function(index) {
-       var statusCell = document.getElementById('status_cell-' + index); // Assuming 'status-cell' is the class of your status cells
-       statusCell.style.backgroundColor = color;
-       if (color === "#00ff00") {
-           statusCell.textContent = "ACCEPT";
-           statusCell.style.fontWeight = "bold";
-       } else if (color === "red") {
-           statusCell.textContent = "REJECT";
-           statusCell.style.fontWeight = "bold";
-       } else if (color === "yellow") {
-           statusCell.textContent = "REWORK";
-           statusCell.style.fontWeight = "bold";
-       }
-   });
+
+document.getElementById('stop-btn').addEventListener('click', function() {
+    var indices = [];
+    // Assuming step_no_values and currentStep are defined somewhere
+    for (var i = 0; i < step_no_values.length; i++) {
+        if (step_no_values[i] === currentStep) {
+            indices.push(i);
+        }
+    }
+
+    indices.forEach(function(index) {
+        var statusCell = document.getElementById('status_cell-' + index); // Assuming 'status-cell' is the class of your status cells
+        statusCell.style.backgroundColor = color;
+        if (color === "#00ff00") {
+            statusCell.textContent = "ACCEPT";
+            statusCell.style.fontWeight = "bold";
+        } else if (color === "red") {
+            statusCell.textContent = "REJECT";
+            statusCell.style.fontWeight = "bold";
+        } else if (color === "yellow") {
+            statusCell.textContent = "REWORK";
+            statusCell.style.fontWeight = "bold";
+        }
+    });
 });
 
 
@@ -1128,6 +1256,31 @@ var utl_values_str = "{{ utl_values|safe }}";
 var utl_values_cleaned = utl_values_str.replace(/[\[\]']+/g, '');
 var utl_values = utl_values_cleaned.split(',');
 
+var part_status_counts_str = "{{ part_status_counts|safe }}";
+        // Clean the string by removing square brackets, curly braces, and single quotes
+        var part_status_counts_cleaned = part_status_counts_str.replace(/[\[\]{}'\s]+/g, '');
+        // Split the string into an array of status-count pairs
+        var part_status_counts = part_status_counts_cleaned.split(',');
+
+        // Initialize an empty object to store the counts
+        var status_counts = {};
+        // Iterate over each pair and split by colon to separate status and count
+        part_status_counts.forEach(function(pair, index) {
+            // Split by colon to get status and count
+            var [status, count] = pair.split(':');
+            // Trim any whitespace and parse the count as an integer
+            status_counts[status.trim()] = parseInt(count.trim());
+        });
+
+        // Set the input field values based on the parsed counts
+        document.getElementById('accept').value = status_counts.ACCEPT || 0;
+        document.getElementById('reject').value = status_counts.REJECT || 0;
+        document.getElementById('rework').value = status_counts.REWORK || 0;
+
+        // Log the final status counts for debugging
+        console.log("status_counts:", status_counts);
+
+
 var step_no_values_str = "{{ step_no_values|safe }}";
 var step_no_values_cleaned = step_no_values_str.replace(/[\[\]']+/g, '');
 var step_no_values = step_no_values_cleaned.split(',');
@@ -1144,6 +1297,7 @@ console.log("usl:",usl_values)
 console.log("ltl:",ltl_values);
 console.log("utl:",utl_values);
 console.log("step_no_values:",step_no_values);
+console.log("part_status_counts:",part_status_counts);
 
  
     // Select the table body

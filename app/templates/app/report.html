@@ -77,7 +77,16 @@ Report
              margin-top: 30px;
                
          }
-  #report-btn{
+  
+  .report-btn{
+      background-color: green;
+      color:black;           
+      height: 50px;
+      width: 150px; 
+      margin-left: 65px; 
+      margin-top: 30px;
+  }
+  .save-btn{
       background-color: green;
       color:black;           
       height: 50px;
@@ -86,6 +95,52 @@ Report
       margin-top: 30px;
   }
 
+  .pdf-btn{
+      background-color: red;
+      color:black;           
+      height: 50px;
+      width: 150px; 
+      margin-left: 65px; 
+      margin-top: 30px;
+  }
+
+  .email-btn{
+      background-color: yellow;
+      color:black;           
+      height: 50px;
+      width: 150px; 
+      margin-left: 65px; 
+      margin-top: 30px;
+  }
+
+  .print-btn{
+      background-color: green;
+      color:black;           
+      height: 50px;
+      width: 150px; 
+      margin-left: 65px; 
+      margin-top: 30px;
+  }
+
+  #report-table {
+    border-collapse: collapse;
+    width: 100%;
+}
+
+#table-headers th,
+#table-body td {
+    border: 1px solid black;
+    padding: 2px;
+    text-align: left;
+}
+
+#table-headers th {
+    background-color: #f2f2f2; /* Light gray background color for headers */
+}
+
+#table-body{
+    background-color: #f2f2f2; /* Alternate row background color */
+}
 
 
 </style>
@@ -109,15 +164,25 @@ Report
 
 
         <label for="sr.no" style="margin-top: 20px;" >PART.NO:</label>
-        <select id="sr_no" name="sr_no"></select>
+        <select class="sr_no" name="sr_no" disabled>
+            <option value="1" selected>1</option>
+        </select>
         
 
         <label for="partModel">PART MODEL:</label>
-        <select id="partModel" name="partModel"></select><br>
+        <select class="partModel" name="partModel">
+          {% for model in model_data %}
+                <option>{{ model }}</option>
+            {% endfor %}
+        </select><br>
 
-        <label for="parameter_name">PARAMATER NAME:</label>
-        <select id="parameter_name" name="parameter_name"></select>
-
+        <label for="parameter_name">Parameter Name:</label>
+        <select id="parameter_name" name="parameter_name">
+          {% for parameter in measurement_data %}
+                <option>{{ parameter }}</option>
+            {% endfor %}
+        </select>
+    
         <label for="fixure_no">FIXURE NO:</label>
         <select id="fixure_no" name="fixure_no"></select><br>
 
@@ -130,27 +195,39 @@ Report
         <input type="datetime-local" id="to_date" name="to_date"><br>
 
         <label for="machine" style="margin-top: 30px;">MACHINE:</label>
-        <select id="machine" name="machine"></select>
+        <select class="machine" name="machine">
+          {% for machine in machine_data %}
+                <option>{{ machine }}</option>
+            {% endfor %}
+        </select>
 
         <label for="vendor_code">VENDOR CODE:</label>
         <select id="vendor_code" name="vendor_code"></select><br>
 
         <label for="operator">OPERATOR:</label>
-        <select id="operator" name="operator"></select>
+        <select class="operator" name="operator">
+          {% for operator in operator_data %}
+                <option>{{ operator }}</option>
+            {% endfor %}
+        </select>
 
         <label for="batch_no">BATCH NO:</label>
         <select id="batch_no" name="batch_no"></select><br>
 
         <label for="job_no">JOB NO:</label>
-        <select id="job_no" name="job_no"></select>
+        <select class="job_no" name="job_no"></select>
         
         <label for="shift">SHIFT:</label>
-        <select id="shift" name="shift"></select><br>
+        <select class="shift" name="shift">
+          {% for shift in shift_data %}
+                <option>{{ shift }}</option>
+            {% endfor %}
+        </select><br>
 
         <a href="{% url 'index' %}" >
           <button type="button" id="cancel-btn"><b>Cancel</b></button>
           </a>
-        <button type="button" id="report-btn"><b>View Report</b></button>
+        <button type="button" class="report-btn"><b>View Report</b></button>
      
     </div>
 
@@ -160,17 +237,29 @@ Report
 
 
         <label for="sr.no" >PART.NO:</label>
-        <select id="sr_no" name="sr_no"></select>
+        <select class="sr_no" name="sr_no" disabled>
+            <option value="1" selected>1</option>
+        </select>
         
 
         <label for="partModel">PART MODEL:</label>
-        <select id="partModel" name="partModel"></select><br>
+        <select class="partModel" name="partModel">
+          {% for model in model_data %}
+                <option>{{ model }}</option>
+            {% endfor %}
+        </select><br>
 
         <label for="parameter_name">PARAMATER NAME:</label>
-        <select id="parameter_name" name="parameter_name"></select>
+        <select id="parameter_name" name="parameter_name" disabled>
+          {% for parameter in measurement_data %}
+                <option>{{ parameter }}</option>
+            {% endfor %}
+        </select>
 
         <label for="fixure_no">FIXURE NO:</label>
-        <select id="fixure_no" name="fixure_no"></select><br>
+        <select id="fixure_no" name="fixure_no" disabled></select><br>
+
+        
 
         
         <label for="from_date" style="margin-top: 30px;">FROM DATE TIME:</label>
@@ -181,27 +270,47 @@ Report
         <input type="datetime-local" id="to_date" name="to_date"><br>
 
         <label for="machine" style="margin-top: 30px;">MACHINE:</label>
-        <select id="machine" name="machine"></select>
+        <select class="machine" name="machine">
+          {% for machine in machine_data %}
+                <option>{{ machine }}</option>
+            {% endfor %}
+        </select>
 
         <label for="vendor_code">VENDOR CODE:</label>
-        <select id="vendor_code" name="vendor_code"></select><br>
+        <select id="vendor_code" name="vendor_code">
+            {% for vendor in vendor_data %}
+                <option>{{ vendor }}</option>
+            {% endfor %}
+        </select><br>
 
         <label for="operator">OPERATOR:</label>
-        <select id="operator" name="operator"></select>
+        <select class="operator" name="operator">
+          {% for operator in operator_data %}
+                <option>{{ operator }}</option>
+            {% endfor %}
+        </select>
 
         <label for="batch_no">BATCH NO:</label>
-        <select id="batch_no" name="batch_no"></select><br>
+        <select id="batch_no" name="batch_no" disabled></select><br>
 
         <label for="job_no">JOB NO:</label>
-        <select id="job_no" name="job_no"></select>
+        <select class="job_no" name="job_no">
+            {% for punch in punch_data %}
+                <option>{{ punch }}</option>
+            {% endfor %}
+        </select>
         
         <label for="shift">SHIFT:</label>
-        <select id="shift" name="shift"></select><br>
+        <select class="shift" name="shift">toDateValue
+          {% for shift in shift_data %}
+                <option>{{ shift }}</option>
+            {% endfor %}
+        </select><br>
 
         <a href="{% url 'index' %}" >
           <button type="button" id="cancel-btn"><b>Cancel</b></button>
           </a>
-        <button type="button" id="report-btn"><b>View Report</b></button>    
+        <button type="button" class="report-btn"><b>View Report</b></button>    
     </div>
 
     <div class="item item-3" id="item3">
@@ -210,14 +319,24 @@ Report
 
 
         <label for="sr.no" >PART.NO:</label>
-        <select id="sr_no" name="sr_no"></select>
+        <select class="sr_no" name="sr_no" disabled>
+            <option value="1" selected>1</option>
+        </select>
         
 
         <label for="partModel">PART MODEL:</label>
-        <select id="partModel" name="partModel"></select><br>
+        <select class="partModel" name="partModel">
+          {% for model in model_data %}
+                <option>{{ model }}</option>
+            {% endfor %}
+        </select><br>
 
         <label for="parameter_name">PARAMATER NAME:</label>
-        <select id="parameter_name" name="parameter_name"></select>
+        <select id="parameter_name" name="parameter_name">
+          {% for parameter in measurement_data %}
+                <option>{{ parameter }}</option>
+            {% endfor %}
+        </select>
 
         <label for="fixure_no">FIXURE NO:</label>
         <select id="fixure_no" name="fixure_no"></select><br>
@@ -231,38 +350,62 @@ Report
         <input type="datetime-local" id="to_date" name="to_date"><br>
 
         <label for="machine" style="margin-top: 30px;">MACHINE:</label>
-        <select id="machine" name="machine"></select>
+        <select class="machine" name="machine">
+          {% for machine in machine_data %}
+                <option>{{ machine }}</option>
+            {% endfor %}
+        </select>
 
         <label for="vendor_code">VENDOR CODE:</label>
         <select id="vendor_code" name="vendor_code"></select><br>
 
         <label for="operator">OPERATOR:</label>
-        <select id="operator" name="operator"></select>
+        <select class="operator" name="operator">
+          {% for operator in operator_data %}
+                <option>{{ operator }}</option>
+            {% endfor %}
+        </select>
 
         <label for="batch_no">BATCH NO:</label>
         <select id="batch_no" name="batch_no"></select><br>
 
         <label for="job_no">JOB NO:</label>
-        <select id="job_no" name="job_no"></select>
+        <select class="job_no" name="job_no">
+            {% for punch in punch_data %}
+                <option>{{ punch }}</option>
+            {% endfor %}
+        </select>
         
         <label for="shift">SHIFT:</label>
-        <select id="shift" name="shift"></select><br>
+        <select class="shift" name="shift">
+          {% for shift in shift_data %}
+                <option>{{ shift }}</option>
+            {% endfor %}
+        </select><br>
 
         <a href="{% url 'index' %}" >
           <button type="button" id="cancel-btn"><b>Cancel</b></button>
           </a>
-        <button type="button" id="report-btn"><b>View Report</b></button>    
+        <button type="button" class="report-btn"><b>View Report</b></button>    
     </div>
 
     <div class="item item-4" id="item-4">
       <center style="color: purple; text-shadow: 2px 2px 4px rgb(240, 118, 240);">
         <h2><b>Jobwise Report </b></h2></center>
+
+
       <label for="sr.no" >PART.NO:</label>
-      <select id="sr_no" name="sr_no"></select>
+      <select class="sr_no" name="sr_no" disabled>
+        <option value="1" selected>1</option>
+      </select>
     
 
       <label for="partModel">PART MODEL:</label>
-      <select id="partModel" name="partModel"></select><br>
+      <select class="partModel" name="partModel">
+        {% for model in model_data %}
+                <option>{{ model }}</option>
+            {% endfor %}
+      </select><br>
 
       <label for="from_date" style="margin-top: 30px;">FROM DATE TIME:</label>
         <input type="datetime-local" id="from_date" name="from_date"><br>
@@ -272,12 +415,12 @@ Report
         <input type="datetime-local" id="to_date" name="to_date"><br>
 
         <label for="job_no"style="margin-top: 20px;">JOB NO:</label>
-        <select id="job_no" name="job_no" style="width: 40%;"></select><br>
+        <select class="job_no" name="job_no" style="width: 40%;"></select><br>
 
         <a href="{% url 'index' %}" >
           <button type="button" id="cancel-btn"><b>Cancel</b></button>
           </a>
-        <button type="button" id="report-btn"><b>View Report</b></button>  
+        <button type="button" class="report-btn"><b>View Report</b></button>  
 
     </div>
 
@@ -287,14 +430,24 @@ Report
 
 
         <label for="sr.no" >PART.NO:</label>
-        <select id="sr_no" name="sr_no"></select>
+        <select class="sr_no" name="sr_no" disabled>
+            <option value="1" selected>1</option>
+        </select>
         
 
         <label for="partModel">PART MODEL:</label>
-        <select id="partModel" name="partModel"></select><br>
+        <select class="partModel" name="partModel">
+          {% for model in model_data %}
+                <option>{{ model }}</option>
+            {% endfor %}
+        </select><br>
 
         <label for="parameter_name">PARAMATER NAME:</label>
-        <select id="parameter_name" name="parameter_name"></select>
+        <select id="parameter_name" name="parameter_name">
+          {% for parameter in measurement_data %}
+                <option>{{ parameter }}</option>
+            {% endfor %}
+        </select>
 
         <label for="fixure_no">FIXURE NO:</label>
         <select id="fixure_no" name="fixure_no"></select><br>
@@ -308,27 +461,43 @@ Report
         <input type="datetime-local" id="to_date" name="to_date"><br>
 
         <label for="machine" style="margin-top: 30px;">MACHINE:</label>
-        <select id="machine" name="machine"></select>
+        <select class="machine" name="machine">
+          {% for machine in machine_data %}
+                <option>{{ machine }}</option>
+            {% endfor %}
+        </select>
 
         <label for="vendor_code">VENDOR CODE:</label>
         <select id="vendor_code" name="vendor_code"></select><br>
 
         <label for="operator">OPERATOR:</label>
-        <select id="operator" name="operator"></select>
+        <select class="operator" name="operator">
+          {% for operator in operator_data %}
+                <option>{{ operator }}</option>
+            {% endfor %}
+        </select>
 
         <label for="batch_no">BATCH NO:</label>
         <select id="batch_no" name="batch_no"></select><br>
 
         <label for="job_no">JOB NO:</label>
-        <select id="job_no" name="job_no"></select>
+        <select class="job_no" name="job_no">
+            {% for punch in punch_data %}
+                <option>{{ punch }}</option>
+            {% endfor %}
+        </select>
         
         <label for="shift">SHIFT:</label>
-        <select id="shift" name="shift"></select><br>
+        <select class="shift" name="shift">
+          {% for shift in shift_data %}
+                <option>{{ shift }}</option>
+            {% endfor %}
+        </select><br>
 
         <a href="{% url 'index' %}" >
           <button type="button" id="cancel-btn"><b>Cancel</b></button>
           </a>
-        <button type="button" id="report-btn"><b>View Report</b></button>    
+        <button type="button" class="report-btn"><b>View Report</b></button>    
     </div>
 
 
@@ -338,14 +507,24 @@ Report
 
 
         <label for="sr.no" >PART.NO:</label>
-        <select id="sr_no" name="sr_no"></select>
+        <select class="sr_no" name="sr_no" disabled>
+            <option value="1" selected>1</option>
+        </select>
         
 
         <label for="partModel">PART MODEL:</label>
-        <select id="partModel" name="partModel"></select><br>
+        <select class="partModel" name="partModel">
+          {% for model in model_data %}
+                <option>{{ model }}</option>
+            {% endfor %}
+        </select><br>
 
         <label for="parameter_name">PARAMATER NAME:</label>
-        <select id="parameter_name" name="parameter_name"></select>
+        <select id="parameter_name" name="parameter_name">
+          {% for parameter in measurement_data %}
+                <option>{{ parameter }}</option>
+            {% endfor %}
+        </select>
 
         <label for="fixure_no">FIXURE NO:</label>
         <select id="fixure_no" name="fixure_no"></select><br>
@@ -359,32 +538,83 @@ Report
         <input type="datetime-local" id="to_date" name="to_date"><br>
 
         <label for="machine" style="margin-top: 30px;">MACHINE:</label>
-        <select id="machine" name="machine"></select>
+        <select class="machine" name="machine">
+          {% for machine in machine_data %}
+                <option>{{ machine }}</option>
+            {% endfor %}
+        </select>
 
         <label for="vendor_code">VENDOR CODE:</label>
         <select id="vendor_code" name="vendor_code"></select><br>
 
         <label for="operator">OPERATOR:</label>
-        <select id="operator" name="operator"></select>
+        <select class="operator" name="operator">
+          {% for operator in operator_data %}
+                <option>{{ operator }}</option>
+            {% endfor %}
+        </select>
 
         <label for="batch_no">BATCH NO:</label>
         <select id="batch_no" name="batch_no"></select><br>
 
         <label for="job_no">JOB NO:</label>
-        <select id="job_no" name="job_no"></select>
+        <select class="job_no" name="job_no">
+            {% for punch in punch_data %}
+                <option>{{ punch }}</option>
+            {% endfor %}
+        </select>
         
         <label for="shift">SHIFT:</label>
-        <select id="shift" name="shift"></select><br>
+        <select class="shift" name="shift">
+          {% for shift in shift_data %}
+                <option>{{ shift }}</option>
+            {% endfor %}
+        </select><br>
 
         <a href="{% url 'index' %}" >
           <button type="button" id="cancel-btn"><b>Cancel</b></button>
           </a>
-        <button type="button" id="report-btn"><b>View Report</b></button>    
+        <button type="button" class="report-btn"><b>View Report</b></button>    
     </div>
+
+    
+</div>
+<div class="item item-7" id="item-7" style="display: none;">
+    <center style="color: purple; text-shadow: 2px 2px 4px rgb(240, 118, 240);">
+        <h2><b>Report for you</b></h2>
+    </center>
+
+
+
+    <!-- Container for the data table -->
+    <div id="report-data">
+        <table id="report-table">
+            <thead>
+                <tr id="table-headers">
+                    <!-- Headers will be populated here -->
+                </tr>
+            </thead>
+            <tbody id="table-body">
+                <!-- Data rows will be populated here -->
+            </tbody>
+        </table>
+    </div>
+    <a href="{% url 'index' %}">
+      <button type="button" id="cancel-btn"><b>Cancel</b></button>
+  </a>
+  <button type="button" class="save-btn"><b>XLSX</b></button>
+  <button type="button" class="pdf-btn"><b>PDF</b></button>
+  <button type="button" class="email-btn"><b>EMAIL</b></button>
+  <button type="button" class="print-btn"><b>PRINT</b></button>
 
 </div>
 
+
+
 <script>
+
+
+  ///////////////////////////////////////////////////
   function enlargeItem(index) {
             document.querySelectorAll('.box-1 > div').forEach(function (el) {
                 el.style.backgroundColor = ''; 
@@ -410,6 +640,301 @@ Report
             showItem('item-1');
             document.querySelector('.box-1 .inner-box-1').style.backgroundColor='red';
         };
+
+
+
+///////////////////////////////////
+const measurementData_str = "{{ measurement_data|safe }}";
+var measurementData_cleaned = measurementData_str.replace(/[\[\]']+/g, '');
+var measurementData_values = measurementData_cleaned.split(',');
+console.log('Measurement Data:', measurementData_values);
+
+const model_str = "{{ model_data|safe }}";
+var model_cleaned = model_str.replace(/[\[\]']+/g, '');
+var model_values = model_cleaned.split(',');
+console.log('Model Data:', model_values);
+
+const machine_str = "{{ machine_data|safe }}";
+var machine_cleaned = machine_str.replace(/[\[\]']+/g, '');
+var machine_values = machine_cleaned.split(',');
+console.log('Machine Data:', machine_values);
+
+const shift_str = "{{ shift_data|safe }}";
+var shift_cleaned = shift_str.replace(/[\[\]']+/g, '');
+var shift_values = shift_cleaned.split(',');
+console.log('shift Data:', shift_values);
+
+const operator_str = "{{ operator_data|safe }}";
+var operator_cleaned = operator_str.replace(/[\[\]']+/g, '');
+var operator_values = operator_cleaned.split(',');
+console.log('Operator Data:', operator_values);
+
+
+const vendor_str = "{{ vendor_data|safe }}";
+var vendor_cleaned = vendor_str.replace(/[\[\]']+/g, '');
+var vendor_values = vendor_cleaned.split(',');
+console.log('Vendor Data:', vendor_values);
+
+
+const punch_str = "{{ punch_data|safe }}";
+var punch_cleaned = punch_str.replace(/[\[\]']+/g, '');
+var punch_values = punch_cleaned.split(',');
+console.log('punch Data:', punch_values);
+
+
+$(document).ready(function() {
+    var fromDate = '';
+    var toDate = '';
+
+    $('.report-btn').on('click', function() {
+        // Find the closest active item
+        var activeItem = $(this).closest('.item');
+
+
+        var selectedModel = activeItem.find('.partModel').val();
+        var selectedShift = activeItem.find('.shift').val();
+        var selectedOperator = activeItem.find('.operator').val();
+        var selectedMachine = activeItem.find('.machine').val();
+        var selectedPunch = activeItem.find('.job_no').val();
+        var fromDateValue = activeItem.find('#from_date').val();
+        var toDateValue = activeItem.find('#to_date').val();
+
+        console.log('Selected model:', selectedModel);
+        console.log('From Date Value:', fromDateValue);
+        console.log('To Date Value:', toDateValue);
+        console.log('selected shift Value:', selectedShift);
+        console.log('selcted machine Value:', selectedMachine);
+        console.log('selected operator value:',selectedOperator);
+        console.log('selected job_no value:',selectedPunch);
+
+        if (!fromDateValue || !toDateValue) {
+            console.error('Date values are empty');
+            return;
+        }
+
+        fromDate = fromDateValue.split('T')[0]; // Extract date part only
+        toDate = toDateValue.split('T')[0]; // Extract date part only
+
+        console.log('Selected From Date:', fromDate);
+        console.log('Selected To Date:', toDate);
+
+        // AJAX POST request to send the selected dates to the server
+        $.ajax({
+            url: '/report/',
+            type: 'POST',
+            data: {
+                'from_date': fromDate,
+                'to_date': toDate,
+                'selected_model': selectedModel,
+                'selected_shift' : selectedShift,
+                'selected_operator' : selectedOperator,
+                'selected_machine' : selectedMachine,
+                'selected_punch' : selectedPunch,
+                'csrfmiddlewaretoken': '{{ csrf_token }}'  // Ensure to include the CSRF token
+            },
+            success: function(response) {
+                console.log('Server Response:', response);
+
+
+                // Close the active item
+                activeItem.hide();
+
+                // Open item-7 and display values
+                $('#item-7').show();
+
+                // Populate table headers
+                var headers = '';
+                if(response.length > 0) {
+                    for(var key in response[0]) {
+                        headers += '<th>' + key + '</th>';
+                    }
+                } else {
+                    headers = '<th>No data available</th>';
+                }
+                $('#table-headers').html(headers);
+
+                // Populate table rows
+                var rows = '';
+                if(response.length > 0) {
+                    $.each(response, function(index, row) {
+                        rows += '<tr>';
+                        $.each(row, function(key, value) {
+                            rows += '<td>' + value + '</td>';
+                        });
+                        rows += '</tr>';
+                    });
+                } else {
+                    rows = '<tr><td colspan="100%">No data available</td></tr>';
+                }
+                $('#table-body').html(rows);
+                $('.box-1').hide();
+                $('.box').hide();
+
+            },
+            error: function(xhr, status, error) {
+                console.error('Error:', error);
+            }
+        });
+    });
+
+    $('.save-btn').on('click', function() {
+        if (!fromDate || !toDate) {
+            console.error('Date values are empty');
+            return;
+        }
+
+        console.log('Selected From Date:', fromDate);
+        console.log('Selected To Date:', toDate);
+
+        // AJAX POST request to send the selected dates to the server
+        $.ajax({
+            url: '/report/',
+            type: 'POST',
+            data: {
+                'from_date': fromDate,
+                'to_date': toDate,
+                'excel': 'true',  // Indicate that the response should be an Excel file
+                'csrfmiddlewaretoken': '{{ csrf_token }}'  // Ensure to include the CSRF token
+            },
+            xhrFields: {
+                responseType: 'blob'
+            },
+            success: function(response, status, xhr) {
+                // Create a new Blob object using the response data
+                var blob = new Blob([response], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+                var link = document.createElement('a');
+                link.href = window.URL.createObjectURL(blob);
+                link.download = 'report.xlsx';
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            },
+            error: function(xhr, status, error) {
+                console.error('Error:', error);
+            }
+        });
+    });
+
+    // Function to set the active item
+    function setActiveItem(itemNumber) {
+        $('.item').removeClass('active'); // Remove active class from all items
+        $('#item' + itemNumber).addClass('active'); // Add active class to the selected item
+    }
+
+    // Add click event handlers for the inner-box elements to set the active item
+    $('.inner-box-1').on('click', function() { setActiveItem(1); });
+    $('.inner-box-2').on('click', function() { setActiveItem(2); });
+    $('.inner-box-3').on('click', function() { setActiveItem(3); });
+    $('.inner-box-4').on('click', function() { setActiveItem(4); });
+    $('.inner-box-5').on('click', function() { setActiveItem(5); });
+    $('.inner-box-6').on('click', function() { setActiveItem(6); });
+
+});
+
+
+
+// Add an event listener to log the selected value when it changes
+// Ensure the DOM is fully loaded before attaching the event listener
+// Function to handle model selection
+// Ensure the DOM is fully loaded before attaching the event listener
+// Function to handle model selection
+function handleModelSelection() {
+    var selectedModelElement = this.closest('.item').querySelector('.partModel');
+    var selectedModel = selectedModelElement ? selectedModelElement.value : '';
+    var selectedIndex = this.selectedIndex + 1; // +1 to get 1-based index
+    var selectedMachineElement = this.closest('.item').querySelector('.machine');
+    var selectedMachine = selectedMachineElement ? selectedMachineElement.value : '';
+    var selectedShiftElement = this.closest('.item').querySelector('.shift');
+    var selectedShift = selectedShiftElement ? selectedShiftElement.value : '';
+    var selectedOperatorElement = this.closest('.item').querySelector('.operator');
+    var selectedOperator = selectedOperatorElement ? selectedOperatorElement.value : '';
+    var selectedPunchElement = this.closest('.item').querySelector('.job_no');
+    var selectedPunch = selectedPunchElement ? selectedPunchElement.value : '';
+
+     
+
+
+
+    console.log('Selected machine:', selectedMachine);
+    console.log('Selected model:', selectedModel);
+    console.log('Selected model index:', selectedIndex);
+    console.log('Selected operator name:', selectedOperator);
+    console.log('selected shift is:',selectedShift);
+    console.log('selected shift is:',selectedPunch);
+
+    // Find the closest parent item element
+    var parentItem = this.closest('.item');
+
+    // Get the sibling element with class 'sr_no' within the parent item
+    var srNoSelect = parentItem.querySelector('.sr_no');
+
+    // Check if srNoSelect is not null before modifying its innerHTML
+    if (srNoSelect) {
+        // Clear the PART.NO dropdown
+        srNoSelect.innerHTML = '';
+        
+        // Add the new option based on the selected model index
+        var option = document.createElement('option');
+        option.value = selectedIndex;
+        option.text = selectedIndex;
+        srNoSelect.appendChild(option);
+    } else {
+        console.error('SR.NO select element not found.');
+    }
+}
+
+function initializeEventListeners() {
+    // Use querySelectorAll to select all elements with class 'partModel'
+    var partModelSelects = document.querySelectorAll('.partModel');
+    var machineSelects = document.querySelectorAll('.machine');
+    var shiftSelects = document.querySelectorAll('.shift');
+    var operatorSelects = document.querySelectorAll('.operator');
+    var operatorSelects = document.querySelectorAll('.job_no');
+
+    
+    // Loop through each partModelSelect element and add event listener
+    partModelSelects.forEach(function(partModelSelect) {
+        partModelSelect.addEventListener('change', handleModelSelection);
+
+        // Set default selected value (first option)
+        partModelSelect.selectedIndex = 0;
+
+        // Trigger the change event to update the dependent elements
+        var event = new Event('change');
+        partModelSelect.dispatchEvent(event);
+    });
+
+    var machineSelects = document.querySelectorAll('.machine');
+    machineSelects.forEach(function(machineSelect) {
+        machineSelect.addEventListener('change', handleModelSelection);
+    });
+
+    var operatorSelects = document.querySelectorAll('.operator');
+operatorSelects.forEach(function(operatorSelect) {
+    operatorSelect.addEventListener('change', handleModelSelection);
+});
+
+var shiftSelects = document.querySelectorAll('.shift');
+shiftSelects.forEach(function(shiftSelect) {
+    shiftSelect.addEventListener('change', handleModelSelection);
+});
+
+var punchSelects = document.querySelectorAll('.job_no');
+punchSelects.forEach(function(punchSelect) {
+    punchSelect.addEventListener('change', handleModelSelection);
+});
+
+}
+
+
+// Event listener for DOMContentLoaded
+document.addEventListener('DOMContentLoaded', initializeEventListeners);
+
+
+
+
+
+////////////////////////////////////        
 </script>
 
 {% endblock content %}
