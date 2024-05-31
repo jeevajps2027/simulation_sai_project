@@ -332,17 +332,17 @@ input[type=checkbox] {
         <div style="border: 2px solid black;width: 200px;background-color: rgb(167, 27, 167);"><b>RESET VALUES</b></div>
     </center>
     <div style="margin-top: 20px;"id="notificationDiv" >
-        <label><input type="checkbox" name="accept"style="margin-left: 5px;"><span style="background-color: green;margin-left: 5px; padding: 3px 8px; color: white;">ACCEPT</span></label><br>
-        <label><input type="checkbox" name="reject"style="margin-left: 3px;"><span style="background-color: red;margin-left: 3px; padding: 3px 8px; color: white;">REJECT</span></label><br>
-        <label><input type="checkbox" name="rework"style="margin-left: 4px;"><span style="background-color: yellow; padding: 3px 8px; color: black;">REWORK</span></label><br>    
+        <label><input type="checkbox" id="ACCEPT" name="ACCEPT"style="margin-left: 5px;"><span style="background-color: green;margin-left: 5px; padding: 3px 8px; color: white;">ACCEPT</span></label><br>
+        <label><input type="checkbox" id="REJECT" name="REJECT"style="margin-left: 3px;"><span style="background-color: red;margin-left: 3px; padding: 3px 8px; color: white;">REJECT</span></label><br>
+        <label><input type="checkbox" id="REWORK" name="REWORK"style="margin-left: 4px;"><span style="background-color: yellow; padding: 3px 8px; color: black;">REWORK</span></label><br>    
         <button onclick="handleOk()"style="margin-left: 70%;width: 100px; background-color: orangered;"><b>OK</b></button><br><br>
     </div>
     <div style="margin-top: 20px;display: none;"id="notificationDiv1" >
         <label for="userid">USER ID:</label>
-        <input type="text" id="userid" style="width: 150px;"><br>
+        <input type="text" id="userid" style="width: 150px;" ><br>
         <label for="password">PASSWORD:</label>
-        <input type="text" id="password" style="width: 150px;"><br><br>
-        <button style="margin-left: 70%;width: 100px; background-color: orangered;"><b>OK</b></button><br><br>
+        <input type="text" id="password" style="width: 150px;" ><br><br>
+        <button onclick="handleLogin()" style="margin-left: 70%;width: 100px; background-color: orangered;"><b>OK</b></button><br><br>
     </div>
 </div>
 
@@ -364,6 +364,67 @@ input[type=checkbox] {
     
 
 <script>
+/////////////////////////////////////////////
+function handleLogin() {
+    var username = document.getElementById('userid').value;
+    var password = document.getElementById('password').value;
+
+    if (username === "admin" && password === "admin") {
+        var checkboxes = document.querySelectorAll('input[type="checkbox"]:checked');
+        var selectedIDs = [];
+        var dateValue = document.getElementById('date').value;
+        var partModelValue = document.getElementById('partModel').value;
+
+        checkboxes.forEach(function(checkbox) {
+            selectedIDs.push(checkbox.id);
+        });
+
+        selectedIDs.push("Date: " + dateValue);
+        selectedIDs.push("Part Model: " + partModelValue);
+
+        console.clear();
+        console.log("Selected IDs and Values:", selectedIDs);
+
+        var csrftoken = getCookie('csrftoken');
+        $.ajax({
+            type: "POST",
+            url: "/measurement/",
+            contentType: "application/json",
+            dataType: "json",
+            data: JSON.stringify({ selectedIDs: selectedIDs }),
+            headers: { 'X-CSRFToken': csrftoken },
+            success: function(response) {
+                console.log("Data sent successfully:", response);
+
+                // Update the input fields with the counts received from the server
+                document.getElementById('accept').value = response.ACCEPT || 0;
+                document.getElementById('reject').value = response.REJECT || 0;
+                document.getElementById('rework').value = response.REWORK || 0;
+            },
+            error: function(xhr, status, error) {
+                console.error("Error sending data:", error);
+            }
+        });
+    } else {
+        alert("Incorrect username or password. Please try again.");
+    }
+}
+
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
 
 /////////////////////////////////////////////
 
@@ -635,9 +696,17 @@ $(document).ready(function() {
                     $('#table-body').append(row);
 
                     var customerName = response.customer_name_values;
-
-                    // Update the input box with the value
                     document.getElementById("customer_name").value = customerName;
+
+                    // Extract the counts with default value 0 if undefined
+                    const acceptCount = response.part_status_counts.ACCEPT || 0;
+                    const rejectCount = response.part_status_counts.REJECT || 0;
+                    const reworkCount = response.part_status_counts.REWORK || 0;
+
+                    // Set the values in the input fields
+                    document.getElementById('accept').value = acceptCount;
+                    document.getElementById('reject').value = rejectCount;
+                    document.getElementById('rework').value = reworkCount;
 
                     console.log("Parameter Name:", response.parameterNameValues[i]);
                     console.log("Nominal Value:", response.nominalValues[i]);
@@ -652,7 +721,8 @@ $(document).ready(function() {
                     console.log("Probe Value:", response.probe_values[i]);
                     console.log("Step No Value:", response.step_no_values[i]);
                     console.log("customer_name_values:", response.customer_name_values);
-
+                    console.log("part_status_counts:", response.part_status_counts);
+                    
                     displaySerialData(
                         response.probe_values[i], 
                         response.e_values[i], 
@@ -1136,20 +1206,31 @@ function getCookie(name) {
         document.getElementById('punch_textarea').focus();
     };
     
-        function handleEnterKeyPress(event) {
-            if (event.key === 'Enter') {
-                // Get the value from the textarea
-                var punchValue = document.getElementById('punch_textarea').value;
-                
-                // Set the value in the COMP SR.NO input box
-                document.getElementById('comp_srno').value = punchValue;
+    function handleEnterKeyPress(event) {
+    if (event.key === 'Enter') {
+        // Get the value from the textarea
+        var punchValue = document.getElementById('punch_textarea').value;
+        var partModelValue = document.getElementById('partModel').value;
+
+        // Set the value in the COMP SR.NO input box
+        document.getElementById('comp_srno').value = punchValue;
+
+        // Disable the notification container
+        document.getElementById('notification-container').style.display = 'none';
+
+        // Send the value to the backend via AJAX
+        var xhr = new XMLHttpRequest();
+        xhr.open('POST', '/measurement/', true);
+        xhr.setRequestHeader('Content-Type', 'application/json');
+        xhr.setRequestHeader('X-CSRFToken', getCookie('csrftoken')); // CSRF token for security
     
-                
-                
-                // Disable the notification container
-                document.getElementById('notification-container').style.display = 'none';
-            }
-        }
+        var data = JSON.stringify({
+            punch_value: punchValue,
+            part_model: partModelValue
+        });
+        xhr.send(data);
+    }
+}
         function closeNotification() {
             // Disable the notification container
             document.getElementById('notification-container').style.display = 'none';
@@ -1256,29 +1337,6 @@ var utl_values_str = "{{ utl_values|safe }}";
 var utl_values_cleaned = utl_values_str.replace(/[\[\]']+/g, '');
 var utl_values = utl_values_cleaned.split(',');
 
-var part_status_counts_str = "{{ part_status_counts|safe }}";
-        // Clean the string by removing square brackets, curly braces, and single quotes
-        var part_status_counts_cleaned = part_status_counts_str.replace(/[\[\]{}'\s]+/g, '');
-        // Split the string into an array of status-count pairs
-        var part_status_counts = part_status_counts_cleaned.split(',');
-
-        // Initialize an empty object to store the counts
-        var status_counts = {};
-        // Iterate over each pair and split by colon to separate status and count
-        part_status_counts.forEach(function(pair, index) {
-            // Split by colon to get status and count
-            var [status, count] = pair.split(':');
-            // Trim any whitespace and parse the count as an integer
-            status_counts[status.trim()] = parseInt(count.trim());
-        });
-
-        // Set the input field values based on the parsed counts
-        document.getElementById('accept').value = status_counts.ACCEPT || 0;
-        document.getElementById('reject').value = status_counts.REJECT || 0;
-        document.getElementById('rework').value = status_counts.REWORK || 0;
-
-        // Log the final status counts for debugging
-        console.log("status_counts:", status_counts);
 
 
 var step_no_values_str = "{{ step_no_values|safe }}";
@@ -1297,9 +1355,7 @@ console.log("usl:",usl_values)
 console.log("ltl:",ltl_values);
 console.log("utl:",utl_values);
 console.log("step_no_values:",step_no_values);
-console.log("part_status_counts:",part_status_counts);
 
- 
     // Select the table body
 var tableBody = document.getElementById("table-body");
 

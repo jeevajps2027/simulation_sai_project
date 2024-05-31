@@ -822,57 +822,103 @@ def master(request):
 from collections import defaultdict
 from django.db.models import Count
 
-def measurement(request):
+import json
+from django.http import JsonResponse
+from .models import MeasurementData
+from datetime import datetime
 
+def measurement(request):
     if request.method == 'POST':
-        
         try:
             # Parse the JSON data sent in the request
             data = json.loads(request.body)
             print("Received data:", data)
-            print("Request body:", request.body)
+            part_model = data.get('part_model')
+            punch_value = data.get('punch_value')
+            # Process the punch_value as needed
+            print(f"Received punch value: {punch_value}")
+            selected_ids = data.get('selectedIDs')
+            print("Received data:", selected_ids)
 
+            try:
+                # Print each value separately
+                for index, item in enumerate(selected_ids):
+                    print(f"Item {index + 1}: {item}")
+                    
+                # Extract part_model and date from selected_ids
+                part_model = None
+                date = None
+                
+                for item in selected_ids:
+                    if item.startswith('Part Model:'):
+                        part_model = item.split(':')[1].strip()
+                    if item.startswith('Date:'):
+                        date = item.split(':', 1)[1].strip()  # split only on the first colon
+
+                if part_model is None:
+                    raise ValueError("Part model not found in selected IDs")
+                
+                if date is None:
+                    raise ValueError("Date not found in selected IDs")
+                
+                print(f"Extracted Date: {date}")
+
+                
+
+            except ValueError as ve:
+                print(f"Error: {ve}")
+
+            except Exception as e:
+                print(f"An unexpected error occurred: {e}")
+
+            
 
             # Save data to database
             table_data = data.get('tableData', {}).get('formDataArray', [])
             for row in table_data:
-                # Convert date string to proper format
-                date_str = row.get('date')
-                date_obj = datetime.strptime(date_str, '%d/%m/%Y %I:%M:%S %p').date()
+                try:
+                    # Convert date string to proper format
+                    date_str = row.get('date')
+                    date_obj = datetime.strptime(date_str, '%d/%m/%Y %I:%M:%S %p')
+                    
+                    print("Creating MeasurementData object with the following values:")
+                    print(f"Parameter Name: {row.get('parameterName')}")
+                    print(f"Readings: {row.get('readings')}")
+                    print(f"Nominal: {row.get('nominal')}")
+                    print(f"LSL: {row.get('lsl')}")
+                    print(f"USL: {row.get('usl')}")
+                    print(f"Status Cell: {row.get('statusCell')}")
+                    print(f"Date: {date_obj}")
+                    print(f"Operator: {row.get('operator')}")
+                    print(f"Shift: {row.get('shift')}")
+                    print(f"Machine: {row.get('machine')}")
+                    print(f"Part Model: {row.get('partModel')}")
+                    print(f"Part Status: {row.get('partStatus')}")
+                    print(f"Customer Name: {row.get('customerName')}")
+                    print(f"Component Serial Number: {row.get('compSrNo')}")
 
-                print("Creating MeasurementData object with the following values:")
-                print(f"Parameter Name: {row.get('parameterName')}")
-                print(f"Readings: {row.get('readings')}")
-                print(f"Nominal: {row.get('nominal')}")
-                print(f"LSL: {row.get('lsl')}")
-                print(f"USL: {row.get('usl')}")
-                print(f"Status Cell: {row.get('statusCell')}")
-                print(f"Date: {date_obj}")
-                print(f"Operator: {row.get('operator')}")
-                print(f"Shift: {row.get('shift')}")
-                print(f"Machine: {row.get('machine')}")
-                print(f"Part Model: {row.get('partModel')}")
-                print(f"Part Status: {row.get('partStatus')}")
-                print(f"Customer Name: {row.get('customerName')}")
-                print(f"Component Serial Number: {row.get('compSrNo')}")
+                    # Save the data to the database
+                    data_values = MeasurementData.objects.create(
+                        parameter_name=row.get('parameterName'),
+                        readings=row.get('readings'),
+                        nominal=row.get('nominal'),
+                        lsl=row.get('lsl'),
+                        usl=row.get('usl'),
+                        status_cell=row.get('statusCell'),
+                        date=date_obj,
+                        operator=row.get('operator'),
+                        shift=row.get('shift'),
+                        machine=row.get('machine'),
+                        part_model=row.get('partModel'),
+                        part_status=row.get('partStatus'),
+                        customer_name=row.get('customerName'),
+                        comp_sr_no=row.get('compSrNo')
+                    )
+                    data_values.save()
 
-                data_values = MeasurementData.objects.create(
-                    parameter_name=row.get('parameterName'),
-                    readings=row.get('readings'),
-                    nominal=row.get('nominal'),
-                    lsl=row.get('lsl'),
-                    usl=row.get('usl'),
-                    status_cell=row.get('statusCell'),
-                    date=date_obj,
-                    operator=row.get('operator'),
-                    shift=row.get('shift'),
-                    machine=row.get('machine'),
-                    part_model=row.get('partModel'),
-                    part_status=row.get('partStatus'),
-                    customer_name=row.get('customerName'),
-                    comp_sr_no=row.get('compSrNo')
-                )
-                data_values.save()
+                except Exception as e:
+                    print(f"Error processing row: {row}")
+                    print(f"Exception: {e}")
 
             part_model = data.get('partModel')
             print('your data from frontend:',part_model)
@@ -881,7 +927,33 @@ def measurement(request):
                 if customer_name_values.exists():  # Check if queryset has any results
                     customer_name_values = customer_name_values[0]  # Access the first value
             print("customer_name_values:",customer_name_values)
-           
+
+            # Retrieve distinct component serial numbers
+            comp_sr_no_list = MeasurementData.objects.filter(part_model=part_model).values_list('comp_sr_no', flat=True).distinct()
+            print('Distinct component_serial_number:', comp_sr_no_list)
+
+            # Initialize a dictionary to store part statuses for each component serial number
+            part_status_dict = defaultdict(set)
+
+            # Populate the dictionary with distinct part statuses for each component serial number
+            for comp_sr_no in comp_sr_no_list:
+                part_statuses = MeasurementData.objects.filter(comp_sr_no=comp_sr_no).values_list('part_status', flat=True).distinct()
+                part_status_dict[comp_sr_no].update(part_statuses)
+
+            # Initialize a dictionary to count each part status
+            part_status_count = defaultdict(int)
+
+            # Print the component serial numbers along with their distinct part statuses
+            for comp_sr_no, part_statuses in part_status_dict.items():
+                print(f'Component Serial Number: {comp_sr_no}, Part Statuses: {list(part_statuses)}')
+                for status in part_statuses:
+                    part_status_count[status] += 1
+
+            # Print the counts for each part status
+            print("\nPart Status Counts:")
+            for status, count in part_status_count.items():
+                print("your values which is get from the front end:"f'{part_model}{status}: {count}')
+            
 
             parameter_name_queryset = parameter_settings.objects.filter(model_id=part_model).values_list('parameter_name', flat=True)
 
@@ -984,6 +1056,7 @@ def measurement(request):
                 'probe_values' : probe_values,
                 'step_no_values' : step_no_values,
                 'customer_name_values':customer_name_values,
+                'part_status_counts': dict(part_status_count), 
             }
 
             # Return a JSON response with the retrieved values

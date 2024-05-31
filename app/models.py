@@ -1,4 +1,4 @@
-from django.db import models
+from django.db import models # type: ignore
 
 
   
@@ -87,7 +87,7 @@ class mastering_data(models.Model):
 
     def save(self, *args, **kwargs):
         if self.date_time:  # Format the date and time string with AM/PM information
-            self.date_time = self.date_time.strftime("%m/%d/%Y, %I:%M:%S %p")
+            self.date_time = self.date_time.strftime("%d/%m/%Y, %I:%M:%S %p")
         super().save(*args, **kwargs)
 
     def __str__(self):
@@ -143,6 +143,6 @@ class MeasurementData(models.Model):
     
     def save(self, *args, **kwargs):
         if self.date:  # Format the date and time string with AM/PM information
-            self.date = self.date.strftime("%m/%d/%Y, %I:%M:%S %p")
+            self.date = self.date.strftime("%d/%m/%Y, %I:%M:%S %p")
         super().save(*args, **kwargs)
 
