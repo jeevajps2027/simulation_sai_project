@@ -1025,6 +1025,28 @@ function updateAllParameterValues(id, lsl, usl,ltl,utl,preValue) {
     }
 }
 
+// Store the IDs of the updated additional input elements
+let updatedAdditionalInputIds = [];
+
+document.getElementById('partModel').addEventListener('change', function() {
+    console.clear();
+    clearAdditionalInputFields();
+});
+
+function clearAdditionalInputFields() {
+    updatedAdditionalInputIds.forEach(id => {
+        const additionalInput = document.getElementById(id);
+        if (additionalInput) {
+            additionalInput.value = '';
+            additionalInput.style.backgroundColor = ''; // Clear background color if needed
+            console.clear();
+            console.log("Cleared additional input ID:", id);
+        }
+    });
+
+    // Clear the list after clearing the inputs
+    updatedAdditionalInputIds = [];
+}
 
 
 
