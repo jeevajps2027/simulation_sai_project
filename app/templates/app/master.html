@@ -881,7 +881,7 @@ function updateParameterValues(id, lsl, usl,ltl, utl) {
     const containers = document.querySelectorAll('.input-box-container');
 
     const additionalInput = document.getElementById(id + '_additional_input');
-
+    
     if (additionalInput) {
         // Set the value of the additional input field with the global 'm' value
         additionalInput.value = k;
@@ -893,7 +893,7 @@ function updateParameterValues(id, lsl, usl,ltl, utl) {
         } else if (k > utl || k < ltl) {
             additionalInput.style.backgroundColor = 'red';
         }
-
+        console.log("additionalInput ID jjjjjjjjjjjjjjjjjjjjj:", additionalInput.id);
 
         
     } else {
@@ -910,6 +910,7 @@ function updateInputValue(value,lsl,usl,ltl,utl) {
 
     const container = getSelectedContainer();
     const additionalInput = document.getElementById(container.id + '_additional_input');
+    
 
     if (additionalInput) {
         additionalInput.value = value;
@@ -922,6 +923,7 @@ function updateInputValue(value,lsl,usl,ltl,utl) {
             additionalInput.style.backgroundColor = 'red';
         }
 
+        console.log("additionalInput ID jjjjjjjjjjjjjjjjjjjjj:", additionalInput.id);
 
         
     } else {
@@ -930,6 +932,7 @@ function updateInputValue(value,lsl,usl,ltl,utl) {
 }
 
 
+   
 //////////////////////////////////////////
 
 let m; // Declare m in the global scope
@@ -1025,28 +1028,6 @@ function updateAllParameterValues(id, lsl, usl,ltl,utl,preValue) {
     }
 }
 
-// Store the IDs of the updated additional input elements
-let updatedAdditionalInputIds = [];
-
-document.getElementById('partModel').addEventListener('change', function() {
-    console.clear();
-    clearAdditionalInputFields();
-});
-
-function clearAdditionalInputFields() {
-    updatedAdditionalInputIds.forEach(id => {
-        const additionalInput = document.getElementById(id);
-        if (additionalInput) {
-            additionalInput.value = '';
-            additionalInput.style.backgroundColor = ''; // Clear background color if needed
-            console.clear();
-            console.log("Cleared additional input ID:", id);
-        }
-    });
-
-    // Clear the list after clearing the inputs
-    updatedAdditionalInputIds = [];
-}
 
 
 

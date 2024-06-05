@@ -1,3 +1,5 @@
+
+from datetime import datetime
 from django.db import models # type: ignore
 
 
@@ -146,3 +148,26 @@ class MeasurementData(models.Model):
             self.date = self.date.strftime("%d/%m/%Y, %I:%M:%S %p")
         super().save(*args, **kwargs)
 
+class MasterIntervalSettings(models.Model):
+    timewise = models.BooleanField(default=False)
+    componentwise = models.BooleanField(default=False)
+    hour = models.IntegerField(null=True, blank=True)
+    minute = models.IntegerField(null=True, blank=True)
+    component_no = models.IntegerField(null=True, blank=True)
+
+class ShiftSettings(models.Model):
+    shift = models.CharField(max_length=50)
+    shift_time = models.CharField(max_length=20) 
+
+    def __str__(self):
+        return f"{self.shift} - {self.shift_time}"
+
+    def save(self, *args, **kwargs):
+        if self.shift_time:  # Convert the string to a datetime object
+            try:
+                parsed_time = datetime.strptime(self.shift_time, "%I:%M:%S %p")
+                self.shift_time = parsed_time.strftime(" %I:%M:%S %p")
+            except ValueError:
+                # Handle the case where the string is not in the expected format
+                pass
+        super().save(*args, **kwargs)

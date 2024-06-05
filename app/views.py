@@ -1,3 +1,4 @@
+import base64
 from collections import defaultdict
 import threading
 from django.http import HttpResponseNotAllowed, JsonResponse
@@ -12,8 +13,8 @@ import threading
 import serial
 from django.views.decorators.csrf import csrf_exempt
 from django.core.cache import cache
-from.models import MasterData,comport_settings,mastering_data,parameter_settings,MeasurementData
-from.models import find,TableOneData,TableTwoData,TableThreeData,TableFourData,TableFiveData
+from.models import MasterData,comport_settings,mastering_data,parameter_settings,MeasurementData,MasterIntervalSettings
+from.models import find,TableOneData,TableTwoData,TableThreeData,TableFourData,TableFiveData,ShiftSettings
 import json
 from datetime import datetime
 from django.views.decorators.cache import never_cache
@@ -1157,8 +1158,22 @@ def measurement(request):
             customer_name_values = TableOneData.objects.filter(part_model=part_model).values_list('customer_name', flat=True).distinct()
             if customer_name_values.exists():  # Check if queryset has any results
                 customer_name_values = customer_name_values[0]  # Access the first value
+        
+        master_interval_settings = MasterIntervalSettings.objects.all()
+        print("master_interval_settings:",master_interval_settings)
 
-
+        for setting in master_interval_settings:
+            print("ID:", setting.id)
+            print("Timewise:", setting.timewise)
+            print("Componentwise:", setting.componentwise)
+            print("Hour:", setting.hour)
+            print("Minute:", setting.minute)
+            print("Component No:", setting.component_no)
+        # Convert the queryset to a list of dictionaries
+        interval_settings_list = list(master_interval_settings.values())
+        
+        # Serialize the list to JSON
+        interval_settings_json = json.dumps(interval_settings_list)
         # Do something with the retrieved values, such as passing them to the template
         context = {
             'part_model': part_model,
@@ -1176,7 +1191,8 @@ def measurement(request):
             'ltl_values' : ltl_values,
             'utl_values' : utl_values,
             'step_no_values' : step_no_values,
-            'part_status_counts': dict(part_status_count), 
+            'part_status_counts': dict(part_status_count),
+            'interval_settings_json':interval_settings_json,
         }
         global serial_data
         with serial_data_lock:
@@ -1326,9 +1342,103 @@ def report(request):
     return render(request, 'app/report.html', context)
 
 
-def utility(request):
-    return render(request,'app/utility.html')
+from datetime import datetime
 
+@csrf_exempt
+def utility(request):
+    try:
+        if request.method == 'POST':
+            data = json.loads(request.body)
+            form_id = data.get('id')
+            
+            if form_id == 'master_interval':
+                timewise = data.get('timewise')
+                componentwise = data.get('componentwise')
+                hour = data.get('hour')
+                minute = data.get('minute')
+                component_no = data.get('component_no')
+
+                print("Master Interval Settings:")
+                print("id_value:", form_id)
+                print("timewise:", timewise)
+                print("componentwise:", componentwise)
+                print("hour:", hour)
+                print("minute:", minute)
+                print("component_no:", component_no)
+                # Convert hour, minute, and component_no to integers if they exist
+                hour = int(hour) if hour else None
+                minute = int(minute) if minute else None
+                component_no = int(component_no) if component_no else None
+
+               # Retrieve existing instance or create a new one
+                interval_settings, created = MasterIntervalSettings.objects.get_or_create(id=1)
+                
+                # Update attributes
+                interval_settings.timewise = timewise
+                interval_settings.componentwise = componentwise
+                interval_settings.hour = hour
+                interval_settings.minute = minute
+                interval_settings.component_no = component_no
+                
+                # Save changes to the database
+                interval_settings.save()
+
+                print("Master Interval Settings saved:", interval_settings)
+
+                # Process the interval settings data here
+
+            elif form_id == 'shift_settings':
+                shift = data.get('shift')
+                shift_time = data.get('shift_time')
+
+                print("Shift Settings:")
+                print("id_value:", form_id)
+                print("shift:", shift)
+                print("shift_time:", shift_time)
+
+                # Check if a ShiftSettings object with the same shift already exists
+                existing_shift = ShiftSettings.objects.filter(shift=shift).first()
+
+                if existing_shift:
+                    # Update the shift_time of the existing ShiftSettings object
+                    existing_shift.shift_time = shift_time
+                    existing_shift.save()
+                else:
+                    # Create a new ShiftSettings object
+                    shift_settings_obj = ShiftSettings.objects.create(shift=shift, shift_time=shift_time)
+                    shift_settings_obj.save()
+            elif form_id == 'customer_details':
+                customer_name = data.get('customer_name')
+                contact_person = data.get('contact_person')
+                email = data.get('email')
+                phone_no = data.get('phone_no')
+                dept = data.get('dept')
+                address = data.get('address')
+                logo_file = data.get('logo')
+                
+                print("Logo File Name:", logo_file)
+               
+                print("customer_details:",customer_name,contact_person,email,phone_no,dept,address)
+
+
+            return JsonResponse({'status': 'success'})
+        
+        elif request.method == 'GET':
+            try:
+                master_interval_settings = MasterIntervalSettings.objects.all()
+                shift_settings = ShiftSettings.objects.all()
+                print("Master Interval Settings:", master_interval_settings)
+                print("Shift Settings:", shift_settings)
+                # Pass the retrieved data to the template for rendering
+                return render(request, 'app/utility.html', {'master_interval_settings': master_interval_settings,'shift_settings':shift_settings})
+
+            except Exception as e:
+                return JsonResponse({'error': str(e)}, status=500)
+
+            
+    except json.JSONDecodeError as e:
+        return JsonResponse({'status': 'error', 'message': str(e)}, status=400)
+    return render(request, 'app/utility.html')
 
 
 

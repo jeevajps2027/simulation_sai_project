@@ -395,11 +395,6 @@ function handleLogin() {
             headers: { 'X-CSRFToken': csrftoken },
             success: function(response) {
                 console.log("Data sent successfully:", response);
-
-                // Update the input fields with the counts received from the server
-                document.getElementById('accept').value = response.ACCEPT || 0;
-                document.getElementById('reject').value = response.REJECT || 0;
-                document.getElementById('rework').value = response.REWORK || 0;
             },
             error: function(xhr, status, error) {
                 console.error("Error sending data:", error);
@@ -554,7 +549,7 @@ $(document).ready(function(){
         var tableData = {
             formDataArray: formDataArray
         };
-console.clear();
+
         console.log('Table data to be sent:', tableData);
 
         // Send data to the server
@@ -754,6 +749,7 @@ $(document).ready(function() {
     $('#partModel').change(function() {
         var selectedModel = $(this).val();
         fetchData(selectedModel);
+        console.clear();
     });
 });
 
@@ -1355,6 +1351,52 @@ console.log("usl:",usl_values)
 console.log("ltl:",ltl_values);
 console.log("utl:",utl_values);
 console.log("step_no_values:",step_no_values);
+console.clear();
+
+document.addEventListener("DOMContentLoaded", function() {
+    // Access the interval settings JSON
+    const intervalSettings = JSON.parse('{{ interval_settings_json|escapejs }}');
+
+    intervalSettings.forEach(setting => {
+        console.log("Timewise:", setting.timewise);
+        console.log("Componentwise:", setting.componentwise);
+        console.log("Hour:", setting.hour);
+        console.log("Minute:", setting.minute);
+        console.log("Component No:", setting.component_no);
+
+        if (setting.timewise) {
+            const hours = setting.hour;
+            const minutes = setting.minute;
+
+            // Calculate the interval in milliseconds
+            const interval = (hours * 60 + minutes) * 60 * 1000;
+
+            // Set an interval to display the alert message
+            setInterval(() => {
+                if (confirm("Timewise alert: It's time for mastering! Click OK to go to the master page.")) {
+                    // Redirect to the master page if OK is clicked
+                    window.location.href = '/master/'; // Replace '/master-page' with the actual URL of your master page
+                }
+            }, interval);
+        }
+        if (setting.componentwise) {
+            const componentNo = setting.component_no;
+            let clickCount = 0;
+
+            const saveButton = document.getElementById('save-btn');
+            saveButton.addEventListener('click', () => {
+                clickCount++;
+                if (clickCount === componentNo) {
+                    if (confirm("Componentwise alert: The button has been clicked the specified number of times! Click OK to go to the master page.")) {
+                        // Redirect to the master page if OK is clicked
+                        window.location.href = '/master/'; // Replace '/master/' with the actual URL of your master page
+                    }
+                    clickCount = 0; // Reset the count after the alert
+                }
+            });
+        }
+    });
+});
 
     // Select the table body
 var tableBody = document.getElementById("table-body");
@@ -1407,6 +1449,7 @@ for (var i = 0; i < para_values.length; i++) {
     // Append the row to the table body
     tableBody.appendChild(row);
 }
+
 /////////////////////////////////////////////////////////////////////////////////
 
 

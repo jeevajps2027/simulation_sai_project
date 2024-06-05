@@ -274,6 +274,12 @@ Parameter Settings
 
 
 <script>
+     window.addEventListener('DOMContentLoaded', (event) => {
+            var inputs = document.querySelectorAll('input');
+            inputs.forEach(input => {
+                input.setAttribute('autocomplete', 'off');
+            });
+        });
 
 let selectedModelId;
 let selectedParameterID;

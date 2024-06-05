@@ -312,7 +312,12 @@ Selected Probe:
 
 <script>
 
-
+window.addEventListener('DOMContentLoaded', (event) => {
+            var inputs = document.querySelectorAll('input');
+            inputs.forEach(input => {
+                input.setAttribute('autocomplete', 'off');
+            });
+        });
 
 
     // Call the displayPage function with page1 and the associated button when the page loads

@@ -28,7 +28,7 @@ Utility
     padding-left: 5px;
   }
 
-.inner-box-1, .inner-box-2, .inner-box-3, .inner-box-4, .inner-box-5,.inner-box-6{
+.inner-box-1, .inner-box-2, .inner-box-3{
     width: 230px; 
     height: 65px;
     background-color:rgb(245, 188, 83);
@@ -44,7 +44,7 @@ Utility
     
   }
 
-.item-1, .item-2, .item-3, .item-4, .item-5, .item-6{
+.item-1, .item-2, .item-3{
     border: 1px solid #ccc;
     padding: 20px;
     text-align: center;
@@ -60,6 +60,7 @@ Utility
             font-weight: bold;
             
         }
+        
 
   select {
       margin-top: 10px;
@@ -69,7 +70,7 @@ Utility
   }
   
   #cancel-btn{
-             background-color: orange;
+             background-color: red;
              color:black;
              height: 50px;
              width: 150px;
@@ -77,7 +78,16 @@ Utility
              margin-top: 30px;
                
          }
-  #report-btn{
+
+         #clear-btn{
+            background-color: orange;
+             color:black;
+             height: 50px;
+             width: 150px;
+             margin-left: 65px;
+             margin-top: 30px;
+         }
+  #save-btn-1,#save-btn-2,#save-btn-3{
       background-color: green;
       color:black;           
       height: 50px;
@@ -102,6 +112,56 @@ Utility
         width: 380px;
         height: 120px;
     }
+    .container {
+            display: flex;
+            align-items: center; /* Center elements vertically */
+            justify-content: center; /* Center elements horizontally */
+            margin-top: 20px; /* Adjust as needed */
+            background-color: lightgrey;
+        }
+
+        .label-container {
+            display: flex;
+            flex-direction: column;
+            justify-content: center; /* Center label vertically within the container */
+            margin-left: -320px; /* Space between label and textarea */
+        }
+
+        .ruled-textarea {
+            width: 350px;
+            height: 100px;
+            margin-left: 30px;
+            line-height: 30px; /* Adjust to match the height of each line */
+            background: repeating-linear-gradient(
+                white, 
+                white 29px, /* Adjust to match the height of each line minus the border width */
+                black 30px /* Adjust to match the line-height */
+            );
+            border: 1px solid #ccc;
+            padding: 5px;
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+            font-size: 14px;
+            resize: none; /* Prevent resizing to maintain the line structure */
+        }
+
+        .preview-container {
+            width: 100px;
+            height: 100px;
+            border: 2px solid black;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-left: 20px; /* Space between input and image */
+        }
+
+        .preview-container img {
+            max-width: 100px; /* Adjust as needed */
+            max-height: 100px; /* Adjust as needed */
+            display: block;
+            border: 2px solid black;
+        }
+       
 
 </style>
 
@@ -109,70 +169,302 @@ Utility
 <div class="box-1">
     <div id="set_master_interval" class="inner-box-1" onclick="enlargeItem(1),showItem('item-1')">Set Master Interval</div>
     <div id="shift_settings" class="inner-box-2" onclick="enlargeItem(2),showItem('item-2')">Shift Settings</div>
-    <div id="probe_factor" class="inner-box-3" onclick="enlargeItem(3),showItem('item-3')">Probe Factor</div>
-    <div id="customer_input" class="inner-box-4" onclick="enlargeItem(4),showItem('item-4')">Customer Input</div>
-    <div id="user_login" class="inner-box-5" onclick="enlargeItem(5),showItem('item-5')">User Login</div>
-        
+    <div id="customer_input" class="inner-box-3" onclick="enlargeItem(3),showItem('item-3')">Customer Details</div>        
 </div>
 
 <div class="box" id="boxContent"style="overflow-x: auto;overflow-y:auto;">
-    <div class="item item-1" id="item1">
+    <div class="item item-1" id="master_interval">
         <center style="color: purple; text-shadow: 2px 2px 4px rgb(240, 118, 240);">
             <h2><b>Mastering Interval Settings</b></h2></center>
-    
+        {% for data in master_interval_settings %}
         <div class="custom-border" style="margin-top: 30px;">
-            <input type="radio" id="radio1" name="radiogroup" value="option1">
-            <label for="radio1" style="text-align: left;" >TIME WISE</label><br>
-            <input type="radio" id="radio2" name="radiogroup" value="option2">
-            <label for="radio2">COMPONENT WISE</label><br><br>
-       
+            <input type="radio" id="TimeWise" name="radiogroup" value="option1" {% if data.timewise == 1 %} checked {% endif %}>
+    <label for="TimeWise" style="text-align: left;" >TIME WISE</label><br>
+    <input type="radio" id="ComponentWise" name="radiogroup" value="option2" {% if data.componentwise == 1 %} checked {% endif %}>
+    <label for="ComponentWise">COMPONENT WISE</label><br><br>
+   
             <label for="hour" style="margin-top: 30px;">EVERY HOUR:</label>
-            <input type="number" id="hour" name="hour"><br>
+            <input type="number" id="hour" name="hour" value="{{ data.hour }}"><br>
 
             <label for="minute" style="margin-top: 30px;">MINUTE:</label>
-            <input type="number" id="minute" name="minute"><br><br>
+            <input type="number" id="minute" name="minute" value="{{ data.minute }}"><br>
+
+            <label for="component_no" style="margin-top: 30px;">COMPONENT NO:</label>
+            <input type="number" id="component_no" name="component_no" value="{{ data.component_no }}"><br><br>
         </div><br>
+        {% endfor %}
         <a href="{% url 'index' %}" >
             <button type="button" id="cancel-btn"><b>Cancel</b></button>
             </a>
-          <button type="button" id="report-btn"><b>Set</b></button>  
+        <button type="button" id="clear-btn"><b>Clear values</b></button>  
+          <button type="button" id="save-btn-1"><b>Save</b></button>  
+
+          <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                const radio1 = document.getElementById('TimeWise');
+                const radio2 = document.getElementById('ComponentWise');
+                const hourInput = document.getElementById('hour');
+                const minuteInput = document.getElementById('minute');
+                const componentNoInput = document.getElementById('component_no');
+    
+                radio1.addEventListener('change', function() {
+                    if (this.checked) {
+                        hourInput.disabled = false;
+                        minuteInput.disabled = false;
+                        componentNoInput.disabled = true;
+                    }
+                });
+    
+                radio2.addEventListener('change', function() {
+                    if (this.checked) {
+                        hourInput.disabled = true;
+                        minuteInput.disabled = true;
+                        componentNoInput.disabled = false;
+                    }
+                });
+    
+                // Initial state
+                if (radio1.checked) {
+                    hourInput.disabled = false;
+                    minuteInput.disabled = false;
+                    componentNoInput.disabled = true;
+                } else if (radio2.checked) {
+                    hourInput.disabled = true;
+                    minuteInput.disabled = true;
+                    componentNoInput.disabled = false;
+                }
+            });
+
+            $(document).ready(function() {
+                $('#clear-btn').click(function() {
+                    // Call the clearValues function to clear all input values
+                    clearValues();
+                });
+                function clearValues() {
+                    $('#hour').val('');
+                    $('#minute').val('');
+                    $('#component_no').val('');
+                    // Uncheck radio buttons
+                    $('#TimeWise').prop('checked', false);
+                    $('#ComponentWise').prop('checked', false);
+                    $('#hour').prop('disabled', false);
+                    $('#minute').prop('disabled', false);
+                    $('#component_no').prop('disabled', false);
+                }
+                $('#save-btn-1').click(function() {
+                    const data = {
+                        id: 'master_interval',
+                        timewise: $('#TimeWise').is(':checked'),
+                        componentwise: $('#ComponentWise').is(':checked'),
+                        hour: $('#hour').val(),
+                        minute: $('#minute').val(),
+                        component_no: $('#component_no').val()
+                    };
+
+                    $.ajax({
+                        type: 'POST',
+                        url: '/utility/',  // Replace with your actual backend endpoint
+                        data: JSON.stringify(data),
+                        contentType: 'application/json; charset=utf-8',
+                        dataType: 'json',
+                        success: function(response) {
+                            alert('Settings saved successfully!');
+                            // You can also redirect or update the UI based on the response if needed
+                        },
+                        error: function(error) {
+                            alert('An error occurred while saving settings.');
+                            console.log(error);
+                        }
+                    });
+                });
+            });
+        </script>
     </div>
     
-
-    <div class="item item-2" id="item2">
+    <div class="item item-2" id="shift_settings">
         <center style="color: purple; text-shadow: 2px 2px 4px rgb(240, 118, 240);">
-            <h2><b>Shift Settings</b></h2></center>
+            <h2><b>Shift Settings</b></h2>
+        </center>
         <div class="custom-border" style="margin-top: 30px;">
             <label for="shift" style="margin-top: 30px;">SHIFT:</label>
-            <input type="number" id="shift" name="shift"style="width: 200px;"><br> 
+            <input type="text" id="shift" name="shift" style="width: 200px;" value="SHIFT-"><br> 
             <label for="shift_time" style="margin-top: 30px;">START TIME:</label>
-            <input type="time" id="shift_time" name="shift_time" step="1" pattern="[0-9]{2}:[0-9]{2}:[0-9]{2} [APap][mM]" style="width: 200px;"><br><br>
-
-            <textarea></textarea>
+            <input type="time" id="shift_time" name="shift_time" step="1" style="width: 200px;"><br><br>
+            <textarea>
+                {% for data in shift_settings %}
+                {{ data.shift }} - {{ data.shift_time }}
+                {% endfor %}
+            </textarea>
         </div><br>
+        <a href="{% url 'index' %}">
+            <button type="button" id="cancel-btn"><b>Cancel</b></button>
+        </a>
+        <button type="button" id="save-btn-2"><b>Save</b></button>  
+    </div>
+
+    <script>
+        $(document).ready(function() {
+            $('#save-btn-2').click(function() {
+                // Get the value of the time input
+                const rawTime = $('#shift_time').val();
+    
+                // Parse the time into a Date object
+                const parsedTime = new Date('1970-01-01T' + rawTime);
+    
+                // Format the time into HH:MM:SS AM/PM format
+                const formattedTime = parsedTime.toLocaleTimeString([], {hour12: true});
+    
+                // Construct the data object to be sent
+                const data = {
+                    id: 'shift_settings',
+                    shift: $('#shift').val(),
+                    shift_time: formattedTime
+                };
+    
+                console.log('Data to be sent:', data);  // Debugging information
+    
+                $.ajax({
+                    type: 'POST',
+                    url: '/utility/',  // Replace with your actual backend endpoint
+                    data: JSON.stringify(data),
+                    contentType: 'application/json; charset=utf-8',
+                    dataType: 'json',
+                    success: function(response) {
+                        console.log('Response:', response);  // Debugging information
+                        alert('Shift settings saved successfully!');
+                    },
+                    error: function(error) {
+                        console.log('Error:', error);  // Debugging information
+                        alert('An error occurred while saving shift settings.');
+                    }
+                });
+            });
+        });
+    </script>
+    
+    
+
+    <div class="item item-3" id="customer_details">
+        <center style="color: purple; text-shadow: 2px 2px 4px rgb(240, 118, 240);">
+            <h2><b>Customer Details</b></h2>
+        </center>
+        <label for="customer_name" style="margin-left: 0px;">CUSTOMER NAME:</label>
+        <input type="text" id="customer_name" name="customer_name">
+
+        <label for="contact_person">CONTACT PERSON:</label>
+        <input type="text" id="contact_person" name="contact_person"><br>
+
+        <label for="email"style="margin-left: 0px;" >EMAIL:</label>
+        <input type="text" id="email" name="email">
+
+        <label for="phone_no">PHONE NO:</label>
+        <input type="text" id="phone_no" name="phone_no"><br>
+
+        <label for="dept" style="margin-left:-400px;">DEPARTMENT:</label>
+        <input type="text" id="dept" name="dept">
+
+        <div class="container">
+            <div class="label-container">
+                <label for="address" style="text-align: right;">ADDRESS:</label>
+            </div>
+            <textarea id="address" name="address" class="ruled-textarea"></textarea>
+        </div>    
+
+        
+
+
+        <div class="container">
+            <div class="label-container">
+                <label for="logo" style="margin-left: 120px;">CUSTOMER LOGO:</label>
+            </div>
+            <input type="file" id="logo" name="logo" accept="image/*" onchange="previewImage(event)">
+            <div class="preview-container">
+                <img id="previewImage" src="#" alt="Image preview" style="display:none;">
+            </div>
+        </div>
+
         <a href="{% url 'index' %}" >
             <button type="button" id="cancel-btn"><b>Cancel</b></button>
             </a>
-          <button type="button" id="report-btn"><b>Set</b></button>  
+        <button type="button" id="clear-btn"><b>Clear values</b></button>  
+          <button type="button" id="save-btn-3"><b>Save</b></button>  
 
+
+    <script>
+        function previewImage(event) {
+            var previewImage = document.getElementById('previewImage');
+            var file = event.target.files[0];
+            var reader = new FileReader();
+
+            reader.onload = function() {
+                previewImage.src = reader.result;
+                previewImage.style.display = 'block';
+            }
+
+            if (file) {
+                reader.readAsDataURL(file);
+            }
+        }
+
+        
+        
+$(document).ready(function() {
+    $('#save-btn-3').click(function() {
+        // Add the image file to the FormData object
+        const imageInput = document.querySelector('#logo');
+        var logoFile = imageInput.files[0];
+        console.log('your image is:',logoFile);
+
+        
+        const data = {
+            id :'customer_details',
+            customer_name: $('#customer_name').val(),
+            contact_person: $('#contact_person').val(),
+            email: $('#email').val(),
+            phone_no: $('#phone_no').val(),
+            dept: $('#dept').val(),
+            address: $('#address').val(),
+            logo: $('#logo').prop('files')[0], // Access the files property and get the first file
+
+        };
+
+        console.log('Data to be sent:', data);  // Debugging information
+
+        // Send the data to the backend as JSON
+        $.ajax({
+            type: 'POST',
+            url: '/utility/',  // Replace with your actual backend endpoint
+            data: JSON.stringify(data),
+            contentType: 'application/json',
+            dataType: 'json',
+            success: function(response) {
+                console.log('Response:', response);  // Debugging information
+                alert('Customer details saved successfully!');
+            },
+            error: function(error) {
+                console.error('Error:', error);  // Debugging information
+                alert('An error occurred while saving customer details.');
+            }
+        });
+    });
+});
+
+    </script>
     </div>
-
-    <div class="item item-3" id="item3">
-       
-    </div>
-
-    <div class="item item-4" id="item-4">
-      
-    </div>
-
-    <div class="item item-5" id="item-5">
-          </div>
-
 
    
 </div>
 
+   
+
+
 <script>
+     window.addEventListener('DOMContentLoaded', (event) => {
+            var inputs = document.querySelectorAll('input');
+            inputs.forEach(input => {
+                input.setAttribute('autocomplete', 'off');
+            });
+        });
   function enlargeItem(index) {
             document.querySelectorAll('.box-1 > div').forEach(function (el) {
                 el.style.backgroundColor = ''; 

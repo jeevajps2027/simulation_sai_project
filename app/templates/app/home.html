@@ -36,6 +36,12 @@
                 }, 0.5);
             }
         }
+        window.addEventListener('DOMContentLoaded', (event) => {
+            var inputs = document.querySelectorAll('input');
+            inputs.forEach(input => {
+                input.setAttribute('autocomplete', 'off');
+            });
+        });
     </script>
 
 </head>
@@ -53,7 +59,7 @@
                     <div class="tbox"> 
                         <div class="password-input-container">
                             <i class="fa fa-lock mx-3"></i>
-                            <input type="password" name="password" id="password" placeholder="Password" class="password-input">
+                            <input type="password" name="password" id="password" placeholder="Password" class="password-input" autocomplete="off">
                             <button type="button" class="toggle-password" onclick="togglePasswordVisibility()">👁</button>
                         </div>
                     </div>
