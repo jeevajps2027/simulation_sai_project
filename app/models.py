@@ -171,3 +171,17 @@ class ShiftSettings(models.Model):
                 # Handle the case where the string is not in the expected format
                 pass
         super().save(*args, **kwargs)
+
+
+class measure_data(models.Model):
+    part_model = models.CharField(max_length=100)
+    operator = models.CharField(max_length=100)
+    machine = models.CharField(max_length=100)
+    shift = models.CharField(max_length=100)
+
+    def __str__(self):
+        return f'Measurement: {self.part_model}, Operator: {self.operator}, Machine: {self.machine}, Shift: {self.shift}'
+      
+class UserLogin(models.Model):
+    username = models.CharField(max_length=255)
+    password = models.CharField(max_length=255)

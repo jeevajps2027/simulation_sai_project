@@ -1,7 +1,7 @@
 
 from django.contrib import admin
 from.models import MasterData,comport_settings,mastering_data,parameter_settings,MeasurementData,MasterIntervalSettings
-from.models import find,TableOneData,TableTwoData,TableThreeData,TableFourData,TableFiveData,ShiftSettings
+from.models import find,TableOneData,TableTwoData,TableThreeData,TableFourData,TableFiveData,ShiftSettings,measure_data,UserLogin
 # Register your models here.
 
 admin.site.register(find)
@@ -17,3 +17,5 @@ admin.site.register(parameter_settings)
 admin.site.register(MeasurementData)
 admin.site.register(MasterIntervalSettings)
 admin.site.register(ShiftSettings)
+admin.site.register(measure_data)
+admin.site.register(UserLogin)

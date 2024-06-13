@@ -613,7 +613,6 @@ Report
 
 <script>
 
-
   ///////////////////////////////////////////////////
   function enlargeItem(index) {
             document.querySelectorAll('.box-1 > div').forEach(function (el) {
@@ -699,13 +698,7 @@ $(document).ready(function() {
         var fromDateValue = activeItem.find('#from_date').val();
         var toDateValue = activeItem.find('#to_date').val();
 
-        console.log('Selected model:', selectedModel);
-        console.log('From Date Value:', fromDateValue);
-        console.log('To Date Value:', toDateValue);
-        console.log('selected shift Value:', selectedShift);
-        console.log('selcted machine Value:', selectedMachine);
-        console.log('selected operator value:',selectedOperator);
-        console.log('selected job_no value:',selectedPunch);
+       
 
         if (!fromDateValue || !toDateValue) {
             console.error('Date values are empty');
@@ -732,45 +725,67 @@ $(document).ready(function() {
                 'selected_punch' : selectedPunch,
                 'csrfmiddlewaretoken': '{{ csrf_token }}'  // Ensure to include the CSRF token
             },
+
+            
             success: function(response) {
-                console.log('Server Response:', response);
+    console.log('Server Response:', response);
+
+    // Close the active item
+    activeItem.hide();
+
+    // Open item-7 and display values
+    $('#item-7').show();
+
+    // Define specific headers including the parameters you want to display
+    var headers = '<th>S.No</th><th>Date Time</th><th>Job Number</th><th>Shift</th><th>Operator</th>';
+
+    var rows = '';
+if (response.length > 0 && parameterData.length > 0) {
+    console.clear();
+    console.log('your values for this parameter_data:', parameterData);
+    $.each(response, function(index, row) {
+        if (index < parameterData.length) {
+            headers += '<th>' + parameterData[index] + '</th>';
+
+        } else {
+            headers += '<th></th>'; // Add an empty header for indices beyond the length of parameterData
+        }
+    });
+}
+    // Set table headers
+    $('#table-headers').html(headers);
+
+    // Populate table rows
+    var rows = '';
+    if(response.length > 0) {
+        $.each(response, function(index, row) {
+            rows += '<tr>';
+            rows += '<td>' + (index + 1) + '</td>'; // Serial number
+            rows += '<td>' + row.date + '</td>'; // Date Time
+            rows += '<td>' + row.comp_sr_no + '</td>'; // Job Number
+            rows += '<td>' + row.shift + '</td>'; // Shift
+            rows += '<td>' + row.operator + '</td>'; // Operator
+            
+            $.each(parameterData, function(paramIndex, parameter) {
+            if (paramIndex < row.readings.length) {
+                rows += '<td>' + row.readings + '</td>'; // Add the reading for this parameter
+            } else {
+                rows += '<td></td>'; // Add an empty cell if reading is not available
+            }
+        }); // Operator
+            rows += '</tr>';
+        });
+    } else {
+        rows = '<tr><td colspan="100%">No data available</td></tr>';
+    }
+
+    // Set table body
+    $('#table-body').html(rows);
+    $('.box-1').hide();
+    $('.box').hide();
+},
 
 
-                // Close the active item
-                activeItem.hide();
-
-                // Open item-7 and display values
-                $('#item-7').show();
-
-                // Populate table headers
-                var headers = '';
-                if(response.length > 0) {
-                    for(var key in response[0]) {
-                        headers += '<th>' + key + '</th>';
-                    }
-                } else {
-                    headers = '<th>No data available</th>';
-                }
-                $('#table-headers').html(headers);
-
-                // Populate table rows
-                var rows = '';
-                if(response.length > 0) {
-                    $.each(response, function(index, row) {
-                        rows += '<tr>';
-                        $.each(row, function(key, value) {
-                            rows += '<td>' + value + '</td>';
-                        });
-                        rows += '</tr>';
-                    });
-                } else {
-                    rows = '<tr><td colspan="100%">No data available</td></tr>';
-                }
-                $('#table-body').html(rows);
-                $('.box-1').hide();
-                $('.box').hide();
-
-            },
             error: function(xhr, status, error) {
                 console.error('Error:', error);
             }
@@ -838,7 +853,9 @@ $(document).ready(function() {
 // Function to handle model selection
 // Ensure the DOM is fully loaded before attaching the event listener
 // Function to handle model selection
+var parameterData;
 function handleModelSelection() {
+    
     var selectedModelElement = this.closest('.item').querySelector('.partModel');
     var selectedModel = selectedModelElement ? selectedModelElement.value : '';
     var selectedIndex = this.selectedIndex + 1; // +1 to get 1-based index
@@ -851,6 +868,30 @@ function handleModelSelection() {
     var selectedPunchElement = this.closest('.item').querySelector('.job_no');
     var selectedPunch = selectedPunchElement ? selectedPunchElement.value : '';
 
+    // Create an object to hold the data
+    var requestData = {
+        selectedModel: selectedModel,
+    };
+
+    console.log('your value to sed to srver sude is:',requestData);
+    // Make an AJAX GET request
+    $.ajax({
+        url: '/report/',
+        type: 'GET',
+        data: requestData,
+        success: function(response) {
+        // Handle the response here
+        parameterData = response.parameter_data;
+        console.log('Parameter Data:', parameterData);
+
+        // Depending on the response format, you can access specific data like:
+        // var parameterData = response.parameter_data;
+    },
+    error: function(xhr, status, error) {
+        console.error('Error:', error);
+    }
+});
+    
      
 
 
@@ -882,6 +923,8 @@ function handleModelSelection() {
         console.error('SR.NO select element not found.');
     }
 }
+
+
 
 function initializeEventListeners() {
     // Use querySelectorAll to select all elements with class 'partModel'

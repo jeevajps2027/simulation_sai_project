@@ -215,15 +215,56 @@ input[type=checkbox] {
         transform: scale(1.5); /* Increase the size of the checkbox */
         margin-right: 5px; /* Add some spacing between checkbox and label */
     }
+    .arrow-button {
+            display: inline-flex;
+            align-items: center;
+            padding: 8px 16px;
+            border: none;
+            background-color: #FF0000; /* Red background */
+            color: white; /* White text */
+            font-size: 14px;
+            cursor: pointer;
+            border-radius: 5px;
+            transition: background-color 0.3s ease;
+           
+        }
 
+        .arrow-button:hover {
+            background-color: #CC0000; /* Darker red background on hover */
+          
+        }
 
-    
-    
+        .arrow-icon {
+            width: 0; 
+            height: 0; 
+            border-top: 10px solid transparent;
+            border-bottom: 10px solid transparent; 
+            border-right: 20px solid white; /* White arrow */
+            position: relative;
+            margin-right: 8px; /* Space between arrow and text */
+        }
+
+        .arrow-tail {
+            position: absolute;
+            top: -5px; /* Adjusts the position of the tail */
+            left: 0;
+            width: 20px; /* Width of the tail */
+            height: 10px; /* Height of the tail */
+            background-color: white; /* White tail */
+            transform: rotate(-180deg); /* Rotates the tail to be horizontal */
+            transform-origin: right center; /* Adjusts the rotation origin */
+        }
 </style>
 
 <div class="box-1" id="box1">
+
+    <button class="arrow-button"  onclick="redirectToMeasurebox()">
+        <div class="arrow-icon">
+            <div class="arrow-tail"></div>
+        </div> 
+       </button>
     
-    <label for="date"style="width: 50px; margin-left:30px;">DATE:</label>
+    <label for="date"style="width: 50px; margin-left:10px;">DATE:</label>
     <input type="text" id="date" style="width: 190px;background-color:#1a7d9e ;color: white;">
 
     <label for="operator">OPERATOR:</label>
@@ -255,7 +296,7 @@ input[type=checkbox] {
     <label for="partModel" style="width: 130px;" >PART MODEL:</label>
     <select id="partModel" name="partModel" style="width: 200px;" >
         {% for value in part_model_values %}
-            <option value="{{ value }}">{{ value }}</option>
+            <option value="{{ value }}"><b>{{ value }}</b></option>
         {% endfor %}
     </select>
 
@@ -364,6 +405,10 @@ input[type=checkbox] {
     
 
 <script>
+
+function redirectToMeasurebox() {
+            window.location.href = '/measurebox/';
+        }
 /////////////////////////////////////////////
 function handleLogin() {
     var username = document.getElementById('userid').value;
@@ -395,9 +440,11 @@ function handleLogin() {
             headers: { 'X-CSRFToken': csrftoken },
             success: function(response) {
                 console.log("Data sent successfully:", response);
+                alert("Data received successfully on the server.");
             },
             error: function(xhr, status, error) {
                 console.error("Error sending data:", error);
+                alert("Error sending data: " + error);
             }
         });
     } else {
@@ -425,12 +472,15 @@ function getCookie(name) {
 
 function redirectToMasterPage() {
         if (event.key === 'F1') {
-            window.location.href = 'http://localhost:8000/master/';
+            window.location.href = '/master/';
             event.preventDefault();
         }
     }
     document.addEventListener('keydown', redirectToMasterPage);
 
+document.getElementById('master-btn').addEventListener('click', function() {
+        window.location.href = '/master/'; // Replace '/master' with the actual URL of the master page
+    });
 
 
 document.addEventListener('keydown', function(event) {
@@ -498,11 +548,10 @@ function closeNotification() {
 
 
 
+      
 $(document).ready(function(){
     $("#save-btn").click(function(){
         // Get form data
-
-
 
         // Loop through each table row
         var formDataArray = [];
@@ -550,6 +599,7 @@ $(document).ready(function(){
             formDataArray: formDataArray
         };
 
+        console.clear();
         console.log('Table data to be sent:', tableData);
 
         // Send data to the server
@@ -566,15 +616,20 @@ $(document).ready(function(){
             },
             success: function(response){
                 // Handle success response
-                console.log("Data saved successfully: ", response);
+                if (response && response.status === 'success') {
+                    alert(response.message); // Display success message
+                } else {
+                    alert("Data saved, but there was an issue. Please check server logs for details.");
+                }
             },
             error: function(xhr, status, error){
                 // Handle error
-                console.error("Error occurred while saving data: ", error);
+                alert("Error occurred while saving data: " + error);
             }
         });
     });
 });
+
 
 
 
@@ -749,7 +804,6 @@ $(document).ready(function() {
     $('#partModel').change(function() {
         var selectedModel = $(this).val();
         fetchData(selectedModel);
-        console.clear();
     });
 });
 
@@ -1071,7 +1125,7 @@ usl, ltl, utl,indicatorBox,indicatorBox1,statusCell) {
 
 
 
-document.getElementById('stop-btn').addEventListener('click', function() {
+                        document.getElementById('stop-btn').addEventListener('click', function() {
     var indices = [];
     // Assuming step_no_values and currentStep are defined somewhere
     for (var i = 0; i < step_no_values.length; i++) {
@@ -1081,21 +1135,22 @@ document.getElementById('stop-btn').addEventListener('click', function() {
     }
 
     indices.forEach(function(index) {
+        var readingsInput = document.getElementById('readings-input-' + index);
+        var color = readingsInput.style.color;
         var statusCell = document.getElementById('status_cell-' + index); // Assuming 'status-cell' is the class of your status cells
         statusCell.style.backgroundColor = color;
-        if (color === "#00ff00") {
+        if (color === "rgb(0, 255, 0)" || color === "#00ff00") { // Different browsers might return color in different formats
             statusCell.textContent = "ACCEPT";
             statusCell.style.fontWeight = "bold";
-        } else if (color === "red") {
+        } else if (color === "red" || color === "#ff0000") {
             statusCell.textContent = "REJECT";
             statusCell.style.fontWeight = "bold";
-        } else if (color === "yellow") {
+        } else if (color === "yellow" || color === "#ffff00") {
             statusCell.textContent = "REWORK";
             statusCell.style.fontWeight = "bold";
         }
     });
 });
-
 
 
 
@@ -1214,17 +1269,7 @@ function getCookie(name) {
         // Disable the notification container
         document.getElementById('notification-container').style.display = 'none';
 
-        // Send the value to the backend via AJAX
-        var xhr = new XMLHttpRequest();
-        xhr.open('POST', '/measurement/', true);
-        xhr.setRequestHeader('Content-Type', 'application/json');
-        xhr.setRequestHeader('X-CSRFToken', getCookie('csrftoken')); // CSRF token for security
-    
-        var data = JSON.stringify({
-            punch_value: punchValue,
-            part_model: partModelValue
-        });
-        xhr.send(data);
+       
     }
 }
         function closeNotification() {
@@ -1260,28 +1305,7 @@ function getCookie(name) {
         setInterval(updateDateTime, 1000);
     
     
-        // Get URL parameters
-        var urlParams = new URLSearchParams(window.location.search);
-        var partModel = urlParams.get('partModel');
-        var operator = urlParams.get('operator');
-        var machine = urlParams.get('machine');
-        var shift = urlParams.get('shift');
-        var hiddenTextarea = urlParams.get('hiddenTextarea');
-        
-        // Do something with the values (e.g., display them on the page)
-        console.log("Part Model: " + partModel);
-        console.log("Operator: " + operator);
-        console.log("Machine: " + machine);
-        console.log("Shift: " + shift);
-        console.log("hidden-textarea :" + hiddenTextarea);
-    
-        // Set values to the elements
-        document.getElementById('partModel').value = partModel;
-        document.getElementById('operator').value = operator;
-        document.getElementById('shift').value = shift;
-        document.getElementById('comp_srno').value = hiddenTextarea;
-        document.getElementById('machine').value = machine;
-    
+       
     
         // Log the is_selected_values to the console
         var hide = "{{ hide }}"; // Assuming this is how you pass the value from Django template
@@ -1343,15 +1367,33 @@ step_no_values = step_no_values.map(Number);
 // Find the maximum value among the step_no_values
 var totalSteps = Math.max(...step_no_values);
 
-// Log the para_values and nominal_values to console
-console.log("para_values:", para_values);
-console.log("nominal_values:", nominal_values);
-console.log("lsl:",lsl_values);
-console.log("usl:",usl_values)
-console.log("ltl:",ltl_values);
-console.log("utl:",utl_values);
+
+var operator_values_str = "{{ operator_values|safe }}";
+    var operator_values_cleaned = operator_values_str.match(/'([^']*)'/)[1];
+    var operator_values = operator_values_cleaned.split(',');
+    var operatorInput = document.getElementById("operator");
+    // Set its value to the values from machine_values array
+    operatorInput.value = operator_values.join(', ');
+
+
+    var shift_values_str = "{{ shift_values|safe }}";
+    var shift_values_cleaned = shift_values_str.match(/'([^']*)'/)[1];
+    var shift_values = shift_values_cleaned.split(',');
+    var shiftInput = document.getElementById("shift");
+    // Set its value to the values from machine_values array
+    shiftInput.value = shift_values.join(', ');
+
+
+    var machine_values_str = "{{ machine_values|safe }}";
+    // Extract the value between single quotes
+    var machine_value = machine_values_str.match(/'([^']*)'/)[1];
+    console.log('your machine value is:', machine_value);
+    var machineInput = document.getElementById("machine");
+    // Set its value to the extracted value
+    machineInput.value = machine_value;
+
 console.log("step_no_values:",step_no_values);
-console.clear();
+
 
 document.addEventListener("DOMContentLoaded", function() {
     // Access the interval settings JSON

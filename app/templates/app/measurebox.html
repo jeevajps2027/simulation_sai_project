@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Part Selection</title>
   <style>
     body {
       display: flex;
@@ -19,8 +20,10 @@
       border: 2px solid black;
       border-radius: 8px;
       background-color: #f8f8f8;
-      height: 250px;
+      height: 280px;
       width: 500px;
+      margin-left: -250px;
+      margin-top: -50px;
     }
 
     label {
@@ -56,14 +59,60 @@
             background-color: red;
             font-size: 20px;      
         }
+        .centered-content {
+            color: white;
+            text-shadow: 2px 2px 4px #000000;
+            text-align: center;
+            margin-top: -450px;
+            margin-left: -500px;
+            font-weight: bold;
+            font-family:'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif ;
+            
+        }
+        #notification {
+            display: none;
+            position: fixed;
+            height: 25px;
+            width: 500px;
+            top: 75%;
+            left: 45%;
+            transform: translateX(-50%);
+            text-align: center;
+            font-size: large;
+            font-weight: bold;
+            background-color: yellow; /* Green background */
+            color: black;
+            padding: 15px;
+            border-radius: 5px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+            z-index: 1000; /* Ensure it stays on top */
+        }
 
+        #master-btn, #measure-btn {
+            width: 150px;
+            height: 100px;
+            margin-left: 20px;
+            margin-top: 10px;
+            font-size: 15px;   
+            background-color: orangered;
+            color: white;
+            border: 2px solid white;
+            cursor: pointer;
+            transition: background-color 0.3s, color 0.3s; /* Smooth transition for the hover effect */
+        }
 
+        #master-btn:hover, #measure-btn:hover {
+            background-color: orange;
+            color: black;
+        }
 
   </style>
-  <title>Centered Container</title>
 </head>
 <body>
+   
+   
   <div class="container">
+
     <label for="partModel" >PART MODEL:</label>
     <select id="partModel" name="partModel" >
         {% for value in part_model_values %}
@@ -96,25 +145,111 @@
         <a href="{% url 'index' %}" >
             <button type="button" id="cancel-btn"><b>Cancel</b></button>
         </a>
-    <button type="button" id="select-btn"><b>Select</b></button></div>
+    <button type="button" id="select-btn"><b>Select</b></button></div><br>
+
+   
     
   </div>
+  <div>
+    <button type="button" id="master-btn"><b>MASTER</b></button><br>
+    <button type="button" id="measure-btn"><b>MEASUREMENT</b></button></div>
+
+  <div class="centered-content">
+    <h1><b>Part Selection</b></h1>
+</div>
+
+<div id="notification" style="display: none;"></div>
+
+
   <script>
-    document.getElementById("select-btn").addEventListener("click", function() {
-        var partModel = document.getElementById("partModel").value;
-        var operator = document.getElementById("operator").value;
-        var machine = document.getElementById("machine").value;
-        var shift = document.getElementById("shift").value;
-    
-        const url = `{% url 'measurement' %}?partModel=${partModel}&operator=${operator}&machine=${machine}&shift=${shift}`;
-        window.location.href = url;
+
+document.getElementById('select-btn').addEventListener('click', function() {
+    const partModel = document.getElementById('partModel').value;
+    const operator = document.getElementById('operator').value;
+    const machine = document.getElementById('machine').value;
+    const shift = document.getElementById('shift').value;
+
+    console.log('Selected Values:');
+    console.log('PART MODEL:', partModel);
+    console.log('OPERATOR:', operator);
+    console.log('MACHINE:', machine);
+    console.log('SHIFT:', shift);
+
+    // Prepare the data to be sent in the POST request
+    const data = {
+        partModel: partModel,
+        operator: operator,
+        machine: machine,
+        shift: shift
+    };
+
+    // Get CSRF token
+    const csrftoken = getCookie('csrftoken');
+
+    // Send the data using AJAX POST request
+    fetch('/measurebox/', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': csrftoken  // Include CSRF token in headers
+        },
+        body: JSON.stringify(data)
+    })
+    .then(response => response.json())
+    .then(data => {
+        console.log('Server Response:', data);
+        // Display notification if data was successfully sent
+        if (data.status === 'success') {
+        displayNotification('Your part selection was successful.');
+    }
+    })
+    .catch(error => {
+        console.error('Error:', error);
     });
+});
+
+// Function to display notification
+function displayNotification(message) {
+    const notificationDiv = document.getElementById('notification');
+    notificationDiv.innerText = message;
+    notificationDiv.style.display = 'block';
+
+    // Optionally, hide the notification after a few seconds
+    setTimeout(() => {
+        notificationDiv.style.display = 'none';
+    }, 3000); // Hide after 3 seconds
+}
+
+// Function to handle the redirect for the master button
+document.getElementById('master-btn').addEventListener('click', function() {
+            window.location.href = '/master/';
+        });
+
+        // Function to handle the redirect for the measure button
+        document.getElementById('measure-btn').addEventListener('click', function() {
+            window.location.href = '/measurement/';
+        });
+
+
+// Function to retrieve CSRF token from cookie
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
     </script>
     
     
     
 </body>
 </html>
-
-
-  

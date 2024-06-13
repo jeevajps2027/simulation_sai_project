@@ -149,7 +149,7 @@ Mastering Page
                 <option value="{{ value }}">{{ value }}</option>
             {% endfor %}
         </select>
-        <a href="{% url 'index' %}" >
+        <a href="{% url 'measurebox' %}" >
             <button type="button" id="cancel-btn"><b>Cancel</b></button>
             </a>
         <button type="button" id="select-btn"><b>Select</b></button>
@@ -172,7 +172,7 @@ Mastering Page
             }
         </script>
     </select>
-    <button id="measureBtn" type="button" onclick="MeasureBtnClick()"><b>Measurement</b></button>
+    <button id="measureBtn" type="button" onclick="MeasureBtnClick()"><b>Measurement<br>F1</b></button>
     <button id="lowMasterBtn" type="button" onclick="lowMasteringClick()"><b>Low Mastering</b></button>
     <button id="highMasterBtn" type="button" onclick="highMasteringClick()"><b>High Mastering</b></button>
 
@@ -201,7 +201,16 @@ Mastering Page
 
 
 <script>
-
+    function MeasureBtnClick() {
+        window.location.href = '/measurement/'; // Replace '/measurement' with the actual URL of the measurement page
+    }
+    function redirectToMasterPage() {
+        if (event.key === '1') {
+            window.location.href = '/measurement/';
+            event.preventDefault();
+        }
+    }
+    document.addEventListener('keydown', redirectToMasterPage);
 
 function updateClock() {
     var now = new Date();

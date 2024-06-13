@@ -2,77 +2,86 @@
 <html>
 <head>
     <meta charset="utf-8">
-    <title>login page</title>
+    <title>Login Page</title>
     {% load static %}
     <link rel="stylesheet" href="{% static 'css/style.css' %}">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
     <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.css">
+</head>
+<style>
+    .alert-center {
+    position: fixed;
+    top: 10%;
+    left: 45%;
+    height: 60px;
+    width: 350px;
+    transform: translate(-50%, -50%);
+    z-index: 1000;
+    display: none;
+    text-align: center;
+}
+</style>
+<body style="background-color: #1a7d9e;">
+    <img src="{% static 'images/sai.jpg' %}" style="height: 170px; width: 150px; margin-top: 170px; margin-left: 500px;border: 7px solid white;">
+    <div class="login">
+        <div class="loginform">
+            <h2>Login</h2> 
+            <form method="post">
+                {% csrf_token %}
+                <div class="tbox">
+                    <i class="fa fa-user mx-3"></i>
+                    <input type="text" name="user" id="username" placeholder="Username" autocomplete="off" required>
+                </div>
+                <br>
+                <div class="tbox">
+                    <div class="password-input-container">
+                        <i class="fa fa-lock mx-3"></i>
+                        <input type="password" name="password" id="password" placeholder="Password" class="password-input" autocomplete="off" required>
+                        <button type="button" class="toggle-password" onclick="togglePasswordVisibility()">👁</button>
+                    </div>
+                </div>
+                <br>
+                <button type="submit" id="login-button" style="margin-left: 150px;"><b>Login</b></button>
+            </form>
+            {% if error_message %}
+            <div class="alert alert-danger alert-center" role="alert" id="error-alert">
+                {{ error_message }}
+            </div>
+        {% endif %}
+        </div>
+    </div>
+    <h1 class="center-align"><b>Sai Accurate Multigauging Fixtures & Gauges</b></h1>
+    <h1 class="left-align">Web: www.saiaccurate.com<br>E-Mail: sales@saiaccurate.com</h1>
+    <h1 class="right-align">-Accuracy is Our Moto & Passion</h1>
+    <h1 class="right-align-1">Sales : +91 9344438999 / 9344338666<br>Service : +91 9787375999 / 9894353535</h1>
+
     <script>
         function togglePasswordVisibility() {
-        var passwordInput = document.querySelector('.password-input');
-        
-        if (passwordInput.type === 'password') {
-            passwordInput.type = 'text';
-        } else {
-            passwordInput.type = 'password';
-        }
-    }
-        // JavaScript function to display an alert message when the form is submitted
-        function displayAlert() {
-            var username = document.getElementById('username').value;
-            var password = document.getElementById('password').value;
-    
-            if (username === 'admin' && password === 'admin') {
-                // Redirect to the index page if credentials are correct
-                window.location.href = "{% url 'index' %}";
+            var passwordInput = document.querySelector('.password-input');
+            if (passwordInput.type === 'password') {
+                passwordInput.type = 'text';
             } else {
-                // Display an alert message if the credentials are incorrect
-                var errorMessage = 'Invalid username or password. Please try again.';
-                alert(errorMessage);
-    
-                // Automatically hide the alert message after 3 seconds (3000 milliseconds)
-                setTimeout(function() {
-                    alert(errorMessage);
-                }, 0.5);
+                passwordInput.type = 'password';
             }
         }
+        
+        document.addEventListener("DOMContentLoaded", function() {
+            var errorAlert = document.getElementById('error-alert');
+            if (errorAlert) {
+                errorAlert.style.display = 'block';
+                setTimeout(function() {
+                    errorAlert.style.display = 'none';
+                }, 3000); // Hide after 3 seconds
+            }
+        });
+
         window.addEventListener('DOMContentLoaded', (event) => {
             var inputs = document.querySelectorAll('input');
             inputs.forEach(input => {
                 input.setAttribute('autocomplete', 'off');
             });
         });
+      
     </script>
-
-</head>
-<body style="background-color: #1a7d9e;">
-    <img src="{% static 'images/sai.jpg' %}" style="height: 170px; width: 150px; margin-top: 170px;
-    margin-left: 500px;border: 7px solid white; "> 
-        <div class="login" >
-            <div class="loginform" >
-                <h1>Login</h1> 
-                <form method="post" onsubmit="displayAlert(); return false;">
-                    {% csrf_token %}
-                    <div class="tbox">
-                        <i class="fa fa-user mx-3"></i><input type="text" name="user" id="username" placeholder="username"autocomplete="off">
-                    </div><br>
-                    <div class="tbox"> 
-                        <div class="password-input-container">
-                            <i class="fa fa-lock mx-3"></i>
-                            <input type="password" name="password" id="password" placeholder="Password" class="password-input" autocomplete="off">
-                            <button type="button" class="toggle-password" onclick="togglePasswordVisibility()">👁</button>
-                        </div>
-                    </div>
-                    <br>
-                    
-                    <button type="submit" id="cancel-button" style="margin-left: 150px;"><b>Login</b></button>
-                </form>
-            </div>
-        </div>
-        <h1 class="center-align"><b>Sai Accurate Multigauging Fixtures & Gauges</b></h1>
-        <h1 class="left-align">Web:www.saiaccurate.com<br>E-Mail:sales@saiaccurate.com</h1>
-        <h1 class="right-align">-Accuracy is Our Moto & Passion</h1>
-        <h1 class="right-align-1">Sales : +91 9344438999 / 9344338666<br>Service : +91 9787375999 / 9894353535</h1>
-
 </body>
 </html>

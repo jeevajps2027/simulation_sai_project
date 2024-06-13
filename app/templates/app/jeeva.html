@@ -1,41 +1,237 @@
-// Function to handle back button click
-document.getElementById("back-btn").addEventListener("click", function() {
-    if (currentStep > 1) {
-        currentStep--; // Decrement current step
-        // Clear status cell
-        var prevStep = currentStep - 1;
-        var statusCell = document.getElementById('status_cell-' + prevStep);
-        console.clear();
-        console.log("statusCell:",statusCell);
-        if (statusCell) {
-            statusCell.textContent = ""; // Clear status cell content
-            statusCell.style.backgroundColor = "";
-        }
-        
-        var readingsInput = document.getElementById('readingsInput-' + prevStep);
-        if (readingsInput) {
-            readingsInput.textContent = ""; // Clear status cell content
-            readingsInput.style.backgroundColor = "";
-        }
+def measurement(request):
+    if request.method == 'POST':
+        try:
+            # Parse the JSON data sent in the request
+            data = json.loads(request.body)
+            print("Received data:", data)
+            part_model = data.get('part_model')
+            punch_value = data.get('punch_value')
+            # Process the punch_value as needed
+            print(f"Received punch value: {punch_value}")
+            selected_ids = data.get('selectedIDs')
+            print("Received data:", selected_ids)
 
-        // Clear indicator boxes
-        var indicatorBox = document.getElementById('indicator-box-' + prevStep);
-        var indicatorBox1 = document.getElementById('indicator-box1-' + prevStep);
-        if (indicatorBox) {
-            indicatorBox.textContent = ""; // Clear indicator box content
-            indicatorBox.style.backgroundColor = white;
-        }
-        if (indicatorBox1) {
-            indicatorBox1.textContent = ""; // Clear indicator box 1 content
-            indicatorBox1.style.backgroundColor = white;
-        }
+            try:
+                # Print each value separately
+                for index, item in enumerate(selected_ids):
+                    print(f"Item {index + 1}: {item}")
+                    
+                # Extract part_model and date from selected_ids
+                part_model = None
+                date = None
+                
+                for item in selected_ids:
+                    if item.startswith('Part Model:'):
+                        part_model = item.split(':')[1].strip()
+                    if item.startswith('Date:'):
+                        date = item.split(':', 1)[1].strip()  # split only on the first colon
 
-        // Show notification for going back
-        showNotification(`Going back to step ${currentStep}.`);
-        
-        // Start calculation for the current step
-        startContinuousUpdate();
-    } else {
-        showNotification("Already at the first step.");
-    }
-});
+                if part_model is None:
+                    raise ValueError("Part model not found in selected IDs")
+                
+                if date is None:
+                    raise ValueError("Date not found in selected IDs")
+                
+                print(f"Extracted Date: {date}")
+
+                
+
+            except ValueError as ve:
+                print(f"Error: {ve}")
+
+            except Exception as e:
+                print(f"An unexpected error occurred: {e}")
+
+            
+
+            # Save data to database
+            table_data = data.get('tableData', {}).get('formDataArray', [])
+            for row in table_data:
+                try:
+                    # Convert date string to proper format
+                    date_str = row.get('date')
+                    date_obj = datetime.strptime(date_str, '%d/%m/%Y %I:%M:%S %p')
+                    
+                    print("Creating MeasurementData object with the following values:")
+                    print(f"Parameter Name: {row.get('parameterName')}")
+                    print(f"Readings: {row.get('readings')}")
+                    print(f"Nominal: {row.get('nominal')}")
+                    print(f"LSL: {row.get('lsl')}")
+                    print(f"USL: {row.get('usl')}")
+                    print(f"Status Cell: {row.get('statusCell')}")
+                    print(f"Date: {date_obj}")
+                    print(f"Operator: {row.get('operator')}")
+                    print(f"Shift: {row.get('shift')}")
+                    print(f"Machine: {row.get('machine')}")
+                    print(f"Part Model: {row.get('partModel')}")
+                    print(f"Part Status: {row.get('partStatus')}")
+                    print(f"Customer Name: {row.get('customerName')}")
+                    print(f"Component Serial Number: {row.get('compSrNo')}")
+
+                    # Save the data to the database
+                    data_values = MeasurementData.objects.create(
+                        parameter_name=row.get('parameterName'),
+                        readings=row.get('readings'),
+                        nominal=row.get('nominal'),
+                        lsl=row.get('lsl'),
+                        usl=row.get('usl'),
+                        status_cell=row.get('statusCell'),
+                        date=date_obj,
+                        operator=row.get('operator'),
+                        shift=row.get('shift'),
+                        machine=row.get('machine'),
+                        part_model=row.get('partModel'),
+                        part_status=row.get('partStatus'),
+                        customer_name=row.get('customerName'),
+                        comp_sr_no=row.get('compSrNo')
+                    )
+                    data_values.save()
+
+                except Exception as e:
+                    print(f"Error processing row: {row}")
+                    print(f"Exception: {e}")
+
+            part_model = data.get('partModel')
+            print('your data from frontend:',part_model)
+            if part_model:
+                customer_name_values = TableOneData.objects.filter(part_model=part_model).values_list('customer_name', flat=True).distinct()
+                if customer_name_values.exists():  # Check if queryset has any results
+                    customer_name_values = customer_name_values[0]  # Access the first value
+            print("customer_name_values:",customer_name_values)
+
+            # Retrieve distinct component serial numbers
+            comp_sr_no_list = MeasurementData.objects.filter(part_model=part_model).values_list('comp_sr_no', flat=True).distinct()
+            print('Distinct component_serial_number:', comp_sr_no_list)
+
+            # Initialize a dictionary to store part statuses for each component serial number
+            part_status_dict = defaultdict(set)
+
+            # Populate the dictionary with distinct part statuses for each component serial number
+            for comp_sr_no in comp_sr_no_list:
+                part_statuses = MeasurementData.objects.filter(comp_sr_no=comp_sr_no).values_list('part_status', flat=True).distinct()
+                part_status_dict[comp_sr_no].update(part_statuses)
+
+            # Initialize a dictionary to count each part status
+            part_status_count = defaultdict(int)
+
+            # Print the component serial numbers along with their distinct part statuses
+            for comp_sr_no, part_statuses in part_status_dict.items():
+                print(f'Component Serial Number: {comp_sr_no}, Part Statuses: {list(part_statuses)}')
+                for status in part_statuses:
+                    part_status_count[status] += 1
+
+            # Print the counts for each part status
+            print("\nPart Status Counts:")
+            for status, count in part_status_count.items():
+                print("your values which is get from the front end:"f'{part_model}{status}: {count}')
+            
+
+            parameter_name_queryset = parameter_settings.objects.filter(model_id=part_model).values_list('parameter_name', flat=True)
+
+            # Convert the queryset to a list to pass only the values
+            parameter_name_values = list(parameter_name_queryset)
+            print('parameter_name values are:',parameter_name_values)
+
+            lsl_values_queryset = parameter_settings.objects.filter(model_id=part_model).values_list('lsl', flat=True)
+
+            # Convert the queryset to a list to pass only the values
+            lsl_values = list(lsl_values_queryset)
+            print('lsl values are:',lsl_values)
+
+            usl_values_queryset = parameter_settings.objects.filter(model_id=part_model).values_list('usl', flat=True)
+
+            # Convert the queryset to a list to pass only the values
+            usl_values = list(usl_values_queryset)
+            print('usl values are:',usl_values)
+
+            ltl_values_queryset = parameter_settings.objects.filter(model_id=part_model).values_list('ltl', flat=True)
+
+            # Convert the queryset to a list to pass only the values
+            ltl_values = list(ltl_values_queryset)
+            print('ltl values are:',ltl_values)
+
+
+            utl_values_queryset = parameter_settings.objects.filter(model_id=part_model).values_list('utl', flat=True)
+            # Convert the queryset to a list to pass only the values
+            utl_values = list(utl_values_queryset)
+            print('utl values are:',utl_values)
+
+
+            
+
+            nominal_values_queryset = parameter_settings.objects.filter(model_id=part_model).values_list('nominal', flat=True)
+            nominal_values = list(nominal_values_queryset)
+            print('your nominal values are:',nominal_values)
+
+            measurement_mode_values_queryset = parameter_settings.objects.filter(model_id=part_model).values_list('measurement_mode', flat=True)
+            measurement_mode_values = list(measurement_mode_values_queryset)
+            print('your measurement_mode values are:',measurement_mode_values)
+
+            step_no_values_queryset = parameter_settings.objects.filter(model_id=part_model).values_list('step_no', flat=True)
+            step_no_values = list(step_no_values_queryset)
+            print('your step_no values are:',step_no_values)
+
+
+
+            filter_my = mastering_data.objects.filter(
+                selected_value=part_model,
+            ).values()
+
+            d = [item['d'] for item in filter_my]
+            
+            o1 = [item['o1'] for item in filter_my]
+
+            e = [item['e'] for item in filter_my]
+            
+            
+            # Initialize an empty dictionary to store last_stored_parameter
+            last_stored_parameter = {}
+
+            # Iterate over items in filter_my and populate last_stored_parameter
+            for item in filter_my:
+                last_stored_parameter[item['parameter_name']] = item
+
+            # Initialize empty lists to store o1 and d values
+            o1_values = []
+            d_values = []
+            e_values = []
+            probe_values = []
+
+            # Iterate over last_stored_parameter to extract o1 and d values
+            for parameter_name, item in last_stored_parameter.items():
+                o1_values.append(item['o1'])
+                d_values.append(item['d'])
+                e_values.append(item['e'])
+                probe_values.append(item['probe_no'])
+                print('Last stored parameter_name for ', parameter_name, 'is:', item)
+
+            # Print o1 and d values
+            print('o1 values :', o1_values)
+            print('d values :', d_values)
+            print('e_values :',e_values)
+            print('probe_values  :',probe_values)
+
+
+            # Prepare the response data
+            response_data = {
+                'parameterNameValues': parameter_name_values,
+                'lslValues': lsl_values,
+                'uslValues': usl_values,
+                'ltlValues': ltl_values,
+                'utlValues': utl_values,
+                'nominalValues': nominal_values,
+                'measurementModeValues': measurement_mode_values,
+                'o1_values': o1_values,
+                'd_values': d_values,
+                'e_values' : e_values,
+                'probe_values' : probe_values,
+                'step_no_values' : step_no_values,
+                'customer_name_values':customer_name_values,
+                'part_status_counts': dict(part_status_count), 
+            }
+
+            # Return a JSON response with the retrieved values
+            return JsonResponse(response_data)
+        except Exception as e:
+            # Return a JSON response indicating error
+            return JsonResponse({'error': str(e)}, status=500)
