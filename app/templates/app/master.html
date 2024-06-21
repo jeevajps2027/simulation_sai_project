@@ -127,10 +127,53 @@ Mastering Page
         #clock-box{
          background-color:white;
          border-radius: 5px;
+         height: 40px;
+         border: 1px solid black;
+         padding-top: 5px;
+         font-weight: bold;
          max-width: 180px;
          margin-left: 1000px;
  
         }
+
+
+.reset-button {
+  position: relative;
+  background-color: #007bff;
+  border: none;
+  border-radius: 30%;
+  width: 40px;
+  height: 40px;
+  margin-top: -40px;
+  margin-left: 1200px;
+  padding: 0;
+  cursor: pointer;
+  overflow: hidden;
+}
+
+.reset-symbol {
+  font-size: 20px;
+  color: white;
+  position: relative;
+  z-index: 1;
+}
+
+.reset-button:before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 120%;
+  height: 120%;
+  background-color: rgba(255, 255, 255, 0.2);
+  border-radius: 50%;
+  transform: translate(-50%, -50%) rotateX(55deg) rotateY(30deg);
+  transition: transform 0.5s ease;
+}
+
+.reset-button:hover:before {
+  transform: translate(-50%, -50%) rotateX(0deg) rotateY(0deg);
+}
         
         
  </style>
@@ -140,6 +183,10 @@ Mastering Page
     <div id="clock">
         <div class="box" id="clock-box"></div>
     </div>
+
+    <button class="reset-button" id="reset-button">
+        <span class="reset-symbol">&#8634;</span>
+    </button>
 
     <div class="left-box">
     
@@ -175,7 +222,7 @@ Mastering Page
     <button id="measureBtn" type="button" onclick="MeasureBtnClick()"><b>Measurement<br>F1</b></button>
     <button id="lowMasterBtn" type="button" onclick="lowMasteringClick()"><b>Low Mastering</b></button>
     <button id="highMasterBtn" type="button" onclick="highMasteringClick()"><b>High Mastering</b></button>
-
+    
 
 
 
@@ -201,11 +248,24 @@ Mastering Page
 
 
 <script>
+     document.getElementById('reset-button').addEventListener('click', function() {
+        location.reload();
+        const preTag = document.getElementById('pre');
+        preTag.innerText = "New Mastering is Started";
+    });
+
+    document.getElementById("lowMasterBtn").disabled = false;
+    document.getElementById("lowMasterBtn").style.opacity = '1';
+    document.getElementById("highMasterBtn").disabled = true;
+    document.getElementById("highMasterBtn").style.opacity = '0.6';
+
+
+
     function MeasureBtnClick() {
         window.location.href = '/measurement/'; // Replace '/measurement' with the actual URL of the measurement page
     }
     function redirectToMasterPage() {
-        if (event.key === '1') {
+        if (event.key === 'F1') {
             window.location.href = '/measurement/';
             event.preventDefault();
         }
@@ -610,6 +670,10 @@ function displayContainerValues(container) {
 function lowMasteringClick() {
 
     console.log("lowMasteringClick");
+    document.getElementById("lowMasterBtn").disabled = true;
+    document.getElementById("lowMasterBtn").style.opacity = '0.6';
+    document.getElementById("highMasterBtn").disabled = false;
+    document.getElementById("highMasterBtn").style.opacity = '1';
 
         const preTag = document.getElementById('pre');
 
@@ -662,7 +726,12 @@ function lowMasteringClick() {
     }
 
     function highMasteringClick() {
+        console.clear();
     console.log("highMasteringClick");
+    document.getElementById("lowMasterBtn").disabled = true;
+    document.getElementById("lowMasterBtn").style.opacity = '0.6';
+    document.getElementById("highMasterBtn").disabled = true;
+    document.getElementById("highMasterBtn").style.opacity = '0.6';
 
     const preTag = document.getElementById('pre');
 

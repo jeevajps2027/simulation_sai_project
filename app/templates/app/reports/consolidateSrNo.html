@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Measurement Data</title>
+    <style>
+        .data-box {
+            border: 1px solid #ccc;
+            padding: 10px;
+            margin-bottom: 20px;
+            overflow-x: auto;
+            overflow-y: auto;
+            
+            
+        }
+        .grid-container {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr); /* Four columns */
+            grid-gap: 5px; /* Gap between grid items */
+            width: 1000px;
+        }
+        .box {
+            background-color: #fff;
+            border: 1px solid #ccc;
+            padding: 10px;
+            text-align: center;
+        }
+        .label {
+            font-family: 'Courier New', Courier, monospace;
+            font-size: small;
+        }
+        .value {
+            font-weight: bold;
+        }
+        
+        th, td {
+            border: 1px solid #ccc;
+            text-align: center;
+            padding: 5px;
+            width: 100px;
+        }
+        
+        .table_data{
+            width: 5000px;
+        }
+        .table_data th:nth-child(3) {
+            width: 300px; /* Specific width for the 2nd th element */
+        }
+        .table_data th:nth-child(2) {
+            width: 200px; /* Specific width for the 2nd th element */
+        }
+        .table_data th:nth-child(1) {
+            width: 20px; /* Specific width for the 2nd th element */
+        }
+    </style>
+</head>
+<body>
+
+   
+<div class="data-box">
+    <h1 style="color: red; text-align: center;">Consolidate With SrNo</h1>
+    {% for data in consolidate_values %}
+    <div class="grid-container">
+        <div class="box">
+            <span class="label">PARTMODEL:</span> <span class="value">{{ data.part_model }}</span>
+        </div>
+        <div class="box">
+            <span class="label">PARAMETER NAME:</span> <span class="value">{{ data.parameter_name }}</span>
+        </div>
+        <div class="box">
+            <span class="label">OPERATOR:</span> <span class="value">{{ data.operator }}</span>
+        </div>
+        <div class="box">
+            <span class="label">FROM DATE:</span> <span class="value">{{ data.formatted_from_date }}</span>
+        </div>
+        <div class="box">
+            <span class="label">TO DATE:</span> <span class="value">{{ data.formatted_to_date }}</span>
+        </div>
+        <div class="box">
+            <span class="label">MACHINE:</span> <span class="value">{{ data.machine }}</span>
+        </div>
+        <div class="box">
+            <span class="label">VENDOR CODE:</span> <span class="value">{{ data.vendor_code }}</span>
+        </div>
+        <div class="box">
+            <span class="label">JOB NO:</span> <span class="value">{{ data.job_no }}</span>
+        </div>
+        <div class="box">
+            <span class="label">SHIFT:</span> <span class="value">{{ data.shift }}</span>
+        </div>
+        <div class="box">
+            <span class="label">CURRENT DATE:</span> <span class="value">{{ data.current_date_time }}</span>
+        </div>
+        <div class="box">
+            <span class="label">ACCEPT:</span> 
+        </div>
+        <div class="box">
+            <span class="label">REJECT:</span> 
+        </div>
+        <div class="box">
+            <span class="label">REWORK:</span> 
+        </div>
+        <div class="box">
+            <span class="label">TOTAL:</span> 
+        </div>
+    </div><br>
+    {% endfor %}
+
+    <div class="table_data">
+        {{ table_html | safe }}
+    </div>
+</div>
+
+</body>
+</html>

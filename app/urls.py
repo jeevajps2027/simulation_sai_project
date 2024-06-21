@@ -1,27 +1,25 @@
 from django.conf import settings
 from django.urls import path,include
 from django.conf.urls.static import static
-from app import views
-
-
-
-
+from app.views import home,index,comport,probe,trace,parameter,master,measurebox,measurement
+from app.views import utility,report,spc,srno,withoutsrno
 
 urlpatterns = [
-    path('',views.home,name="home"),
-    path('comport/',views.comport, name='comport'),
-    path('index/',views.index,name="index"),
-    path('probe/',views.probe,name="probe"),
-    path('trace/',views.trace,name="trace"),
-    path('parameter/', views.parameter, name='parameter'),
-    path('master/',views.master,name="master"), 
-    path('measurement/',views.measurement,name="measurement"),
-    path('measurebox/',views.measurebox,name="measurebox"),
-    path('report/',views.report,name="report"), 
-    path('utility/',views.utility,name="utility"),  
-    path('jeeva/',views.jeeva,name="jeeva"), 
-
-]
+    path('',home,name="home"),
+    path('index/',index,name="index"),
+    path('comport/',comport,name="comport"),
+    path('probe/',probe,name="probe"),
+    path('trace/',trace,name="trace"),
+    path('parameter/',parameter,name="parameter"),
+    path('master/',master,name="master"),
+    path('measurebox/',measurebox,name="measurebox"),
+    path('measurement/',measurement,name="measurement"),
+    path('utility/',utility,name="utility"),
+    path('report/',report,name="report"),
+    path('spc/',spc,name="spc"),
+    path('srno/',srno,name="srno"),
+    path('withoutsrno/',withoutsrno,name="withoutsrno"),
+    ]
 
 if settings.DEBUG:
     urlpatterns += static(settings.STATIC_URL,document_root=settings.STATIC_ROOT)

@@ -46,12 +46,6 @@ class TableFiveData(models.Model):
 
 
 
-
-
-
-
-
-
 class MasterData(models.Model):
     probe_no = models.CharField(max_length=100)
     a = models.FloatField()
@@ -131,7 +125,7 @@ class MeasurementData(models.Model):
     lsl = models.FloatField()
     usl = models.FloatField()
     status_cell = models.CharField(max_length=100)
-    date = models.CharField(max_length=100)
+    date = models.DateTimeField()
     operator = models.CharField(max_length=100)
     shift = models.CharField(max_length=100)
     machine = models.CharField(max_length=100)
@@ -140,13 +134,7 @@ class MeasurementData(models.Model):
     customer_name = models.CharField(max_length=100)
     comp_sr_no = models.CharField(max_length=100)
 
-    def __str__(self):
-        return f"{self.parameter_name} - {self.date}"
-    
-    def save(self, *args, **kwargs):
-        if self.date:  # Format the date and time string with AM/PM information
-            self.date = self.date.strftime("%d/%m/%Y, %I:%M:%S %p")
-        super().save(*args, **kwargs)
+   
 
 class MasterIntervalSettings(models.Model):
     timewise = models.BooleanField(default=False)
@@ -185,3 +173,15 @@ class measure_data(models.Model):
 class UserLogin(models.Model):
     username = models.CharField(max_length=255)
     password = models.CharField(max_length=255)
+
+class consolidate_with_srno(models.Model):
+    part_model = models.CharField(max_length=100)
+    parameter_name = models.CharField(max_length=100)
+    operator = models.CharField(max_length=100)
+    formatted_from_date = models.CharField(max_length=100)
+    formatted_to_date = models.CharField(max_length=100)
+    machine = models.CharField(max_length=100)
+    vendor_code = models.CharField(max_length=100)
+    job_no = models.CharField(max_length=100)
+    shift = models.CharField(max_length=100)
+    current_date_time = models.CharField(max_length=100)
