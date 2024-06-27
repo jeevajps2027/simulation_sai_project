@@ -1,37 +1,33 @@
 import json
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render
+from django.views.decorators.csrf import csrf_exempt 
 from openpyxl import Workbook
-from app.models import MeasurementData, TableFiveData,parameter_settings,TableOneData,TableThreeData,TableTwoData,TableFourData,consolidate_with_srno
+from app.models import MeasurementData, TableFiveData,parameter_settings,TableOneData,TableThreeData,TableTwoData,TableFourData
+from app.models import consolidate_with_srno,consolidate_without_srno,parameterwise_report,jobwise_report
 
 
+@csrf_exempt
 def report(request):
     if request.method == 'POST':
         try:
             data = json.loads(request.body)
-            form_id = data.get('id')
+            print("data:",data)
+            part_model = data.get('partModel')
+            print(part_model)
+            form_id = data.get('itemId')
+            print("form_id:",form_id)
             if form_id == 'consolidate_with_srno':
                 partModel = data.get('partModel')
-                parameterName = data.get('parameterName')
+                parameterName = data.get('parameter_name')
                 operator = data.get('operator')
-                formattedFromDate = data.get('fromDate')
-                formattedToDate = data.get('toDate')
+                formatted_from_date = data.get('from_date')
+                formatted_to_date = data.get('to_date')
                 machine = data.get('machine')
-                vendorCode = data.get('vendorCode')
-                jobNo = data.get('jobNo')
+                vendor_code = data.get('vendor_code')
+                job_no = data.get('job_no')
                 shift = data.get('shift')
-                currentDateTime = data.get('currentDateTime')
-
-                print("partModel",partModel)
-                print("parameterName",parameterName)
-                print("operator",operator)
-                print("formattedFromDate",formattedFromDate)
-                print("formattedToDate",formattedToDate)
-                print("machine",machine)
-                print("vendorCode",vendorCode)
-                print("jobNo",jobNo)
-                print("shift",shift)
-                print("currentDateTime",currentDateTime)
+                current_date_time = data.get('currentDateTime')
 
                 # Get or create consolidate_with_srno instance with id=1
                 instance, created = consolidate_with_srno.objects.get_or_create(id=1)
@@ -40,21 +36,94 @@ def report(request):
                 instance.part_model = partModel
                 instance.parameter_name = parameterName
                 instance.operator = operator
-                instance.formatted_from_date = formattedFromDate
-                instance.formatted_to_date = formattedToDate
+                instance.formatted_from_date = formatted_from_date
+                instance.formatted_to_date = formatted_to_date
                 instance.machine = machine
-                instance.vendor_code = vendorCode
-                instance.job_no = jobNo
+                instance.vendor_code = vendor_code
+                instance.job_no = job_no
                 instance.shift = shift
-                instance.current_date_time = currentDateTime
+                instance.current_date_time = current_date_time
 
                 # Save the instance
                 instance.save()
-            
+            elif form_id == 'consolidate_without_srno':
+                partModel = data.get('partModel')
+                parameterName = data.get('parameter_name')
+                operator = data.get('operator')
+                formatted_from_date = data.get('from_date')
+                formatted_to_date = data.get('to_date')
+                machine = data.get('machine')
+                vendor_code = data.get('vendor_code')
+                shift = data.get('shift')
+                current_date_time = data.get('currentDateTime')
+
+                 # Get or create consolidate_with_srno instance with id=1
+                instance, created = consolidate_without_srno.objects.get_or_create(id=1)
+
+                # Update the instance with the new data
+                instance.part_model = partModel
+                instance.parameter_name = parameterName
+                instance.operator = operator
+                instance.formatted_from_date = formatted_from_date
+                instance.formatted_to_date = formatted_to_date
+                instance.machine = machine
+                instance.vendor_code = vendor_code
+                instance.shift = shift
+                instance.current_date_time = current_date_time
+
+                # Save the instance
+                instance.save()
+            elif form_id == 'parameterwise_report':
+                partModel = data.get('partModel')
+                parameterName = data.get('parameter_name')
+                operator = data.get('operator')
+                formatted_from_date = data.get('from_date')
+                formatted_to_date = data.get('to_date')
+                machine = data.get('machine')
+                vendor_code = data.get('vendor_code')
+                job_no = data.get('job_no')
+                shift = data.get('shift')
+                current_date_time = data.get('currentDateTime')
+
+                # Get or create consolidate_with_srno instance with id=1
+                instance, created = parameterwise_report.objects.get_or_create(id=1)
+
+                # Update the instance with the new data
+                instance.part_model = partModel
+                instance.parameter_name = parameterName
+                instance.operator = operator
+                instance.formatted_from_date = formatted_from_date
+                instance.formatted_to_date = formatted_to_date
+                instance.machine = machine
+                instance.vendor_code = vendor_code
+                instance.job_no = job_no
+                instance.shift = shift
+                instance.current_date_time = current_date_time
+
+                # Save the instance
+                instance.save()
+            elif form_id == 'jobwise_report':
+                partModel = data.get('partModel')
+                formatted_from_date = data.get('from_date')
+                formatted_to_date = data.get('to_date')
+                job_no = data.get('job_no')
+                current_date_time = data.get('currentDateTime')
+
+                # Get or create consolidate_with_srno instance with id=1
+                instance, created = jobwise_report.objects.get_or_create(id=1)
+                instance.part_model = partModel
+                instance.formatted_from_date = formatted_from_date
+                instance.formatted_to_date = formatted_to_date
+                instance.job_no = job_no
+                instance.current_date_time = current_date_time
+
+                # Save the instance
+                instance.save()
+              
+
                 
 
-            part_model = data.get('partModel')
-            print(part_model)
+            
 
             # Filter parameter_settings where model_id matches part_model and get distinct parameter_name
             parameter_data = parameter_settings.objects.filter(model_id=part_model).values_list('parameter_name', flat=True).distinct()

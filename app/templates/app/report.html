@@ -28,7 +28,7 @@ Report
     padding-left: 5px;
   }
 
-.inner-box-1, .inner-box-2, .inner-box-3, .inner-box-4, .inner-box-5,.inner-box-6{
+.inner-box-1, .inner-box-2, .inner-box-3, .inner-box-4, .inner-box-6{
     width: 230px; 
     height: 65px;
     background-color:rgb(245, 188, 83);
@@ -44,7 +44,7 @@ Report
     
   }
 
-.item-1, .item-2, .item-3, .item-4, .item-5, .item-6{
+.item-1, .item-2, .item-3, .item-4,.item-6{
     border: 1px solid #ccc;
     padding: 20px;
     text-align: center;
@@ -78,7 +78,7 @@ Report
                
          }
   
-  #report_btn_1{
+  .report-btn{
       background-color: green;
       color:black;           
       height: 50px;
@@ -86,82 +86,26 @@ Report
       margin-left: 65px; 
       margin-top: 30px;
   }
-  .save-btn{
-      background-color: green;
-      color:black;           
-      height: 50px;
-      width: 150px; 
-      margin-left: 65px; 
-      margin-top: 30px;
-  }
-
-  .pdf-btn{
-      background-color: red;
-      color:black;           
-      height: 50px;
-      width: 150px; 
-      margin-left: 65px; 
-      margin-top: 30px;
-  }
-
-  .email-btn{
-      background-color: yellow;
-      color:black;           
-      height: 50px;
-      width: 150px; 
-      margin-left: 65px; 
-      margin-top: 30px;
-  }
-
-  .print-btn{
-      background-color: green;
-      color:black;           
-      height: 50px;
-      width: 150px; 
-      margin-left: 65px; 
-      margin-top: 30px;
-  }
-
-  #report-table {
-    border-collapse: collapse;
-    width: 100%;
-}
-
-#table-headers th,
-#table-body td {
-    border: 1px solid black;
-    padding: 2px;
-    text-align: left;
-}
-
-#table-headers th {
-    background-color: #f2f2f2; /* Light gray background color for headers */
-}
-
-#table-body{
-    background-color: #f2f2f2; /* Alternate row background color */
-}
+  
 
 #clock-box{
          font-weight: bold;
         }
-
-
+        
 </style>
 
 
 <div class="box-1">
-    <div id="consolidated_with_sr" class="inner-box-1" onclick="enlargeItem(1),showItem('item-1')">Consolidated Report <br>(with sr.no)</div>
-    <div id="consolidated_without_sr" class="inner-box-2" onclick="enlargeItem(2),showItem('item-2')">Consolidated Report <br>(without sr.no)</div>
-    <div id="parameterwise_report" class="inner-box-3" onclick="enlargeItem(3),showItem('item-3')">Parameterwise Report</div>
-    <div id="jobwise_report" class="inner-box-4" onclick="enlargeItem(4),showItem('item-4')">Jobwise Report</div>
-    <div id="summary_report" class="inner-box-5" onclick="enlargeItem(5),showItem('item-5')">Summary Report</div>
-    <div id="master_report" class="inner-box-6" onclick="enlargeItem(6),showItem('item-6')">Master Report</div>
+    <div id="consolidated_srno_reports" class="inner-box-1" onclick="enlargeItem(1),showItem('item-1')">Consolidated Report <br>(with sr.no)</div>
+    <div id="consolidated_without_reports" class="inner-box-2" onclick="enlargeItem(2),showItem('item-2')">Consolidated Report <br>(without sr.no)</div>
+    <div id="parameter_wise_reports" class="inner-box-3" onclick="enlargeItem(3),showItem('item-3')">Parameterwise Report</div>
+    <div id="job_wise_reports" class="inner-box-4" onclick="enlargeItem(4),showItem('item-4'),focusJobNoInput()">Jobwise Report</div>
+    <div id="master_reports" class="inner-box-6" onclick="enlargeItem(6),showItem('item-6')">Master Report</div>
     
 </div>
 
 <div class="box" id="boxContent"style="overflow-x: auto;overflow-y:auto;">
-    <div class="item item-1" id="item1">
+    <div class="item item-1" id="consolidate_with_srno">
 
       <center style="color: purple; text-shadow: 2px 2px 4px rgb(240, 118, 240);">
         <h2><b>Consolidated Report </b></h2><h4><b>(with sr.no)</b></h4></center>
@@ -175,8 +119,8 @@ Report
         </select>
         
 
-        <label for="partModel_1">PART MODEL:</label>
-        <select class="partModel" id="partModel_1" name="partModel_1">
+        <label for="partModel">PART MODEL:</label>
+        <select class="partModel"  name="partModel">
           {% for model in model_data %}
                 <option>{{ model }}</option>
             {% endfor %}
@@ -233,11 +177,11 @@ Report
         <a href="{% url 'index' %}" >
           <button type="button" id="cancel-btn"><b>Cancel</b></button>
           </a>
-        <button type="button" id="report_btn_1"><b>View Report</b></button>
+        <button type="button" class="report-btn" id="report_btn_1"><b>View Report</b></button>
      
     </div>
 
-    <div class="item item-2" id="item2">
+    <div class="item item-2" id="consolidate_without_srno">
       <center style="color: purple; text-shadow: 2px 2px 4px rgb(240, 118, 240);">
         <h2><b>Consolidated Report </b></h2><h4><b>(without sr.no)</b></h4></center>
 
@@ -248,8 +192,8 @@ Report
         </select>
         
 
-        <label for="partModel_2">PART MODEL:</label>
-        <select class="partModel" id="partModel_2" name="partModel_2">
+        <label for="partModel">PART MODEL:</label>
+        <select class="partModel" id="partModel" name="partModel">
           {% for model in model_data %}
                 <option>{{ model }}</option>
             {% endfor %}
@@ -292,10 +236,6 @@ Report
             {% endfor %}
         </select><br>
 
-
-
-        <label for="job_no">JOB NO:</label>
-        <select class="job_no" name="job_no"></select>
         
         <label for="shift">SHIFT:</label>
         <select class="shift" name="shift">
@@ -311,7 +251,7 @@ Report
         <button type="button" class="report-btn"><b>View Report</b></button>    
     </div>
 
-    <div class="item item-3" id="item3">
+    <div class="item item-3" id="parameterwise_report">
       <center style="color: purple; text-shadow: 2px 2px 4px rgb(240, 118, 240);">
         <h2><b>Parameterwise Report</b></h2></center>
 
@@ -322,8 +262,8 @@ Report
         </select>
         
 
-        <label for="partModel_3">PART MODEL:</label>
-        <select class="partModel"id="partModel_3" name="partModel_3">
+        <label for="partModel">PART MODEL:</label>
+        <select class="partModel"id="partModel" name="partModel">
           {% for model in model_data %}
                 <option>{{ model }}</option>
             {% endfor %}
@@ -380,10 +320,10 @@ Report
         <a href="{% url 'index' %}" >
           <button type="button" id="cancel-btn"><b>Cancel</b></button>
           </a>
-        <button type="button" class="report-btn"><b>View Report</b></button>    
+        <button type="button" class="report-btn" id="report_btn_3"><b>View Report</b></button>    
     </div>
 
-    <div class="item item-4" id="item-4">
+    <div class="item item-4" id="jobwise_report">
       <center style="color: purple; text-shadow: 2px 2px 4px rgb(240, 118, 240);">
         <h2><b>Jobwise Report </b></h2></center>
 
@@ -394,8 +334,8 @@ Report
       </select>
     
 
-      <label for="partModel_4">PART MODEL:</label>
-      <select class="partModel" id="partModel_4" name="partModel_4">
+      <label for="partModel">PART MODEL:</label>
+      <select class="partModel" id="partModel" name="partModel">
         {% for model in model_data %}
                 <option>{{ model }}</option>
             {% endfor %}
@@ -409,8 +349,9 @@ Report
         <input type="datetime-local" id="to_date" name="to_date"><br>
 
         <label for="job_no" style="margin-top: 20px;">JOB NO:</label>
-        <select class="job_no" name="job_no" style="width: 40%;"></select><br>
-
+        <input style="width: 40%;"  id="job_no" name="job_no">
+        <br>
+        
        
 
         <a href="{% url 'index' %}" >
@@ -420,80 +361,7 @@ Report
 
     </div>
 
-    <div class="item item-5" id="item-5">
-      <center style="color: purple; text-shadow: 2px 2px 4px rgb(240, 118, 240);">
-        <h2><b>Summary Report </b></h2></center>
-
-
-        <label for="sr.no" >PART.NO:</label>
-        <select class="sr_no" name="sr_no" disabled>
-            <option value="1" selected>1</option>
-        </select>
-        
-
-        <label for="partModel_5">PART MODEL:</label>
-        <select class="partModel" id="partModel_5" name="partModel_5">
-          {% for model in model_data %}
-                <option>{{ model }}</option>
-            {% endfor %}
-        </select><br>
-
-        <label for="parameter_name">PARAMATER NAME:</label>
-        <select class="parameter_name" name="parameter_name" ></select>
-
-        <label for="operator">OPERATOR:</label>
-        <select class="operator" name="operator">
-            <option>ALL</option> 
-          {% for operator in operator_data %}
-                <option>{{ operator }}</option>
-            {% endfor %}
-        </select><br>
-
-        
-        <label for="from_date" style="margin-top: 30px;">FROM DATE TIME:</label>
-        <input type="datetime-local" id="from_date" name="from_date"><br>
-        
-
-        <label for="to_date"style="margin-top: 30px;">TO DATE TIME:</label>
-        <input type="datetime-local" id="to_date" name="to_date"><br>
-
-       <label for="machine" style="margin-top: 30px;">MACHINE:</label>
-        <select class="machine" name="machine">
-            <option>ALL</option> 
-          {% for machine in machine_data %}
-                <option>{{ machine }}</option>
-            {% endfor %}
-        </select>
-
-        
-        <label for="vendor_code">VENDOR CODE:</label>
-        <select id="vendor_code" name="vendor_code">
-            <option>ALL</option> 
-            {% for vendor in vendor_data %}
-                <option>{{ vendor }}</option>
-            {% endfor %}
-        </select><br>
-
-
-        <label for="job_no">JOB NO:</label>
-        <select class="job_no" name="job_no"></select>
-        
-        <label for="shift">SHIFT:</label>
-        <select class="shift" name="shift">
-            <option>ALL</option> 
-          {% for shift in shift_data %}
-                <option>{{ shift }}</option>
-            {% endfor %}
-        </select><br>
-
-        <a href="{% url 'index' %}" >
-          <button type="button" id="cancel-btn"><b>Cancel</b></button>
-          </a>
-        <button type="button" class="report-btn"><b>View Report</b></button>    
-    </div>
-
-
-    <div class="item item-6" id="item-6">
+    <div class="item item-6" id="master_report">
       <center style="color: purple; text-shadow: 2px 2px 4px rgb(240, 118, 240);">
         <h2><b>Master Report </b></h2></center>
 
@@ -504,8 +372,8 @@ Report
         </select>
         
 
-        <label for="partModel_6">PART MODEL:</label>
-        <select class="partModel" id="partModel_6" name="partModel_6">
+        <label for="partModel">PART MODEL:</label>
+        <select class="partModel" id="partModel" name="partModel">
           {% for model in model_data %}
                 <option>{{ model }}</option>
             {% endfor %}
@@ -574,6 +442,15 @@ Report
 
 
 <script>
+///////////////////////////////////////////////////////////////////////////////////
+
+//cursor to blink always in the job_no report
+
+function focusJobNoInput() {
+        document.getElementById('job_no').focus();
+    }
+
+/////////////////////////////////////////////////////////////////////////////////
 
 // Function to update the clock
 function updateClock() {
@@ -622,30 +499,126 @@ $(document).ready(function() {
   ////////////////////////////////////////////////////////////////////////////////////////////////
   function enlargeItem(index) {
             document.querySelectorAll('.box-1 > div').forEach(function (el) {
-                el.style.backgroundColor = ''; 
+                el.style.backgroundColor = '';
             });
             var clickedInnerBox = document.querySelector(`.box-1 .inner-box-${index}`);
             clickedInnerBox.style.backgroundColor = 'red';
-           
-            
+            console.log("Selected ID:", clickedInnerBox.id); // Log the ID of the clicked element
         }
-        
+
         function showItem(itemClassName) {
             var itemClasses = document.querySelectorAll('.item');
             itemClasses.forEach(function (item) {
                 item.style.display = 'none';
             });
-        
+
             var selectedItem = document.querySelector('.' + itemClassName);
             if (selectedItem) {
                 selectedItem.style.display = 'block';
+                console.log("Displayed Item Class:", itemClassName); // Log the class name of the displayed item
+                console.log("Selected ID:", selectedItem.id);
             }
         }
+
         window.onload = function () {
             showItem('item-1');
-            document.querySelector('.box-1 .inner-box-1').style.backgroundColor='red';
+            document.querySelector('.box-1 .inner-box-1').style.backgroundColor = 'red';
+            console.log("Displayed Item Class: item-1"); // Log the class name of the default displayed item
         };
 
+        // Function to format the date and time
+        function formatDateTime(dateTime) {
+            var date = new Date(dateTime);
+            var day = date.getDate().toString().padStart(2, '0');
+            var month = (date.getMonth() + 1).toString().padStart(2, '0');
+            var year = date.getFullYear();
+            var hours = date.getHours();
+            var minutes = date.getMinutes().toString().padStart(2, '0');
+            var ampm = hours >= 12 ? 'PM' : 'AM';
+            hours = hours % 12;
+            hours = hours ? hours : 12; // the hour '0' should be '12'
+            var strTime = hours + ':' + minutes + ':' + "00" + ' ' + ampm;
+            return day + '-' + month + '-' + year + ' ' + strTime;
+        }
+
+        // Function to get the current date and time
+        function getCurrentDateTime() {
+            var now = new Date();
+            var day = now.getDate().toString().padStart(2, '0');
+            var month = (now.getMonth() + 1).toString().padStart(2, '0'); // January is 0
+            var year = now.getFullYear();
+            var hours = now.getHours();
+            var minutes = now.getMinutes().toString().padStart(2, '0');
+            var seconds = now.getSeconds().toString().padStart(2, '0');
+            var ampm = hours >= 12 ? 'PM' : 'AM';
+            hours = hours % 12;
+            hours = hours ? hours : 12; // the hour '0' should be '12'
+            var timeString = hours + ':' + minutes + ':' + seconds + ' ' + ampm;
+            var dateString = day + '-' + month + '-' + year;
+            return dateString + ' ' + timeString;
+        }
+
+
+        document.querySelectorAll('.report-btn').forEach(function(button) {
+        button.addEventListener('click', function() {
+            var activeItem = document.querySelector('.item[style*="display: block"]');
+            if (activeItem) {
+                var data = {};
+                var formElements = activeItem.querySelectorAll('input, select');
+                formElements.forEach(function(element) {
+                    if (element.type === 'datetime-local') {
+                        data[element.name] = formatDateTime(element.value);
+                    } else {
+                        data[element.name] = element.value;
+                    }
+                });
+                // Add the current date and time to the data
+                data.currentDateTime = getCurrentDateTime();
+                
+                // Add the ID of the active item to the data
+                data.itemId = activeItem.id;
+                
+                console.log("Data to be sent:", data); // Log the data to be sent
+
+                    // Fetch CSRF token from cookie
+                    function getCookie(name) {
+                        let cookieValue = null;
+                        if (document.cookie && document.cookie !== '') {
+                            const cookies = document.cookie.split(';');
+                            for (let i = 0; i < cookies.length; i++) {
+                                const cookie = cookies[i].trim();
+                                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                                    break;
+                                }
+                            }
+                        }
+                        return cookieValue;
+                    }
+
+                    var csrftoken = getCookie('csrftoken');
+
+                    $.ajax({
+                        type: 'POST',
+                        url: '/report/',  // Replace with your actual backend endpoint
+                        data: JSON.stringify(data),
+                        contentType: 'application/json; charset=utf-8',
+                        dataType: 'json',
+                        headers: {
+                            'X-CSRFToken': csrftoken
+                        },
+                        success: function(response) {
+                            console.log('Response:', response);  // Debugging information
+                            alert('Report generated successfully!');
+                        },
+                        error: function(error) {
+                            console.log('Error:', error);  // Debugging information
+                            alert('An error occurred while generating the report.');
+                        }
+                    });
+                }
+            });
+        });
 /////////////////////////////////////////////////////////////////////////////////////////
 
 $(document).ready(function() {
@@ -747,131 +720,27 @@ function getCookie(name) {
 
 
 ///////////////////////////////////////////////////////////////////////////////////////////
+document.addEventListener("DOMContentLoaded", function() {
+    // Find the button element by its ID
+    var reportBtn = document.getElementById("report_btn_1");
 
-//item-1 (consolidate report with srno) send to the consolidateSrNo.html page
-
-$(document).ready(function() {
-    $('#report_btn_1').click(function(event) {
-        event.preventDefault();  // Prevent the default form submission
-        
-        var partModel = $('#partModel_1').val();
-        var parameterName = $('select[name="parameter_name"]').val();
-        var operator = $('select[name="operator"]').val();
-        var fromDate = $('#from_date').val();  // Assuming fromDate and toDate are already formatted as needed
-        var toDate = $('#to_date').val();
-        var machine = $('select[name="machine"]').val();
-        var vendorCode = $('#vendor_code').val();
-        var jobNo = $('select[name="job_no"]').val();
-        var shift = $('select[name="shift"]').val();
-
-        // Function to format the date and time
-        function formatDateTime(dateTime) {
-            var date = new Date(dateTime);
-            var day = date.getDate().toString().padStart(2, '0');
-            var month = (date.getMonth() + 1).toString().padStart(2, '0');
-            var year = date.getFullYear();
-            var hours = date.getHours();
-            var minutes = date.getMinutes().toString().padStart(2, '0');
-            var ampm = hours >= 12 ? 'PM' : 'AM';
-            hours = hours % 12;
-            hours = hours ? hours : 12; // the hour '0' should be '12'
-            var strTime = hours + ':' + minutes + ':' + "00" + ' ' + ampm;
-            return day + '-' + month + '-' + year + ' ' + strTime;
-        }
-
-        var formattedFromDate = formatDateTime(fromDate);
-        var formattedToDate = formatDateTime(toDate);
-
-        // Get the current date and time
-        function getCurrentDateTime() {
-            var now = new Date();
-            var day = now.getDate().toString().padStart(2, '0');
-            var month = (now.getMonth() + 1).toString().padStart(2, '0'); // January is 0
-            var year = now.getFullYear();
-            var hours = now.getHours();
-            var minutes = now.getMinutes().toString().padStart(2, '0');
-            var seconds = now.getSeconds().toString().padStart(2, '0');
-            var ampm = hours >= 12 ? 'PM' : 'AM';
-            hours = hours % 12;
-            hours = hours ? hours : 12; // the hour '0' should be '12'
-            var timeString = hours + ':' + minutes + ':' + seconds + ' ' + ampm;
-            var dateString = day + '-' + month + '-' + year;
-            return dateString + ' ' + timeString;
-        }
-
-        var currentDateTime = getCurrentDateTime();
-
-        // Log the gathered data to the console
-        console.log("Part Model:", partModel);
-        console.log("Parameter Name:", parameterName);
-        console.log("Operator:", operator);
-        console.log("From Date:", formattedFromDate);
-        console.log("To Date:", formattedToDate);
-        console.log("Machine:", machine);
-        console.log("Vendor Code:", vendorCode);
-        console.log("Job No:", jobNo);
-        console.log("Shift:", shift);
-        console.log("Current Date and Time:", currentDateTime);
-
-        var data = {
-            id: 'consolidate_with_srno',
-            partModel: partModel,
-            parameterName: parameterName,
-            operator: operator,
-            fromDate: formattedFromDate,
-            toDate: formattedToDate,
-            machine: machine,
-            vendorCode: vendorCode,
-            jobNo: jobNo,
-            shift: shift,
-            currentDateTime: currentDateTime  // Include currentDateTime in the data
-        };
-
-        // Fetch CSRF token from cookie
-        var csrftoken = getCookie('csrftoken');
-
-        $.ajax({
-            type: 'POST',
-            url: '/report/',  // Replace with your actual backend endpoint
-            data: JSON.stringify(data),
-            contentType: 'application/json; charset=utf-8',
-            dataType: 'json',
-            headers: {
-                'X-CSRFToken': csrftoken
-            },
-            success: function(response) {
-                console.log('Response:', response);  // Debugging information
-                alert('Shift settings saved successfully!');
-            },
-            error: function(error) {
-                console.log('Error:', error);  // Debugging information
-                alert('An error occurred while saving shift settings.');
-            }
-        });
+    // Add click event listener to the button
+    reportBtn.addEventListener("click", function() {
+        // Redirect to the desired URL
+        window.location.href = '/srno/';
     });
 });
-document.getElementById('report_btn_1').addEventListener('click', function() {
-        window.location.href = '/srno/'; // Replace '/srno-page' with the actual URL you want to redirect to
+
+document.addEventListener("DOMContentLoaded", function() {
+    // Find the button element by its ID
+    var reportBtn = document.getElementById("report_btn_3");
+
+    // Add click event listener to the button
+    reportBtn.addEventListener("click", function() {
+        // Redirect to the desired URL
+        window.location.href = '/paraReport/';
     });
-
-// Function to get CSRF cookie value
-function getCookie(name) {
-    var cookieValue = null;
-    if (document.cookie && document.cookie !== '') {
-        var cookies = document.cookie.split(';');
-        for (var i = 0; i < cookies.length; i++) {
-            var cookie = cookies[i].trim();
-            // Check if this cookie name is the one we want
-            if (cookie.substring(0, name.length + 1) === (name + '=')) {
-                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                break;
-            }
-        }
-    }
-    return cookieValue;
-}
-
-
+});
       
 </script>
 

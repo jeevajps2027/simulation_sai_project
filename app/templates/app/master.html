@@ -1610,38 +1610,6 @@ function resetRadioButtons() {
 //////////////////////////////////////////////
 
  
-function updateSerialData() {
-    // Make an AJAX request to your Django view
-    $.ajax({
-        url: '/probe/',  // Replace with the correct URL
-        type: 'GET',
-        dataType: 'json',
-        success: function (data) {
-            var serialData = data.serial_data;
-
-            // Iterate over the probe keys in serialData
-            for (var probeKey in serialData) {
-                if (serialData.hasOwnProperty(probeKey)) {
-                    // Update the corresponding textarea based on probeKey
-                    $('#probe-' + probeKey).text(serialData[probeKey]);
-                }
-            }
-
-            // Scroll the textarea to view the last line
-            $('.textarea').each(function () {
-                $(this).scrollTop($(this)[0].scrollHeight);
-            });
-        },
-        error: function(error) {
-          console.error('Error updating serial data:', error);
-        }
-    });
-}
-
-// Update the serial data every 1 second (adjust the interval as needed)
-setInterval(updateSerialData, 0.5); // Update every second (1000 ms)
-
-
 ///////////////////////////////////
 
 

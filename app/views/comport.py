@@ -19,11 +19,12 @@ def read_serial_data(ser):
             receive = ser.read().decode('ASCII')
             if receive == '\n':  # Assuming newline indicates end of a message
                 with serial_data_lock:
-                    print("Current Serial Data:", serial_data, flush=True)  # Display only the current serial data
+                    print("Current Serial Data jjjjjjjjjjjjjjjjjjjjjjjjjjjjjjj:", serial_data, flush=True)  # Display only the current serial data
                 serial_data = ""  # Reset serial_data for the next message
             else:
                 with serial_data_lock:
                     serial_data += receive
+                    print("Current Serial Data eeeeeeeeeeeeeeeeeeeeeeeeeeeee:", serial_data, flush=True)
         except Exception as e:
             # Handle exceptions or log errors here
             pass

@@ -10,26 +10,6 @@ from app.models import mastering_data, measure_data, parameter_settings
 
 
 
-serial_data = ""
-serial_data_lock = threading.Lock()
-
-serial_thread = None
-
-def read_serial_data(ser):
-    global serial_data
-    while True:
-        try:
-            receive = ser.read().decode('ASCII')
-            if receive == '\n':  # Assuming newline indicates end of a message
-                with serial_data_lock:
-                    print("Current Serial Data:", serial_data, flush=True)  # Display only the current serial data
-                serial_data = ""  # Reset serial_data for the next message
-            else:
-                with serial_data_lock:
-                    serial_data += receive
-        except Exception as e:
-            # Handle exceptions or log errors here
-            pass
 
 
 def master(request):
@@ -207,8 +187,5 @@ def master(request):
             print(f'Exception: {e}')
             return JsonResponse({'key': 'value'})
     
-    global serial_data
-    with serial_data_lock:
-        context['serial_data']=serial_data
-
+   
     return render(request, 'app/master.html', context)

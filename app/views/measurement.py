@@ -2,38 +2,33 @@ from collections import defaultdict
 from datetime import datetime
 import json
 import threading
-
 from django.http import HttpResponseNotAllowed, JsonResponse
 from django.shortcuts import render
+import pytz
+from django.utils import timezone  
+from django.db.models import Q
 
-from app.models import MasterIntervalSettings, MeasurementData, TableOneData, mastering_data, measure_data, parameter_settings
+from app.models import MasterIntervalSettings, MeasurementData, ResetCount, TableOneData, mastering_data, measure_data, parameter_settings
 
-serial_data = ""
-serial_data_lock = threading.Lock()
-
-serial_thread = None
-
-def read_serial_data(ser):
-    global serial_data
-    while True:
-        try:
-            receive = ser.read().decode('ASCII')
-            if receive == '\n':  # Assuming newline indicates end of a message
-                with serial_data_lock:
-                    print("Current Serial Data:", serial_data, flush=True)  # Display only the current serial data
-                serial_data = ""  # Reset serial_data for the next message
-            else:
-                with serial_data_lock:
-                    serial_data += receive
-        except Exception as e:
-            # Handle exceptions or log errors here
-            pass
 
 def process_row(row):
     try:
         date_str = row.get('date')
+        print("date_str", date_str)
+        
         # Convert date string to datetime object
         date_obj = datetime.strptime(date_str, '%d/%m/%Y %I:%M:%S %p')
+        print("date_obj", date_obj)
+        
+        # Make the datetime object timezone-aware
+        timezone = pytz.timezone('Asia/Kolkata')  # Replace with your timezone
+        date_obj_aware = timezone.localize(date_obj)
+        print("date_obj_aware", date_obj_aware)
+        
+        # Remove timezone information before storing
+        date_obj_naive = date_obj_aware.replace(tzinfo=None)
+        print("date_obj_naive", date_obj_naive)
+        
         MeasurementData.objects.create(
             parameter_name=row.get('parameterName'),
             readings=row.get('readings'),
@@ -41,7 +36,7 @@ def process_row(row):
             lsl=row.get('lsl'),
             usl=row.get('usl'),
             status_cell=row.get('statusCell'),
-            date=date_obj,
+            date=date_obj_naive,
             operator=row.get('operator'),
             shift=row.get('shift'),
             machine=row.get('machine'),
@@ -59,27 +54,31 @@ def measurement(request):
         try:
             data = json.loads(request.body.decode('utf-8'))
             print("data:",data)
+            form_id = data.get('id')
+            print("form_id:",form_id)
 
             table_data = data.get('tableData', {}).get('formDataArray', [])
 
             errors = [process_row(row) for row in table_data]
             if any(errors):
                 return JsonResponse({'status': 'error', 'message': errors[0]}, status=500)
+            
+            if form_id == 'reset_count':
+                part_model = data.get('partModel')
+                date = data.get('date')
+
+                # Check if a ResetCount instance with the same part_model exists
+                reset_count, created = ResetCount.objects.update_or_create(
+                    part_model=part_model,
+                    defaults={
+                        'date': date
+                    }
+                )
 
             part_model = data.get('partModel')
             customer_name_values = TableOneData.objects.filter(part_model=part_model).values_list('customer_name', flat=True).first()
 
-            comp_sr_no_list_distinct = MeasurementData.objects.filter(part_model=part_model).values_list('comp_sr_no', flat=True).distinct()
-            part_status_dict = defaultdict(set)
-            for comp_sr_no in comp_sr_no_list_distinct:
-                part_statuses = MeasurementData.objects.filter(comp_sr_no=comp_sr_no).values_list('part_status', flat=True).distinct()
-                part_status_dict[comp_sr_no].update(part_statuses)
-
-            part_status_count = defaultdict(int)
-            for part_statuses in part_status_dict.values():
-                for status in part_statuses:
-                    part_status_count[status] += 1
-
+           
             parameter_settings_qs = parameter_settings.objects.filter(model_id=part_model, hide_checkbox=False)
             last_stored_parameter = {item['parameter_name']: item for item in mastering_data.objects.filter(selected_value=part_model, parameter_name__in=parameter_settings_qs.values_list('parameter_name', flat=True)).values()}
 
@@ -100,7 +99,6 @@ def measurement(request):
                 'probe_values': [item['probe_no'] for item in last_stored_parameter.values()],
                 'step_no_values': list(parameter_settings_qs.values_list('step_no', flat=True)),
                 'customer_name_values': customer_name_values,
-                'part_status_counts': dict(part_status_count),
             }
 
             return JsonResponse(response_data)
@@ -129,6 +127,97 @@ def measurement(request):
             if hide.exists():  # Check if queryset has any results
                 hide = hide[0]  # Access the first value
                 print('hide:', hide)
+
+
+        # Retrieve the datetime_value from the specified part_model in ResetCount
+        reset_count_value = ResetCount.objects.filter(part_model=part_model).first()
+        if reset_count_value:
+            date_format_input = '%d/%m/%Y %I:%M:%S %p'
+            datetime_naive = datetime.strptime(reset_count_value.date, date_format_input)
+            date_obj_naive = timezone.make_aware(datetime_naive, timezone.get_default_timezone())
+            datetime_value = date_obj_naive.replace(tzinfo=None)
+            print("datetime_value:", datetime_value)
+        else:
+            datetime_value = None
+            print("No datetime value found for the specified part model")
+
+        if datetime_value:
+            # Filter MeasurementData objects from the datetime_value onwards
+            filtered_measurement_data = MeasurementData.objects.filter(part_model=part_model, date__gt=datetime_value)
+
+            # Retrieve and print distinct component serial numbers with non-empty values
+            comp_sr_no_list = filtered_measurement_data.exclude(comp_sr_no__isnull=True).exclude(comp_sr_no__exact='').values_list('comp_sr_no', flat=True).distinct()
+            print('Distinct component_serial_number (non-empty):', comp_sr_no_list)
+
+            # Retrieve all values which contain null or empty component serial numbers
+            invalid_values_list = filtered_measurement_data.filter(Q(comp_sr_no__isnull=True) | Q(comp_sr_no__exact=''))
+
+            # Initialize variables to track distinct dates, part_status, and associated IDs
+            distinct_dates = set()
+            date_status_id_map = defaultdict(lambda: {'part_statuses': set(), 'data': []})
+            status_counts = defaultdict(int)
+
+            # Iterate through the queryset to collect distinct dates, part_status, and associated IDs
+            for obj in invalid_values_list:
+                date_str = obj.date.strftime('%Y-%m-%d %H:%M:%S')  # Format date as string
+                part_status = obj.part_status  # Get part_status
+                if date_str not in distinct_dates:
+                    distinct_dates.add(date_str)
+                if part_status not in date_status_id_map[date_str]['part_statuses']:
+                    date_status_id_map[date_str]['part_statuses'].add(part_status)
+                    date_status_id_map[date_str]['data'].append({'id': obj.id, 'part_status': part_status})
+                    status_counts[part_status] += 1
+
+            # Initialize a dictionary to store part statuses for each component serial number
+            part_status_dict = defaultdict(set)
+
+            # Populate the dictionary with distinct part statuses for each component serial number
+            for comp_sr_no in comp_sr_no_list:
+                part_statuses = filtered_measurement_data.filter(comp_sr_no=comp_sr_no).values_list('part_status', flat=True).distinct()
+                part_status_dict[comp_sr_no].update(part_statuses)
+
+            # Initialize a dictionary to count each part status
+            part_status_count = defaultdict(int)
+
+            # Count part statuses and populate part_status_count
+            for comp_sr_no, part_statuses in part_status_dict.items():
+                for status in part_statuses:
+                    part_status_count[status] += 1
+
+            # Print the component serial numbers along with their distinct part statuses
+            for comp_sr_no, part_statuses in part_status_dict.items():
+                print(f'Component Serial Number: {comp_sr_no}, Part Statuses: {list(part_statuses)}')
+
+            # Print the counts for each part status from part_status_count
+            print("\nPart Status Counts (with component serial numbers):")
+            for status, count in part_status_count.items():
+                print(f"{status}: {count}")
+
+            # Combine counts from status_counts and part_status_count for overall counts
+            overall_status_counts = defaultdict(int)
+            for status, count in status_counts.items():
+                overall_status_counts[status] += count
+            for status, count in part_status_count.items():
+                overall_status_counts[status] += count
+
+            # Print overall status counts
+            print("\nOverall Status Counts (including without component serial numbers):")
+            if 'ACCEPT' not in overall_status_counts:
+                overall_status_counts['ACCEPT'] = 0
+            if 'REJECT' not in overall_status_counts:
+                overall_status_counts['REJECT'] = 0
+            if 'REWORK' not in overall_status_counts:
+                overall_status_counts['REWORK'] = 0
+
+            print(f"ACCEPT: {overall_status_counts['ACCEPT']}")
+            print(f"REJECT: {overall_status_counts['REJECT']}")
+            print(f"REWORK: {overall_status_counts['REWORK']}")
+
+        else:
+            print("No datetime value provided. Skipping filtering.")
+            
+
+#///////////////////////////////////////////////////////////////////////////////////////////////////////
 
         # Your initial queryset for part_model_values
         part_model_values = measure_data.objects.values_list('part_model', flat=True).distinct()
@@ -169,10 +258,11 @@ def measurement(request):
             'operator_values' :operator_values,
             'shift_values' : shift_values,
             'hide':hide,
+            'overall_accept_count': overall_status_counts['ACCEPT'],
+            'overall_reject_count': overall_status_counts['REJECT'],
+            'overall_rework_count': overall_status_counts['REWORK'],
         }
-        global serial_data
-        with serial_data_lock:
-            context['serial_data']=serial_data
+       
         return render(request, 'app/measurement.html', context)
     else:
         # Handle other request methods if needed

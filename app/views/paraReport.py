@@ -2,7 +2,7 @@ from datetime import datetime
 import pandas as pd
 from django.shortcuts import render
 from django.utils import timezone  # Import Django's timezone utility
-from app.models import MeasurementData, parameter_settings, consolidate_with_srno  # Adjust import based on your project structure
+from app.models import MeasurementData, parameter_settings, parameterwise_report  # Adjust import based on your project structure
 
 
 
@@ -13,25 +13,25 @@ from weasyprint import HTML,CSS
 import pandas as pd
 from io import BytesIO
 
-def srno(request):
+def paraReport(request):
     if request.method == 'GET':
-        consolidate_values = consolidate_with_srno.objects.all()
-        part_model = consolidate_with_srno.objects.values_list('part_model', flat=True).distinct().get()
+        parameterwise_values = parameterwise_report.objects.all()
+        part_model = parameterwise_report.objects.values_list('part_model', flat=True).distinct().get()
         print("part_model:", part_model)
 
-        fromDateStr = consolidate_with_srno.objects.values_list('formatted_from_date', flat=True).get()
-        toDateStr = consolidate_with_srno.objects.values_list('formatted_to_date', flat=True).get()
+        fromDateStr = parameterwise_report.objects.values_list('formatted_from_date', flat=True).get()
+        toDateStr = parameterwise_report.objects.values_list('formatted_to_date', flat=True).get()
         print("fromDate:", fromDateStr, "toDate:", toDateStr)
 
-        parameter_name = consolidate_with_srno.objects.values_list('parameter_name', flat=True).get()
+        parameter_name = parameterwise_report.objects.values_list('parameter_name', flat=True).get()
         print("parameter_name:", parameter_name)
-        operator = consolidate_with_srno.objects.values_list('operator', flat=True).get()
+        operator = parameterwise_report.objects.values_list('operator', flat=True).get()
         print("operator:", operator)
-        machine = consolidate_with_srno.objects.values_list('machine', flat=True).get()
+        machine = parameterwise_report.objects.values_list('machine', flat=True).get()
         print("machine:", machine)
-        shift = consolidate_with_srno.objects.values_list('shift', flat=True).get()
+        shift = parameterwise_report.objects.values_list('shift', flat=True).get()
         print("shift:", shift)
-        job_no = consolidate_with_srno.objects.values_list('job_no', flat=True).get()
+        job_no = parameterwise_report.objects.values_list('job_no', flat=True).get()
         print("job_no:", job_no)
 
         # Convert the string representations to naive datetime objects with the correct format
@@ -73,13 +73,6 @@ def srno(request):
 
         distinct_comp_sr_nos = MeasurementData.objects.filter(**filter_kwargs).values_list('comp_sr_no', flat=True).distinct()
         print("distinct_comp_sr_nos:",distinct_comp_sr_nos)
-        if not distinct_comp_sr_nos:
-            # Handle case where no comp_sr_no values are found
-            context = {
-                'no_results': True  # Flag to indicate no results found
-            }
-            return render(request, 'app/reports/consolidateSrNo.html', context)
-
 
         total_count = distinct_comp_sr_nos.count()
 
@@ -107,11 +100,9 @@ def srno(request):
             # Initialize empty list for the key
             data_dict[key] = []
 
-        # Add 'Status' at the end
-        data_dict['Status'] = []
+        
 
-        # Initialize the status counts
-        status_counts = {'ACCEPT': 0, 'REJECT': 0, 'REWORK': 0}
+        
 
         for comp_sr_no in distinct_comp_sr_nos:
             print(f"Processing comp_sr_no: {comp_sr_no}")
@@ -134,7 +125,7 @@ def srno(request):
                 'Job Number': comp_sr_no,
                 'Shift': '',
                 'Operator': '',
-                'Status': ''
+               
             }
 
             for data in comp_sr_no_data:
@@ -161,29 +152,13 @@ def srno(request):
                 combined_row['Operator'] = data['operator']
                 combined_row['Shift'] = data['shift']
 
-            # Determine background color based on part_status value
-            if part_status == 'ACCEPT':
-                # Green background for ACCEPT
-                status_html = f'<span style="background-color: #00ff00; padding: 2px;">{part_status}</span>'
-                status_counts['ACCEPT'] += 1
-            elif part_status == 'REWORK':
-                # Yellow background for REWORK
-                status_html = f'<span style="background-color: yellow; padding: 2px;">{part_status}</span>'
-                status_counts['REWORK'] += 1
-            elif part_status == 'REJECT':
-                # Red background for REJECT
-                status_html = f'<span style="background-color: red; padding: 2px;">{part_status}</span>'
-                status_counts['REJECT'] += 1
-
-            combined_row['Status'] = status_html
+            
 
             # Append combined_row data to data_dict lists
             for key in data_dict:
                 data_dict[key].append(combined_row.get(key, ''))
 
-        # Print the status counts
-        print(f"Status counts: ACCEPT={status_counts['ACCEPT']}, REJECT={status_counts['REJECT']}, REWORK={status_counts['REWORK']}")
-
+        
         # Create a pandas DataFrame from the dictionary with specified column order
         df = pd.DataFrame(data_dict)
 
@@ -195,15 +170,12 @@ def srno(request):
 
         context = {
             'table_html': table_html,
-            'consolidate_values': consolidate_values,
-            'total_count': total_count,
-            'accept_count': status_counts['ACCEPT'],
-            'reject_count': status_counts['REJECT'],
-            'rework_count': status_counts['REWORK'],
+            'parameterwise_values': parameterwise_values,
+            
         }
 
        
-    return render(request, 'app/reports/consolidateSrNo.html', context)
+    return render(request, 'app/reports/parameterReport.html', context)
 
 
 

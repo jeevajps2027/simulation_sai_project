@@ -12,3 +12,4 @@ from .report import report
 from .spc import spc
 from .srno import srno
 from .withoutsrno import withoutsrno
+from .paraReport import paraReport

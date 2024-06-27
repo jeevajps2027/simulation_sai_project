@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Consolidate Report</title>
+    <title>Parameterwise Report</title>
 
     <style>
         .data-box {
@@ -102,8 +102,8 @@
    
     
     <table class="first-table">
-        <h1 id="h1">Consolidate With SrNo</h1>
-        {% for data in consolidate_values %}
+        <h1 id="h1">Parameter Report</h1>
+        {% for data in parameterwise_values %}
         <tr>
             <td>
                 <span class="label">PARTMODEL:</span>
@@ -148,24 +148,7 @@
                 <span class="value">{{ data.current_date_time }}</span>
             </td>
         </tr>
-        <tr>
-            <td>
-                <span class="label">ACCEPT:</span>
-                <span class="value" id="accept-count">{{ accept_count }}</span>
-            </td>
-            <td>
-                <span class="label">REJECT:</span>
-                <span class="value" id="reject-count">{{ reject_count }}</span>
-            </td>
-            <td>
-                <span class="label">REWORK:</span>
-                <span class="value" id="rework-count">{{ rework_count }}</span>
-            </td>
-            <td colspan="2">
-                <span class="label">TOTAL:</span>
-                <span class="value" id="total-count">{{ total_count }}</span>
-            </td>
-        </tr>
+    
         {% endfor %}
     </table>
     
@@ -181,17 +164,18 @@
     </div>
 {% endif %}
 
+
 <!-- JavaScript to dynamically update status counts and print to console -->
 <script>
   
     function saveAsPDF() {
-        fetch("{% url 'srno' %}")
+        fetch("{% url 'paraReport' %}")
         .then(response => response.blob())
         .then(blob => {
             const url = window.URL.createObjectURL(new Blob([blob]));
             const a = document.createElement('a');
             a.href = url;
-            a.download = 'consolidate_report.pdf';
+            a.download = 'parameterwise_report.pdf';
             document.body.appendChild(a);
             a.click();
             document.body.removeChild(a);
@@ -204,13 +188,13 @@
     }
 
     function exportToExcel(event) {
-    fetch("{% url 'srno' %}")
+    fetch("{% url 'paraReport' %}")
     .then(response => response.blob())
     .then(blob => {
         const url = window.URL.createObjectURL(new Blob([blob]));
         const a = document.createElement('a');
         a.href = url;
-        a.download = 'consolidate_report.xlsx';
+        a.download = 'parameterwise_report.xlsx';
         document.body.appendChild(a);
         a.click();
         document.body.removeChild(a);

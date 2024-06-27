@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Two Tables with Different Styles</title>
+<style>
+    /* Common CSS */
+    table {
+        width: 100%; /* Full width of the viewport */
+        border-collapse: collapse; /* Collapse borders */
+        margin-bottom: 20px; /* Space between tables */
+    }
+
+    td, th {
+        border: 1px solid #ccc; /* Border for cells */
+        text-align: center; /* Center align text */
+        padding: 5px; /* Padding for cells */
+    }
+
+    /* First Table Specific Styles */
+    .first-table {
+        width: 100%; /* Full width */
+    }
+
+    .first-table .label {
+        font-family: 'Courier New', Courier, monospace; /* Custom font */
+        font-size: small; /* Font size */
+    }
+
+    .first-table .value {
+        font-weight: bold; /* Bold font weight */
+    }
+
+    /* Second Table Specific Styles */
+    .second-table {
+        width: 5000px; /* Fixed width of 5000px */
+    }
+
+    .second-table th:nth-child(1),
+    .second-table td:nth-child(1) {
+        width: 5px; /* Specific width for the first column */
+    }
+
+    .second-table th:nth-child(2),
+    .second-table td:nth-child(2) {
+        width: 200px; /* Specific width for the second column */
+    }
+
+    .second-table th:nth-child(3),
+    .second-table td:nth-child(3) {
+        width: 300px; /* Specific width for the third column */
+    }
+</style>
+</head>
+<body>
+    <!-- First Table (loop through consolidate_values) -->
+    <table class="first-table">
+        {% for data in consolidate_values %}
+        <tr>
+            <td>
+                <span class="label">PARTMODEL:</span>
+                <span class="value">{{ data.part_model }}</span>
+            </td>
+            <td>
+                <span class="label">PARAMETER NAME:</span>
+                <span class="value">{{ data.parameter_name }}</span>
+            </td>
+            <td>
+                <span class="label">OPERATOR:</span>
+                <span class="value">{{ data.operator }}</span>
+            </td>
+            <td>
+                <span class="label">FROM DATE:</span>
+                <span class="value">{{ data.formatted_from_date }}</span>
+            </td>
+            <td>
+                <span class="label">TO DATE:</span>
+                <span class="value">{{ data.formatted_to_date }}</span>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <span class="label">MACHINE:</span>
+                <span class="value">{{ data.machine }}</span>
+            </td>
+            <td>
+                <span class="label">VENDOR CODE:</span>
+                <span class="value">{{ data.vendor_code }}</span>
+            </td>
+            <td>
+                <span class="label">JOB NO:</span>
+                <span class="value">{{ data.job_no }}</span>
+            </td>
+            <td>
+                <span class="label">SHIFT:</span>
+                <span class="value">{{ data.shift }}</span>
+            </td>
+            <td>
+                <span class="label">CURRENT DATE:</span>
+                <span class="value">{{ data.current_date_time }}</span>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <span class="label">ACCEPT:</span>
+                <span class="value" id="accept-count">{{ accept_count }}</span>
+            </td>
+            <td>
+                <span class="label">REJECT:</span>
+                <span class="value" id="reject-count">{{ reject_count }}</span>
+            </td>
+            <td>
+                <span class="label">REWORK:</span>
+                <span class="value" id="rework-count">{{ rework_count }}</span>
+            </td>
+            <td colspan="2">
+                <span class="label">TOTAL:</span>
+                <span class="value" id="total-count">{{ total_count }}</span>
+            </td>
+        </tr>
+        {% endfor %}
+    </table>
+
+    <!-- Second Table (table_html) -->
+    <div class="table-wrapper">
+        <div class="data-box">
+            <table class="second-table">
+                <thead>
+                    <tr>
+                        <th style="width: 5px;">ID</th>
+                        <th style="width: 200px;">Name</th>
+                        <th style="width: 300px;">Description</th>
+                        <!-- Add more headers as needed -->
+                    </tr>
+                </thead>
+                <tbody>
+                    {{ table_html | safe }}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</body>
+</html>

@@ -46,17 +46,6 @@ class TableFiveData(models.Model):
 
 
 
-class MasterData(models.Model):
-    probe_no = models.CharField(max_length=100)
-    a = models.FloatField()
-    b = models.FloatField()
-    parameter_name = models.CharField(max_length=100)
-    selected_value = models.CharField(max_length=100)
-    selected_mastering = models.CharField(max_length=100)
-    date_time = models.DateTimeField()
-
-    def __str__(self):
-        return f"Probe No: {self.probe_no}, Parameter Name: {self.parameter_name}, DateTime: {self.date_time}"
 
 
 class comport_settings(models.Model):
@@ -185,3 +174,37 @@ class consolidate_with_srno(models.Model):
     job_no = models.CharField(max_length=100)
     shift = models.CharField(max_length=100)
     current_date_time = models.CharField(max_length=100)
+
+class consolidate_without_srno(models.Model):
+    part_model = models.CharField(max_length=100)
+    parameter_name = models.CharField(max_length=100)
+    operator = models.CharField(max_length=100)
+    formatted_from_date = models.CharField(max_length=100)
+    formatted_to_date = models.CharField(max_length=100)
+    machine = models.CharField(max_length=100)
+    vendor_code = models.CharField(max_length=100)
+    shift = models.CharField(max_length=100)
+    current_date_time = models.CharField(max_length=100)
+
+class parameterwise_report(models.Model):
+    part_model = models.CharField(max_length=100)
+    parameter_name = models.CharField(max_length=100)
+    operator = models.CharField(max_length=100)
+    formatted_from_date = models.CharField(max_length=100)
+    formatted_to_date = models.CharField(max_length=100)
+    machine = models.CharField(max_length=100)
+    vendor_code = models.CharField(max_length=100)
+    job_no = models.CharField(max_length=100)
+    shift = models.CharField(max_length=100)
+    current_date_time = models.CharField(max_length=100)
+
+class jobwise_report(models.Model):
+    part_model = models.CharField(max_length=100)
+    formatted_from_date = models.CharField(max_length=100)
+    formatted_to_date = models.CharField(max_length=100)
+    job_no = models.CharField(max_length=100)
+    current_date_time = models.CharField(max_length=100)
+
+class ResetCount(models.Model):
+    part_model = models.CharField(max_length=100)
+    date = models.CharField(max_length=100)

@@ -373,17 +373,12 @@ input[type=checkbox] {
         <div style="border: 2px solid black;width: 200px;background-color: rgb(167, 27, 167);"><b>RESET VALUES</b></div>
     </center>
     <div style="margin-top: 20px;   " id="notificationDiv" >
-        <label><input type="checkbox" id="ACCEPT" name="ACCEPT" style="margin-left: 5px;"><span style="background-color: green;margin-left: 5px; padding: 3px 8px; color: white;">ACCEPT</span></label><br>
-        <label><input type="checkbox" id="REJECT" name="REJECT" style="margin-left: 3px;"><span style="background-color: red;margin-left: 3px; padding: 3px 8px; color: white;">REJECT</span></label><br>
-        <label><input type="checkbox" id="REWORK" name="REWORK" style="margin-left: 4px;"><span style="background-color: yellow; padding: 3px 8px; color: black;">REWORK</span></label><br>
-        <button onclick="handleOk()" style="margin-left: 70%;width: 100px; background-color: orangered;"><b>OK</b></button><br><br>
-    </div>
-    <div style="margin-top: 20px;display: none;" id="notificationDiv1" >
         <label for="userid">USER ID:</label>
         <input type="text" id="userid" style="width: 150px;" ><br>
         <label for="password">PASSWORD:</label>
         <input type="text" id="password" style="width: 150px;" ><br><br>
         <button onclick="handleLogin()" style="margin-left: 70%;width: 100px; background-color: orangered;"><b>OK</b></button><br><br>
+
     </div>
 </div>
 
@@ -415,59 +410,56 @@ function handleLogin() {
     var password = document.getElementById('password').value;
 
     if (username === "admin" && password === "admin") {
-        var checkboxes = document.querySelectorAll('input[type="checkbox"]:checked');
-        var selectedIDs = [];
-        var dateValue = document.getElementById('date').value;
-        var partModelValue = document.getElementById('partModel').value;
+        var data = {
+            id: 'reset_count', 
+            date: document.getElementById('date').value,
+            partModel: document.getElementById('partModel').value,
 
-        checkboxes.forEach(function(checkbox) {
-            selectedIDs.push(checkbox.id);
-        });
-
-        selectedIDs.push("Date: " + dateValue);
-        selectedIDs.push("Part Model: " + partModelValue);
+        };
 
         console.clear();
-        console.log("Selected IDs and Values:", selectedIDs);
-
-        var csrftoken = getCookie('csrftoken');
+        console.log("Data to be sent:");
+        console.log(data);
+        const csrftoken = getCookie('csrftoken');
         $.ajax({
-            type: "POST",
-            url: "/measurement/",
-            contentType: "application/json",
-            dataType: "json",
-            data: JSON.stringify({ selectedIDs: selectedIDs }),
-            headers: { 'X-CSRFToken': csrftoken },
-            success: function(response) {
-                console.log("Data sent successfully:", response);
-                alert("Data received successfully on the server.");
+            type: 'POST',
+            url: '/measurement/',  // Replace with your actual endpoint URL
+            data: JSON.stringify(data),
+            contentType: 'application/json',
+            headers: {
+                'X-CSRFToken': csrftoken  // Include the CSRF token in the headers
             },
-            error: function(xhr, status, error) {
-                console.error("Error sending data:", error);
-                alert("Error sending data: " + error);
+            success: function(response) {
+                console.log("Data saved successfully:", response);
+                alert("Data saved successfully")
+            },
+            error: function(error) {
+                console.error("Error saving data:", error);
+                alert("Error saving data")
             }
         });
     } else {
-        alert("Incorrect username or password. Please try again.");
+        alert("Invalid username or password.");
     }
+    document.getElementById("notification-container1").style.display = "none";
+    location.reload();
 }
 
+// Get the CSRF token from the cookies
 function getCookie(name) {
-    let cookieValue = null;
-    if (document.cookie && document.cookie !== '') {
-        const cookies = document.cookie.split(';');
-        for (let i = 0; i < cookies.length; i++) {
-            const cookie = cookies[i].trim();
-            if (cookie.substring(0, name.length + 1) === (name + '=')) {
-                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                break;
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            let cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                let cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
             }
         }
+        return cookieValue;
     }
-    return cookieValue;
-}
-
-
 /////////////////////////////////////////////
 
 function redirectToMasterPage() {
@@ -541,10 +533,7 @@ function closeNotification() {
         document.getElementById("notification-container1").style.display = "none";
     }
 
-    function handleOk() {
-        document.getElementById("notificationDiv").style.display = "none";
-        document.getElementById("notificationDiv1").style.display = "block";
-    }
+    
 
 
 
@@ -741,15 +730,7 @@ $(document).ready(function() {
                     var customerName = response.customer_name_values;
                     document.getElementById("customer_name").value = customerName;
 
-                    // Extract the counts with default value 0 if undefined
-                    const acceptCount = response.part_status_counts.ACCEPT || 0;
-                    const rejectCount = response.part_status_counts.REJECT || 0;
-                    const reworkCount = response.part_status_counts.REWORK || 0;
-
-                    // Set the values in the input fields
-                    document.getElementById('accept').value = acceptCount;
-                    document.getElementById('reject').value = rejectCount;
-                    document.getElementById('rework').value = reworkCount;
+                   
 
                     console.log("Parameter Name:", response.parameterNameValues[i]);
                     console.log("Nominal Value:", response.nominalValues[i]);
@@ -764,7 +745,7 @@ $(document).ready(function() {
                     console.log("Probe Value:", response.probe_values[i]);
                     console.log("Step No Value:", response.step_no_values[i]);
                     console.log("customer_name_values:", response.customer_name_values);
-                    console.log("part_status_counts:", response.part_status_counts);
+                   
                     
                     displaySerialData(
                         response.probe_values[i], 
@@ -1387,6 +1368,28 @@ var operator_values_str = "{{ operator_values|safe }}";
 console.log("step_no_values:",step_no_values);
 
 
+ // Function to set values from Django context
+ function setOverallCounts(overallCounts) {
+            document.getElementById('accept').value = overallCounts.overall_accept_count;
+            document.getElementById('reject').value = overallCounts.overall_reject_count;
+            document.getElementById('rework').value = overallCounts.overall_rework_count;
+        }
+
+        // Call setOverallCounts with the Django context values
+        const overallCounts = {
+            overall_accept_count: "{{ overall_accept_count }}",
+            overall_reject_count: "{{ overall_reject_count }}",
+            overall_rework_count: "{{ overall_rework_count }}"
+        };
+        
+        // Set values when the page loads
+        window.onload = function() {
+            setOverallCounts(overallCounts);
+        };
+
+
+
+
 document.addEventListener("DOMContentLoaded", function() {
     // Access the interval settings JSON
     const intervalSettings = JSON.parse('{{ interval_settings_json|escapejs }}');
@@ -1509,37 +1512,6 @@ function mapProbeToTextareaId(probeNumber) {
 
 
 /////////////////////////////////////////////////////////////////////////////////
-
-function updateSerialData() {
-    // Make an AJAX request to your Django view
-    $.ajax({
-        url: '/probe/',  // Replace with the correct URL
-        type: 'GET',
-        dataType: 'json',
-        success: function (data) {
-            var serialData = data.serial_data;
-
-            // Iterate over the probe keys in serialData
-            for (var probeKey in serialData) {
-                if (serialData.hasOwnProperty(probeKey)) {
-                    // Update the corresponding textarea based on probeKey
-                    $('#probe-' + probeKey).text(serialData[probeKey]);
-                }
-            }
-
-            // Scroll the textarea to view the last line
-            $('.textarea').each(function () {
-                $(this).scrollTop($(this)[0].scrollHeight);
-            });
-        },
-        error: function(error) {
-          console.error('Error updating serial data:', error);
-        }
-    });
-}
-
-// Update the serial data every 1 second (adjust the interval as needed)
-setInterval(updateSerialData, 0.5); // Update every second (1000 ms)
 
 
 </script>
