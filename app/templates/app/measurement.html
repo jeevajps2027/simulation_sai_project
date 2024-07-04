@@ -254,6 +254,54 @@ input[type=checkbox] {
             transform: rotate(-180deg); /* Rotates the tail to be horizontal */
             transform-origin: right center; /* Adjusts the rotation origin */
         }
+
+        .center-notification {
+    display: none; /* Initially hidden */
+    position: fixed;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    font-weight: bold;
+    justify-content: center;
+    top: 45%;
+    left: 45%;
+    transform: translate(-50%, -50%);
+    z-index: 1000;
+    height: 250px;
+    width: 400px;
+    background-color: lightblue; /* Optional: To make it more visible */
+    padding: 20px; /* Optional: For some padding */
+    border: 2px solid black; /* Optional: For some border */
+    border-radius: 8px; /* Optional: For rounded corners */
+}
+
+#overwrite_ok_button{
+    height: 40px;
+    width: 100px;
+    background-color: green;
+    color: white;
+    font-weight: bold;
+
+}
+
+#overwrite_cancel_button{
+    height: 40px;
+    width: 100px;
+    background-color: red;
+    color: white;
+    font-weight: bold;
+
+}
+
+#punch_login{
+    height: 40px;
+    width: 100px;
+    background-color: green;
+    color: white;
+    font-weight: bold;
+
+}
+
 </style>
 
 <div class="box-1" id="box1">
@@ -361,7 +409,6 @@ input[type=checkbox] {
         <span class="exit-symbol">❌</span>
     </div>
     <pre style="margin-top: 10px;"><b>Enter Your Punch Number here:</b></pre>
-    <!-- Add event listener for Enter key press -->
     <textarea id="punch_textarea" onkeydown="handleEnterKeyPress(event)"></textarea>
 </div>
 
@@ -382,6 +429,25 @@ input[type=checkbox] {
     </div>
 </div>
 
+<div id="punch_overwrite" class="center-notification">
+    <div class="exit-symbol-container" onclick="closeNotification()">
+        <span class="exit-symbol">❌</span>
+    </div>
+    <div id="punch_overwrite_container">
+        <p id="error_message"></p>
+        <p>Do you want to OVERWRITE</p>
+        <button id="overwrite_cancel_button" onclick="punchOverwriteCancel()">CANCEL</button>
+        <button id="overwrite_ok_button" onclick="punchOverwrite()">OK</button>
+    </div>
+    <div style="margin-top: 20px; display: none;" id="punch_overwrite_credentials">
+        <label for="userid_punch">USER ID:</label>
+        <input type="text" id="userid_punch" style="width: 150px;"><br>
+        <label for="password_punch">PASSWORD:</label>
+        <input type="text" id="password_punch" style="width: 150px;"><br><br>
+        <button id="overwrite_cancel_button" onclick="punchOverwriteCancel()">CANCEL</button>
+        <button id="punch_login" onclick="punchOverwriteLogin()">OK</button>
+            </div>
+</div>
 
 
 
@@ -400,10 +466,14 @@ input[type=checkbox] {
     
 
 <script>
+  
+
 
 function redirectToMeasurebox() {
             window.location.href = '/measurebox/';
         }
+/////////////////////////////////////////////
+
 /////////////////////////////////////////////
 function handleLogin() {
     var username = document.getElementById('userid').value;
@@ -525,17 +595,6 @@ function stopAction() {
     });
 
 ///////////////////////////////////////////////////////////
-document.getElementById("reset-button").addEventListener("click", function() {
-  document.getElementById("notification-container1").style.display = "block";
-});
-
-function closeNotification() {
-        document.getElementById("notification-container1").style.display = "none";
-    }
-
-    
-
-
 
 $(document).ready(function(){
     $("#save-btn").click(function(){
@@ -1221,35 +1280,149 @@ function getCookie(name) {
     }
     return cookieValue;
 }
-////////////////////////////////////////
+///////////////////////////////////////////
+    
+document.addEventListener('DOMContentLoaded', function() {
+    document.getElementById('punch_textarea').focus();
+});
+
+function handleEnterKeyPress(event) {
+    if (event.key === 'Enter') {
+        var punchValue = $('#punch_textarea').val();
+        var partModelValue = $('#partModel').val();
+
+        $('#comp_srno').val(punchValue);
+        $('#notification-container').hide();
+
+        // Get CSRF token from cookies (assuming you have `{% csrf_token %}` in your template)
+        var csrftoken = getCookie('csrftoken');
+
+        const data = {
+            id: "punch_value",
+            punch_value: punchValue,
+            part_model_value: partModelValue
+        }
+
+        $.ajax({
+            type: 'POST',
+            url: '/measurement/',  // Replace with your actual backend endpoint
+            headers: {
+                'X-CSRFToken': csrftoken  // Include CSRF token in headers
+            },
+            data: JSON.stringify(data),
+            contentType: 'application/json; charset=utf-8',
+            dataType: 'json',
+            success: function(response) {
+                var punchOverwrite = $('#punch_overwrite');
+                var errorMessage = $('#error_message');
+                var okButton = $('#overwrite_ok_button');
+
+                if (response.status === 'error') {
+                    // Display error message in the container
+                    errorMessage.text(response.message);
+                    punchOverwrite.show();
+                    okButton.show(); // Show the OK button
+                } else {
+                    console.log('Settings saved successfully!');
+                    // Hide the error container if the request was successful
+                    punchOverwrite.hide();
+                    okButton.hide(); // Hide the OK button
+                }
+            },
+            error: function(error) {
+                alert('An error occurred while saving settings.');
+                console.log(error);
+            }
+        });
+    }
+}
+
+
+// Function to get CSRF cookie value
+function getCookie(name) {
+    var cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        var cookies = document.cookie.split(';');
+        for (var i = 0; i < cookies.length; i++) {
+            var cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
+function punchOverwrite() {
+    // Hide the punch_overwrite_container
+    document.getElementById('punch_overwrite_container').style.display = 'none';
+
+    // Show the punch_overwrite_credentials
+    document.getElementById('punch_overwrite_credentials').style.display = 'block';
+}
+
+function punchOverwriteLogin() {
+    var userId = document.getElementById('userid_punch').value;
+    var password = document.getElementById('password_punch').value;
+
+    if (userId === 'admin' && password === 'admin') {
+        var punchValue = $('#punch_textarea').val();
+        var partModelValue = $('#partModel').val();
+        console.log(punchValue,partModelValue);
+
+        // Get CSRF token from cookies
+        var csrftoken = getCookie('csrftoken');
+
+        const data = {
+            punch_value: punchValue,
+            part_model_value: partModelValue
+        };
+        console.log("data for the punch overwrite:",data);
+
+        $.ajax({
+            type: 'DELETE',
+            url: '/measurement/',  // Replace with your actual backend endpoint for deletion
+            headers: {
+                'X-CSRFToken': csrftoken  // Include CSRF token in headers
+            },
+            data: JSON.stringify(data),
+            contentType: 'application/json; charset=utf-8',
+            dataType: 'json',
+            success: function(response) {
+                if (response.status === 'success') {
+                    alert('Punch value deleted successfully.');
+                    $('#punch_overwrite').hide();
+                    location.reload(); 
+                } else {
+                    alert('Failed to delete punch value.');
+                }
+            },
+            error: function(error) {
+                alert('An error occurred while deleting the punch value.');
+                console.log(error);
+            }
+        });
+    } 
+    else {
+        alert('Invalid USER ID or PASSWORD');
+    }
+}
+
+function punchOverwriteCancel() {
+    location.reload();  // Refresh the page
+}
+
+
 
 ///////////////////////////////////////////
 
-
-    window.onload = function() {
-        // Set focus on the textarea when the page loads
-        document.getElementById('punch_textarea').focus();
-    };
-    
-    function handleEnterKeyPress(event) {
-    if (event.key === 'Enter') {
-        // Get the value from the textarea
-        var punchValue = document.getElementById('punch_textarea').value;
-        var partModelValue = document.getElementById('partModel').value;
-
-        // Set the value in the COMP SR.NO input box
-        document.getElementById('comp_srno').value = punchValue;
-
-        // Disable the notification container
-        document.getElementById('notification-container').style.display = 'none';
-
-           }
-}
+                
         function closeNotification() {
             // Disable the notification container
             document.getElementById('notification-container').style.display = 'none';
             document.getElementById('notification-container1').style.display = 'none';
-    
+            document.getElementById('punch_overwrite').style.display = 'none';
         }
     
             // Function to update the date and time in the input box

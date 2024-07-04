@@ -2,7 +2,7 @@ from django.conf import settings
 from django.urls import path,include
 from django.conf.urls.static import static
 from app.views import home,index,comport,probe,trace,parameter,master,measurebox,measurement
-from app.views import utility,report,spc,srno,withoutsrno,paraReport
+from app.views import utility,report,spc,srno,withoutsrno,paraReport,jobReport
 
 urlpatterns = [
     path('',home,name="home"),
@@ -20,6 +20,7 @@ urlpatterns = [
     path('srno/',srno,name="srno"),
     path('withoutsrno/',withoutsrno,name="withoutsrno"),
     path('paraReport/',paraReport,name="paraReport"),
+    path('jobReport/',jobReport,name="jobReport"),
 
     ]
 

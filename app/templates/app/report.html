@@ -248,7 +248,7 @@ Report
         <a href="{% url 'index' %}" >
           <button type="button" id="cancel-btn"><b>Cancel</b></button>
           </a>
-        <button type="button" class="report-btn"><b>View Report</b></button>    
+        <button type="button" class="report-btn" id="report_btn_2"><b>View Report</b></button>    
     </div>
 
     <div class="item item-3" id="parameterwise_report">
@@ -341,13 +341,6 @@ Report
             {% endfor %}
       </select><br>
 
-      <label for="from_date" style="margin-top: 30px;">FROM DATE TIME:</label>
-        <input type="datetime-local" id="from_date" name="from_date"><br>
-        
-
-        <label for="to_date"style="margin-top: 30px;">TO DATE TIME:</label>
-        <input type="datetime-local" id="to_date" name="to_date"><br>
-
         <label for="job_no" style="margin-top: 20px;">JOB NO:</label>
         <input style="width: 40%;"  id="job_no" name="job_no">
         <br>
@@ -357,7 +350,7 @@ Report
         <a href="{% url 'index' %}" >
           <button type="button" id="cancel-btn"><b>Cancel</b></button>
           </a>
-        <button type="button" class="report-btn"><b>View Report</b></button>  
+        <button type="button" class="report-btn" id="report_btn_4"><b>View Report</b></button>  
 
     </div>
 
@@ -431,7 +424,7 @@ Report
         <a href="{% url 'index' %}" >
           <button type="button" id="cancel-btn"><b>Cancel</b></button>
           </a>
-        <button type="button" class="report-btn"><b>View Report</b></button>    
+        <button type="button" class="report-btn" id="report_btn_6"><b>View Report</b></button>    
     </div>
 
     
@@ -733,12 +726,34 @@ document.addEventListener("DOMContentLoaded", function() {
 
 document.addEventListener("DOMContentLoaded", function() {
     // Find the button element by its ID
+    var reportBtn = document.getElementById("report_btn_2");
+
+    // Add click event listener to the button
+    reportBtn.addEventListener("click", function() {
+        // Redirect to the desired URL
+        window.location.href = '/withoutsrno/';
+    });
+});
+
+document.addEventListener("DOMContentLoaded", function() {
+    // Find the button element by its ID
     var reportBtn = document.getElementById("report_btn_3");
 
     // Add click event listener to the button
     reportBtn.addEventListener("click", function() {
         // Redirect to the desired URL
         window.location.href = '/paraReport/';
+    });
+});
+
+document.addEventListener("DOMContentLoaded", function() {
+    // Find the button element by its ID
+    var reportBtn = document.getElementById("report_btn_4");
+
+    // Add click event listener to the button
+    reportBtn.addEventListener("click", function() {
+        // Redirect to the desired URL
+        window.location.href = '/jobReport/';
     });
 });
       

@@ -200,8 +200,6 @@ class parameterwise_report(models.Model):
 
 class jobwise_report(models.Model):
     part_model = models.CharField(max_length=100)
-    formatted_from_date = models.CharField(max_length=100)
-    formatted_to_date = models.CharField(max_length=100)
     job_no = models.CharField(max_length=100)
     current_date_time = models.CharField(max_length=100)
 

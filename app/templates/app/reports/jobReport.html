@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Consolidate without Report</title>
+    <title>Jobwise Report</title>
 
     <style>
         .data-box {
@@ -35,11 +35,9 @@
             width: 100px;
         }
         
-        .table_data {
-            width: 5000px;
-        }
+        
         .table_data th:nth-child(3) {
-            width: 100px; /* Specific width for the 2nd th element */
+            width: 250px; /* Specific width for the 2nd th element */
         }
         .table_data th:nth-child(2) {
             width: 200px; /* Specific width for the 2nd th element */
@@ -107,47 +105,18 @@
    
     
     <table class="first-table">
-        <h1 id="h1">Consolidate Without SrNo</h1>
-        {% for data in consolidate_without_values %}
+        <h1 id="h1">Jobwise Report</h1>
+        {% for data in jobwise_values %}
         <tr>
             <td>
                 <span class="label">PARTMODEL:</span>
                 <span class="value">{{ data.part_model }}</span>
             </td>
             <td>
-                <span class="label">PARAMETER NAME:</span>
-                <span class="value">{{ data.parameter_name }}</span>
-            </td>
-            <td>
-                <span class="label">OPERATOR:</span>
-                <span class="value">{{ data.operator }}</span>
-            </td>
-            <td>
-                <span class="label">FROM DATE:</span>
-                <span class="value">{{ data.formatted_from_date }}</span>
-            </td>
-            <td>
-                <span class="label">TO DATE:</span>
-                <span class="value">{{ data.formatted_to_date }}</span>
-            </td>
-        </tr>
-        <tr>
-            <td>
-                <span class="label">MACHINE:</span>
-                <span class="value">{{ data.machine }}</span>
-            </td>
-            <td>
-                <span class="label">VENDOR CODE:</span>
-                <span class="value">{{ data.vendor_code }}</span>
-            </td>
-            <td>
                 <span class="label">JOB NO:</span>
                 <span class="value">{{ data.job_no }}</span>
             </td>
-            <td>
-                <span class="label">SHIFT:</span>
-                <span class="value">{{ data.shift }}</span>
-            </td>
+            
             <td>
                 <span class="label">CURRENT DATE:</span>
                 <span class="value">{{ data.current_date_time }}</span>
@@ -155,22 +124,20 @@
         </tr>
         <tr>
             <td>
-                <span class="label">ACCEPT:</span>
-                <span class="value" id="accept-count">{{ accept_count }}</span>
+                <span class="label">OPERATOR:</span>
+                <span class="value">{{operators_values}}</span>
             </td>
             <td>
-                <span class="label">REJECT:</span>
-                <span class="value" id="reject-count">{{ reject_count }}</span>
+                <span class="label">SHIFT:</span>
+                <span class="value">{{shifts_values}}</span>
             </td>
             <td>
-                <span class="label">REWORK:</span>
-                <span class="value" id="rework-count">{{ rework_count }}</span>
+                <span class="label">OVERALL STATUS:</span>
+                <span class="value">{{part_status_values}}</span>
             </td>
-            <td colspan="2">
-                <span class="label">TOTAL:</span>
-                <span class="value" id="total-count">{{ total_count }}</span>
-            </td>
+            
         </tr>
+        
         {% endfor %}
     </table>
     

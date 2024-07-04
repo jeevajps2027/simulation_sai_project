@@ -56,6 +56,19 @@ def measurement(request):
             print("data:",data)
             form_id = data.get('id')
             print("form_id:",form_id)
+            
+            if form_id == 'punch_value':
+                punch_value = data.get('punch_value')
+                part_model = data.get('part_model_value')
+                print(punch_value , part_model)
+
+                # Check if punch_value exists in the comp_sr_no field of MeasurementData
+                if MeasurementData.objects.filter(part_model=part_model, comp_sr_no=punch_value).exists():
+                    print(f"Punch number '{punch_value}' is already present.")
+                    return JsonResponse({'status': 'error', 'message': f"Punch number '{punch_value}' is already present."})
+
+                   
+             
 
             table_data = data.get('tableData', {}).get('formDataArray', [])
 
@@ -104,6 +117,18 @@ def measurement(request):
             return JsonResponse(response_data)
         except Exception as e:
             return JsonResponse({'error': str(e)}, status=500)
+        
+    elif request.method == 'DELETE':
+        data = json.loads(request.body)
+        punch_value = data.get('punch_value')
+        part_model = data.get('part_model_value')
+
+        try:
+            MeasurementData.objects.filter(part_model=part_model, comp_sr_no=punch_value).delete()
+            return JsonResponse({'status': 'success', 'message': 'Punch value deleted successfully.'})
+        except MeasurementData.DoesNotExist:
+            return JsonResponse({'status': 'error', 'message': 'Punch value does not exist.'})
+
 
 
     elif request.method == 'GET':
