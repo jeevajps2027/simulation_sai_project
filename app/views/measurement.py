@@ -165,83 +165,82 @@ def measurement(request):
         else:
             datetime_value = None
             print("No datetime value found for the specified part model")
-
+        
         if datetime_value:
             # Filter MeasurementData objects from the datetime_value onwards
             filtered_measurement_data = MeasurementData.objects.filter(part_model=part_model, date__gt=datetime_value)
-
-            # Retrieve and print distinct component serial numbers with non-empty values
-            comp_sr_no_list = filtered_measurement_data.exclude(comp_sr_no__isnull=True).exclude(comp_sr_no__exact='').values_list('comp_sr_no', flat=True).distinct()
-            print('Distinct component_serial_number (non-empty):', comp_sr_no_list)
-
-            # Retrieve all values which contain null or empty component serial numbers
-            invalid_values_list = filtered_measurement_data.filter(Q(comp_sr_no__isnull=True) | Q(comp_sr_no__exact=''))
-
-            # Initialize variables to track distinct dates, part_status, and associated IDs
-            distinct_dates = set()
-            date_status_id_map = defaultdict(lambda: {'part_statuses': set(), 'data': []})
-            status_counts = defaultdict(int)
-
-            # Iterate through the queryset to collect distinct dates, part_status, and associated IDs
-            for obj in invalid_values_list:
-                date_str = obj.date.strftime('%Y-%m-%d %H:%M:%S')  # Format date as string
-                part_status = obj.part_status  # Get part_status
-                if date_str not in distinct_dates:
-                    distinct_dates.add(date_str)
-                if part_status not in date_status_id_map[date_str]['part_statuses']:
-                    date_status_id_map[date_str]['part_statuses'].add(part_status)
-                    date_status_id_map[date_str]['data'].append({'id': obj.id, 'part_status': part_status})
-                    status_counts[part_status] += 1
-
-            # Initialize a dictionary to store part statuses for each component serial number
-            part_status_dict = defaultdict(set)
-
-            # Populate the dictionary with distinct part statuses for each component serial number
-            for comp_sr_no in comp_sr_no_list:
-                part_statuses = filtered_measurement_data.filter(comp_sr_no=comp_sr_no).values_list('part_status', flat=True).distinct()
-                part_status_dict[comp_sr_no].update(part_statuses)
-
-            # Initialize a dictionary to count each part status
-            part_status_count = defaultdict(int)
-
-            # Count part statuses and populate part_status_count
-            for comp_sr_no, part_statuses in part_status_dict.items():
-                for status in part_statuses:
-                    part_status_count[status] += 1
-
-            # Print the component serial numbers along with their distinct part statuses
-            for comp_sr_no, part_statuses in part_status_dict.items():
-                print(f'Component Serial Number: {comp_sr_no}, Part Statuses: {list(part_statuses)}')
-
-            # Print the counts for each part status from part_status_count
-            print("\nPart Status Counts (with component serial numbers):")
-            for status, count in part_status_count.items():
-                print(f"{status}: {count}")
-
-            # Combine counts from status_counts and part_status_count for overall counts
-            overall_status_counts = defaultdict(int)
-            for status, count in status_counts.items():
-                overall_status_counts[status] += count
-            for status, count in part_status_count.items():
-                overall_status_counts[status] += count
-
-            # Print overall status counts
-            print("\nOverall Status Counts (including without component serial numbers):")
-            if 'ACCEPT' not in overall_status_counts:
-                overall_status_counts['ACCEPT'] = 0
-            if 'REJECT' not in overall_status_counts:
-                overall_status_counts['REJECT'] = 0
-            if 'REWORK' not in overall_status_counts:
-                overall_status_counts['REWORK'] = 0
-
-            print(f"ACCEPT: {overall_status_counts['ACCEPT']}")
-            print(f"REJECT: {overall_status_counts['REJECT']}")
-            print(f"REWORK: {overall_status_counts['REWORK']}")
-
         else:
-            print("No datetime value provided. Skipping filtering.")
-            
-
+            # Get all MeasurementData objects for the specified part_model
+            filtered_measurement_data = MeasurementData.objects.filter(part_model=part_model)
+        
+        # Retrieve and print distinct component serial numbers with non-empty values
+        comp_sr_no_list = filtered_measurement_data.exclude(comp_sr_no__isnull=True).exclude(comp_sr_no__exact='').values_list('comp_sr_no', flat=True).distinct()
+        print('Distinct component_serial_number (non-empty):', comp_sr_no_list)
+        
+        # Retrieve all values which contain null or empty component serial numbers
+        invalid_values_list = filtered_measurement_data.filter(Q(comp_sr_no__isnull=True) | Q(comp_sr_no__exact=''))
+        
+        # Initialize variables to track distinct dates, part_status, and associated IDs
+        distinct_dates = set()
+        date_status_id_map = defaultdict(lambda: {'part_statuses': set(), 'data': []})
+        status_counts = defaultdict(int)
+        
+        # Iterate through the queryset to collect distinct dates, part_status, and associated IDs
+        for obj in invalid_values_list:
+            date_str = obj.date.strftime('%Y-%m-%d %H:%M:%S')  # Format date as string
+            part_status = obj.part_status  # Get part_status
+            if date_str not in distinct_dates:
+                distinct_dates.add(date_str)
+            if part_status not in date_status_id_map[date_str]['part_statuses']:
+                date_status_id_map[date_str]['part_statuses'].add(part_status)
+                date_status_id_map[date_str]['data'].append({'id': obj.id, 'part_status': part_status})
+                status_counts[part_status] += 1
+        
+        # Initialize a dictionary to store part statuses for each component serial number
+        part_status_dict = defaultdict(set)
+        
+        # Populate the dictionary with distinct part statuses for each component serial number
+        for comp_sr_no in comp_sr_no_list:
+            part_statuses = filtered_measurement_data.filter(comp_sr_no=comp_sr_no).values_list('part_status', flat=True).distinct()
+            part_status_dict[comp_sr_no].update(part_statuses)
+        
+        # Initialize a dictionary to count each part status
+        part_status_count = defaultdict(int)
+        
+        # Count part statuses and populate part_status_count
+        for comp_sr_no, part_statuses in part_status_dict.items():
+            for status in part_statuses:
+                part_status_count[status] += 1
+        
+        # Print the component serial numbers along with their distinct part statuses
+        for comp_sr_no, part_statuses in part_status_dict.items():
+            print(f'Component Serial Number: {comp_sr_no}, Part Statuses: {list(part_statuses)}')
+        
+        # Print the counts for each part status from part_status_count
+        print("\nPart Status Counts (with component serial numbers):")
+        for status, count in part_status_count.items():
+            print(f"{status}: {count}")
+        
+        # Combine counts from status_counts and part_status_count for overall counts
+        overall_status_counts = defaultdict(int)
+        for status, count in status_counts.items():
+            overall_status_counts[status] += count
+        for status, count in part_status_count.items():
+            overall_status_counts[status] += count
+        
+        # Print overall status counts
+        print("\nOverall Status Counts (including without component serial numbers):")
+        if 'ACCEPT' not in overall_status_counts:
+            overall_status_counts['ACCEPT'] = 0
+        if 'REJECT' not in overall_status_counts:
+            overall_status_counts['REJECT'] = 0
+        if 'REWORK' not in overall_status_counts:
+            overall_status_counts['REWORK'] = 0
+        
+        print(f"ACCEPT: {overall_status_counts['ACCEPT']}")
+        print(f"REJECT: {overall_status_counts['REJECT']}")
+        print(f"REWORK: {overall_status_counts['REWORK']}")
+        
 #///////////////////////////////////////////////////////////////////////////////////////////////////////
 
         # Your initial queryset for part_model_values

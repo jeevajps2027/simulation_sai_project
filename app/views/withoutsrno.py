@@ -11,9 +11,57 @@ from weasyprint import CSS, HTML
 from app.models import MeasurementData, consolidate_without_srno, parameter_settings
 
 def withoutsrno(request):
-    context = {}
+    if request.method == 'GET':
+        consolidate_without_values = consolidate_without_srno.objects.all()
+        part_model = consolidate_without_srno.objects.values_list('part_model', flat=True).distinct().get()
 
-    def get_data_dict():
+        fromDateStr = consolidate_without_srno.objects.values_list('formatted_from_date', flat=True).get()
+        toDateStr = consolidate_without_srno.objects.values_list('formatted_to_date', flat=True).get()
+
+        parameter_name = consolidate_without_srno.objects.values_list('parameter_name', flat=True).get()
+        operator = consolidate_without_srno.objects.values_list('operator', flat=True).get()
+        machine = consolidate_without_srno.objects.values_list('machine', flat=True).get()
+        shift = consolidate_without_srno.objects.values_list('shift', flat=True).get()
+
+        date_format_input = '%d-%m-%Y %I:%M:%S %p'
+        from_datetime_naive = datetime.strptime(fromDateStr, date_format_input)
+        to_datetime_naive = datetime.strptime(toDateStr, date_format_input)
+
+        from_datetime = timezone.make_aware(from_datetime_naive, timezone.get_default_timezone())
+        to_datetime = timezone.make_aware(to_datetime_naive, timezone.get_default_timezone())
+
+        filter_kwargs = {
+            'date__range': (from_datetime, to_datetime),
+            'part_model': part_model,
+        }
+
+        if parameter_name != "ALL":
+            filter_kwargs['parameter_name'] = parameter_name
+
+        if operator != "ALL":
+            filter_kwargs['operator'] = operator
+
+        if machine != "ALL":
+            filter_kwargs['machine'] = machine
+
+        if shift != "ALL":
+            filter_kwargs['shift'] = shift
+
+        filtered_data = MeasurementData.objects.filter(**filter_kwargs).values()
+        distinct_comp_sr_nos = filtered_data.filter(Q(comp_sr_no__isnull=True) | Q(comp_sr_no__exact=''))
+        if not distinct_comp_sr_nos:
+            context = {
+                'no_results': True
+            }
+            return render(request, 'app/reports/consolidateWithoutSrNo.html', context)
+
+        grouped_by_date = defaultdict(list)
+        for entry in distinct_comp_sr_nos:
+            grouped_by_date[entry['date']].append(entry)
+
+        distinct_dates = grouped_by_date.keys()
+        total_count = len(distinct_dates)
+
         data_dict = {
             'Date': [],
             'Operator': [],
@@ -76,56 +124,7 @@ def withoutsrno(request):
 
             data_dict['Status'].append(status_html)
 
-        return data_dict, accept_count, rework_count, reject_count
-
-    if request.method == 'GET':
-        consolidate_without_values = consolidate_without_srno.objects.all()
-        part_model = consolidate_without_srno.objects.values_list('part_model', flat=True).distinct().get()
-
-        fromDateStr = consolidate_without_srno.objects.values_list('formatted_from_date', flat=True).get()
-        toDateStr = consolidate_without_srno.objects.values_list('formatted_to_date', flat=True).get()
-
-        parameter_name = consolidate_without_srno.objects.values_list('parameter_name', flat=True).get()
-        operator = consolidate_without_srno.objects.values_list('operator', flat=True).get()
-        machine = consolidate_without_srno.objects.values_list('machine', flat=True).get()
-        shift = consolidate_without_srno.objects.values_list('shift', flat=True).get()
-
-        date_format_input = '%d-%m-%Y %I:%M:%S %p'
-        from_datetime_naive = datetime.strptime(fromDateStr, date_format_input)
-        to_datetime_naive = datetime.strptime(toDateStr, date_format_input)
-
-        from_datetime = timezone.make_aware(from_datetime_naive, timezone.get_default_timezone())
-        to_datetime = timezone.make_aware(to_datetime_naive, timezone.get_default_timezone())
-
-        filter_kwargs = {
-            'date__range': (from_datetime, to_datetime),
-            'part_model': part_model,
-        }
-
-        if parameter_name != "ALL":
-            filter_kwargs['parameter_name'] = parameter_name
-
-        if operator != "ALL":
-            filter_kwargs['operator'] = operator
-
-        if machine != "ALL":
-            filter_kwargs['machine'] = machine
-
-        if shift != "ALL":
-            filter_kwargs['shift'] = shift
-
-        filtered_data = MeasurementData.objects.filter(**filter_kwargs).values()
-        distinct_comp_sr_nos = filtered_data.filter(Q(comp_sr_no__isnull=True) | Q(comp_sr_no__exact=''))
-
-        grouped_by_date = defaultdict(list)
-        for entry in distinct_comp_sr_nos:
-            grouped_by_date[entry['date']].append(entry)
-
-        distinct_dates = grouped_by_date.keys()
-        total_count = len(distinct_dates)
-
-        data_dict, accept_count, rework_count, reject_count = get_data_dict()
-
+       
         df = pd.DataFrame(data_dict)
         df.index = df.index + 1  # Shift index by 1 to start from 1
 
@@ -138,91 +137,72 @@ def withoutsrno(request):
             'rework_count': rework_count,
             'reject_count': reject_count,
             'total_count': total_count,
-        }
+        }  
+        request.session['data_dict'] = data_dict  
+        return render(request, 'app/reports/consolidateWithoutSrNo.html', context)
 
-    elif request.method == 'POST' and ('export_excel' in request.POST or 'export_pdf' in request.POST):
-        consolidate_without_values = consolidate_without_srno.objects.all()
-        part_model = consolidate_without_srno.objects.values_list('part_model', flat=True).distinct().get()
+    elif request.method == 'POST':
+        export_type = request.POST.get('export_type')
+        data_dict = request.session.get('data_dict')  # Retrieve data_dict from session
+        if data_dict is None:
+            return HttpResponse("No data available for export", status=400)
 
-        fromDateStr = consolidate_without_srno.objects.values_list('formatted_from_date', flat=True).get()
-        toDateStr = consolidate_without_srno.objects.values_list('formatted_to_date', flat=True).get()
-
-        parameter_name = consolidate_without_srno.objects.values_list('parameter_name', flat=True).get()
-        operator = consolidate_without_srno.objects.values_list('operator', flat=True).get()
-        machine = consolidate_without_srno.objects.values_list('machine', flat=True).get()
-        shift = consolidate_without_srno.objects.values_list('shift', flat=True).get()
-
-        date_format_input = '%d-%m-%Y %I:%M:%S %p'
-        from_datetime_naive = datetime.strptime(fromDateStr, date_format_input)
-        to_datetime_naive = datetime.strptime(toDateStr, date_format_input)
-
-        from_datetime = timezone.make_aware(from_datetime_naive, timezone.get_default_timezone())
-        to_datetime = timezone.make_aware(to_datetime_naive, timezone.get_default_timezone())
-
-        filter_kwargs = {
-            'date__range': (from_datetime, to_datetime),
-            'part_model': part_model,
-        }
-
-        if parameter_name != "ALL":
-            filter_kwargs['parameter_name'] = parameter_name
-
-        if operator != "ALL":
-            filter_kwargs['operator'] = operator
-
-        if machine != "ALL":
-            filter_kwargs['machine'] = machine
-
-        if shift != "ALL":
-            filter_kwargs['shift'] = shift
-
-        filtered_data = MeasurementData.objects.filter(**filter_kwargs).values()
-        distinct_comp_sr_nos = filtered_data.filter(Q(comp_sr_no__isnull=True) | Q(comp_sr_no__exact=''))
-
-        grouped_by_date = defaultdict(list)
-        for entry in distinct_comp_sr_nos:
-            grouped_by_date[entry['date']].append(entry)
-
-        data_dict, accept_count, rework_count, reject_count = get_data_dict()
-
-        if 'export_excel' in request.POST:
-            # Create a pandas DataFrame from the dictionary with specified column order
-            df = pd.DataFrame(data_dict)
-
-            # Create a BytesIO buffer to write the Excel file to
-            excel_buffer = io.BytesIO()
-            
-            # Use pandas to_excel method to write the DataFrame to the BytesIO buffer
-            df.to_excel(excel_buffer, index=False)
-
-            # Set response headers for Excel file download
-            response = HttpResponse(
-                excel_buffer.getvalue(),
-                content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-            )
-            response['Content-Disposition'] = 'attachment; filename="consolidate_without_srno.xlsx"'
-            return response
-        
-        elif 'export_pdf' in request.POST:
-            template = get_template('app/reports/consolidateWithoutSrNo.html')
-            context = {
-                'table_html': pd.DataFrame(data_dict).to_html(index=False),
-                'accept_count': accept_count,
-                'rework_count': rework_count,
-                'reject_count': reject_count,
-                'total_count': len(grouped_by_date),
-                'consolidate_without_values': consolidate_without_values,  # Include this line to pass the data
-            }
-            html_content = template.render(context)
-
-            # Generate PDF from HTML content using WeasyPrint
-            pdf_file = io.BytesIO()
-            HTML(string=html_content).write_pdf(pdf_file, stylesheets=[CSS(string='@page { size: landscape; }')])
-
-            # Set response headers for PDF file download
-            response = HttpResponse(pdf_file.getvalue(), content_type='application/pdf')
-            response['Content-Disposition'] = 'attachment; filename="consolidate_without_srno.pdf"'
-            return response
+        df = pd.DataFrame(data_dict)
+        df.index = df.index + 1
 
        
-    return render(request, 'app/reports/consolidateWithoutSrNo.html', context)
+
+        if export_type == 'pdf':
+            template = get_template('app/reports/consolidateWithoutSrNo.html')
+            context = {
+                'table_html': df.to_html(index=True, escape=False, classes='table table-striped table_data'),
+                'consolidate_without_values': consolidate_without_srno.objects.all(),
+                'total_count': df.shape[0],  # Use DataFrame shape for total count
+                'accept_count': df[df['Status'].str.contains('ACCEPT')].shape[0],
+                'reject_count': df[df['Status'].str.contains('REJECT')].shape[0],
+                'rework_count': df[df['Status'].str.contains('REWORK')].shape[0],
+
+            }
+            html_string = template.render(context)
+
+            # CSS for scaling down the content to fit a single PDF page
+            css = CSS(string='''
+                @page {
+                    size: A4 landscape; /* Landscape mode to fit more content horizontally */
+                    margin: 0.5cm; /* Adjust margin as needed */
+                }
+                body {
+                    margin: 0; /* Give body some margin to prevent overflow */
+                    transform: scale(0.2); /* Scale down the entire content */
+                    transform-origin: 0 0; /* Ensure the scaling starts from the top-left corner */
+                }
+                .table_data {
+                    width: 5000px; /* Increase the table width */
+                }
+                table {
+                    table-layout: fixed; /* Fix the table layout */
+                    font-size: 20px; /* Increase font size */
+                    border-collapse: collapse; /* Collapse table borders */
+                }
+                table, th, td {
+                    border: 1px solid black; /* Add border to table */
+                }
+                th, td {
+                    word-wrap: break-word; /* Break long words */
+                }
+            ''')
+
+
+            # Inside your if block where export_type == 'pdf'
+            pdf_filename = f"consolidateWithoutSrNo_{datetime.now().strftime('%Y/%m/%d_%H/%M/%S')}.pdf"
+
+
+            pdf = HTML(string=html_string).write_pdf(stylesheets=[css])
+            response = HttpResponse(pdf, content_type='application/pdf')
+            response['Content-Disposition'] = f'attachment; filename="{pdf_filename}"'
+            return response
+
+        else:
+            return HttpResponse("Invalid export type", status=400)
+
+    return HttpResponse("Unsupported request method", status=405)

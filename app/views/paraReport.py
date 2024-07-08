@@ -71,8 +71,15 @@ def paraReport(request):
         # Filter the MeasurementData records based on the constructed filter
         filtered_data = MeasurementData.objects.filter(**filter_kwargs).values()
 
-        distinct_comp_sr_nos = MeasurementData.objects.filter(**filter_kwargs).values_list('comp_sr_no', flat=True).distinct()
+        distinct_comp_sr_nos = filtered_data.exclude(comp_sr_no__isnull=True).exclude(comp_sr_no__exact='').values_list('comp_sr_no', flat=True).distinct()
         print("distinct_comp_sr_nos:",distinct_comp_sr_nos)
+        if not distinct_comp_sr_nos:
+            # Handle case where no comp_sr_no values are found
+            context = {
+                'no_results': True  # Flag to indicate no results found
+            }
+            return render(request, 'app/reports/parameterReport.html', context)
+
 
         total_count = distinct_comp_sr_nos.count()
 
@@ -99,10 +106,6 @@ def paraReport(request):
             key = f"{param_name} <br>{usl} <br>{lsl}"
             # Initialize empty list for the key
             data_dict[key] = []
-
-        
-
-        
 
         for comp_sr_no in distinct_comp_sr_nos:
             print(f"Processing comp_sr_no: {comp_sr_no}")
@@ -174,47 +177,72 @@ def paraReport(request):
             
         }
 
+        request.session['data_dict'] = data_dict  # Save data_dict to the session for POST request
+
+        return render(request, 'app/reports/parameterReport.html', context)
+    
+    elif request.method == 'POST':
+        export_type = request.POST.get('export_type')
+        data_dict = request.session.get('data_dict')  # Retrieve data_dict from session
+        if data_dict is None:
+            return HttpResponse("No data available for export", status=400)
+
+        df = pd.DataFrame(data_dict)
+        df.index = df.index + 1
+
        
-    return render(request, 'app/reports/parameterReport.html', context)
+
+        if export_type == 'pdf':
+            template = get_template('app/reports/parameterReport.html')
+            context = {
+                'table_html': df.to_html(index=True, escape=False, classes='table table-striped table_data'),
+                'parameterwise_values': parameterwise_report.objects.all(),
+            }
+            html_string = template.render(context)
+
+            # CSS for scaling down the content to fit a single PDF page
+            css = CSS(string='''
+                @page {
+                    size: A4 landscape; /* Landscape mode to fit more content horizontally */
+                    margin: 0.5cm; /* Adjust margin as needed */
+                }
+                body {
+                    margin: 0; /* Give body some margin to prevent overflow */
+                    transform: scale(0.2); /* Scale down the entire content */
+                    transform-origin: 0 0; /* Ensure the scaling starts from the top-left corner */
+                }
+                .table_data {
+                    width: 5000px; /* Increase the table width */
+                }
+                table {
+                    table-layout: fixed; /* Fix the table layout */
+                    font-size: 20px; /* Increase font size */
+                    border-collapse: collapse; /* Collapse table borders */
+                }
+                table, th, td {
+                    border: 1px solid black; /* Add border to table */
+                }
+                th, td {
+                    word-wrap: break-word; /* Break long words */
+                }
+            ''')
+
+
+            # Inside your if block where export_type == 'pdf'
+            pdf_filename = f"ParameterwiseReport{datetime.now().strftime('%Y/%m/%d_%H/%M/%S')}.pdf"
+
+
+            pdf = HTML(string=html_string).write_pdf(stylesheets=[css])
+            response = HttpResponse(pdf, content_type='application/pdf')
+            response['Content-Disposition'] = f'attachment; filename="{pdf_filename}"'
+            return response
+
+        else:
+            return HttpResponse("Invalid export type", status=400)
+
+    return HttpResponse("Unsupported request method", status=405)
 
 
 
 
 
-
-"""
-def save_as_pdf(request):
-    template = get_template('app/reports/consolidateSrNo.html')
-    html = template.render(context)
-
-    response = HttpResponse(content_type='application/pdf')
-    response['Content-Disposition'] = 'attachment; filename="consolidate_report.pdf"'
-
-    HTML(string=html).write_pdf(response, stylesheets=[settings.STATIC_ROOT + 'app/static/css/pdf_styles.css'])
-
-    return response
-
-def export_to_excel(request):
-    # Assuming df is your pandas DataFrame
-    df = pd.DataFrame(data_dict)
-
-    # Create a bytes buffer for the Excel file
-    excel_file = BytesIO()
-    xlwriter = pd.ExcelWriter(excel_file, engine='xlsxwriter')
-
-    # Write the DataFrame to the Excel file
-    df.to_excel(xlwriter, sheet_name='Sheet1', index=False)
-
-    # Close the Pandas Excel writer and output the Excel file
-    xlwriter.save()
-    xlwriter.close()
-
-    # Rewind the buffer and serve the response
-    excel_file.seek(0)
-
-    response = HttpResponse(excel_file.read(),
-                            content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
-    response['Content-Disposition'] = 'attachment; filename="consolidate_report.xlsx"'
-
-    return response
-"""

@@ -432,26 +432,31 @@ sendDataToServer(dataToSend);
 
 
     
-    function sendDataToServer(data) {
-        // Send the data to the server using AJAX
-        $.ajax({
-            type: 'POST',
-            url: '/trace/',
-            data: JSON.stringify(data),
-            contentType: 'application/json',
-            success: function(response) {
-                // Handle successful response from the server
-                // Update the UI or perform any additional actions
-                console.log(response);
-                showNotification('Data saved successfully', true);
-            },
-            error: function(error) {
-                // Handle error from the server
-                console.error('Error:', error);
-                showNotification('Error: Failed to save the data', false); 
-            }
-        });
-    }
+function sendDataToServer(data) {
+    const csrftoken = getCookie('csrftoken');
+    
+    $.ajax({
+        type: 'POST',
+        url: '/trace/',
+        data: JSON.stringify(data),
+        contentType: 'application/json',
+        beforeSend: function(xhr, settings) {
+            xhr.setRequestHeader('X-CSRFToken', csrftoken);
+        },
+        success: function(response) {
+            // Handle successful response from the server
+            // Update the UI or perform any additional actions
+            console.log(response);
+            showNotification('Data saved successfully', true);
+        },
+        error: function(error) {
+            // Handle error from the server
+            console.error('Error:', error);
+            showNotification('Error: Failed to save the data', false);
+        }
+    });
+}
+
  
 
     

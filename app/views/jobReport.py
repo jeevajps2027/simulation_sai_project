@@ -1,5 +1,9 @@
+from datetime import datetime
+from django.http import HttpResponse
 from django.shortcuts import render
 import pandas as pd
+from weasyprint import CSS, HTML
+from django.template.loader import get_template
 
 from app.models import MeasurementData, jobwise_report
 
@@ -89,4 +93,71 @@ def jobReport(request):
             'shifts_values':shifts_values,
             'part_status_values':part_status_values
         }
+
+        request.session['data_dict'] = data_dict  # Save data_dict to the session for POST request
+        request.session['operators_values'] = operators_values
+        request.session['shifts_values'] = shifts_values
+        request.session['part_status_values'] = part_status_values
+
         return render(request, 'app/reports/jobReport.html', context)
+    
+    elif request.method == 'POST':
+        export_type = request.POST.get('export_type')
+        data_dict = request.session.get('data_dict')
+        operators_values = request.session.get('operators_values')
+        shifts_values = request.session.get('shifts_values')
+        part_status_values = request.session.get('part_status_values')
+
+        if data_dict is None or operators_values is None or shifts_values is None or part_status_values is None:
+            return HttpResponse("No data available for export", status=400)
+
+        df = pd.DataFrame(data_dict)
+        df.index = df.index + 1
+
+        if export_type == 'pdf':
+            template = get_template('app/reports/jobReport.html')
+            context = {
+                'table_html': df.to_html(index=True, escape=False, classes='table table-striped table_data'),
+                'jobwise_values': jobwise_report.objects.all(),
+                'operators_values': operators_values,
+                'shifts_values': shifts_values,
+                'part_status_values': part_status_values,
+            }
+            html_string = template.render(context)
+
+            # CSS for scaling down the content to fit a single PDF page
+            css = CSS(string='''
+                @page {
+                    size: A4; /* Landscape mode to fit more content horizontally */
+                    margin: 0.5cm; /* Adjust margin as needed */
+                }
+                body {
+                    margin: 0; /* Give body some margin to prevent overflow */
+                    transform: scale(0.8); /* Scale down the entire content */
+                    transform-origin: 0 0; /* Ensure the scaling starts from the top-left corner */
+                }
+                
+                table {
+                    table-layout: fixed; /* Fix the table layout */
+                    font-size: 20px; /* Increase font size */
+                    border-collapse: collapse; /* Collapse table borders */
+                }
+                table, th, td {
+                    border: 1px solid black; /* Add border to table */
+                }
+                th, td {
+                    word-wrap: break-word; /* Break long words */
+                }
+            ''')
+
+            pdf_filename = f"JobReport{datetime.now().strftime('%Y/%m/%d_%H/%M/%S')}.pdf"
+
+            pdf = HTML(string=html_string).write_pdf(stylesheets=[css])
+            response = HttpResponse(pdf, content_type='application/pdf')
+            response['Content-Disposition'] = f'attachment; filename="{pdf_filename}"'
+            return response
+
+        else:
+            return HttpResponse("Invalid export type", status=400)
+
+    return HttpResponse("Unsupported request method", status=405)

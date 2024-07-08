@@ -13,10 +13,10 @@
             overflow-y: auto;
         }
         
-        .box {
+         
+        .first-table {
             background-color: #fff;
             border: 1px solid #ccc;
-            padding: 10px;
             text-align: center;
         }
         .label {
@@ -31,8 +31,11 @@
         th, td {
             border: 1px solid #ccc;
             text-align: center;
-            padding: 5px;
+            font-weight: bold;
             width: 100px;
+            font-size: 15px;
+            border: 1px solid black; /* Add borders to table cells */
+            padding: 4px; /* Add padding to table cells */
         }
         
         
@@ -84,6 +87,16 @@
             background-color: lightpink;
             display: block;
         }
+            
+        table {
+            width: auto; /* Allow the table to size based on content */
+            table-layout: auto; /* Allow the table to adjust its layout based on content */
+            border-collapse: collapse; /* Collapse table borders */
+        }
+       
+        .table-striped tbody tr:nth-of-type(odd) {
+            background-color: #f9f9f9; /* Alternate row background color */
+        }
         
 
     </style>
@@ -92,17 +105,15 @@
     
     <div class="dropdown" id="dropdown">
         <div class="dropdown-content" id="dropdownContent">
-            <!-- Export buttons -->
-            <form id="exportForm" method="post" action="{% url 'withoutsrno' %}">
+            <form id="exportForm" method="post" action="{% url 'jobReport' %}">
                 {% csrf_token %}
-                <button type="submit" name="export_excel">Export to Excel</button>
-                <button type="submit" name="export_pdf">Export to PDF</button>
+                <button type="submit" name="export_type" value="pdf">Export to PDF</button>
             </form>
-    
+            <button type="submit" name="export_type" onclick="exportToExcel(event)" value="excel">Export to Excel</button>
         </div>
         <button id="save_btn" onclick="toggleDropdown()">&#8285;</button>
     </div>
-   
+    
     
     <table class="first-table">
         <h1 id="h1">Jobwise Report</h1>
@@ -156,6 +167,38 @@
 <!-- JavaScript to dynamically update status counts and print to console -->
 <script>
 
+function exportToExcel(event) {
+    fetch("{% url 'jobReport' %}")
+    .then(response => response.blob())
+    .then(blob => {
+        const url = window.URL.createObjectURL(new Blob([blob]));
+        
+        // Generate filename with date and time segments
+        const currentDate = new Date();
+        const year = currentDate.getFullYear();
+        const month = String(currentDate.getMonth() + 1).padStart(2, '0');
+        const day = String(currentDate.getDate()).padStart(2, '0');
+        const hours = String(currentDate.getHours()).padStart(2, '0');
+        const minutes = String(currentDate.getMinutes()).padStart(2, '0');
+        const seconds = String(currentDate.getSeconds()).padStart(2, '0');
+        
+        const filename = `jobwise_report_${year}_${month}_${day}_${hours}_${minutes}_${seconds}.xlsx`;
+
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        window.URL.revokeObjectURL(url);
+
+        // Prevent default link behavior (optional)
+        event.preventDefault();
+
+        // Hide the dropdown after exporting (if needed)
+        hideDropdown();
+    });
+}
 
 
     function toggleDropdown() {
