@@ -473,7 +473,12 @@ function redirectToMeasurebox() {
             window.location.href = '/measurebox/';
         }
 /////////////////////////////////////////////
-
+window.addEventListener('DOMContentLoaded', (event) => {
+            var inputs = document.querySelectorAll('input');
+            inputs.forEach(input => {
+                input.setAttribute('autocomplete', 'off');
+            });
+        });
 /////////////////////////////////////////////
 function handleLogin() {
     var username = document.getElementById('userid').value;
@@ -871,63 +876,56 @@ document.getElementById("start-btn").addEventListener("click", function() {
 
 
 document.getElementById("stop-btn").addEventListener("click", function() {
-    setTimeout(function(){
-    var statusCells = document.querySelectorAll('.status_cell');
-    var partStatusInput = document.getElementById("part_status");
-    
-    if (currentStep === totalSteps) {
-        var hasRed = false;
-        var hasYellow = false;
-        var hasGreen = false;
-        statusCell.style.backgroundColor = ""; // Clear text content
-        statusCells.forEach(function(statusCell) {
-            var color = statusCell.style.backgroundColor;
-            if (color === 'red') {
-                hasRed = true;
-            } else if (color === 'yellow') {
-                hasYellow = true;
-            } else if (color === '#00ff00') {
-                hasGreen = true;
+    setTimeout(function() {
+        var statusCells = document.querySelectorAll('.status_cell');
+        var partStatusInput = document.getElementById("part_status");
+        console.clear();
+        console.log("partStatusInput", partStatusInput);
+
+        if (currentStep === totalSteps) {
+            var hasRed = false;
+            var hasYellow = false;
+            var hasGreen = false;
+
+            statusCells.forEach(function(statusCell) {
+                var color = statusCell.style.backgroundColor;
+                if (color === 'red') {
+                    hasRed = true;
+                } else if (color === 'yellow') {
+                    hasYellow = true;
+                } else if (color === 'rgb(0, 255, 0)') { // Ensure color comparison is correct
+                    hasGreen = true;
+                }
+                console.log("statusCell:", statusCell, "color:", color);
+            });
+
+            console.log("hasRed:", hasRed, "hasYellow:", hasYellow, "hasGreen:", hasGreen);
+
+            if (hasRed) {
+                partStatusInput.style.backgroundColor = 'red';
+                partStatusInput.value = "REJECT";
+            } else if (hasYellow) {
+                partStatusInput.style.backgroundColor = 'yellow';
+                partStatusInput.value = "REWORK";
+            } else if (hasGreen) {
+                partStatusInput.style.backgroundColor = '#00ff00';
+                partStatusInput.value = "ACCEPT";
             }
-            console.clear();
 
-            console.log("statusCells:",statusCell);
-        });
-
-        if (hasRed) {
-            partStatusInput.style.backgroundColor = 'Red';
-            partStatusInput.value = "REJECT";
             partStatusInput.style.fontWeight = "bold";
             partStatusInput.style.textAlign = "center";
 
-        } else if (hasYellow) {
-            partStatusInput.style.backgroundColor = 'Yellow';
-            partStatusInput.value = "REWORK";
-            partStatusInput.style.fontWeight = "bold";
-            partStatusInput.style.textAlign = "center";
-
-        } else {
-            partStatusInput.style.backgroundColor = '#00ff00';
-            partStatusInput.value = "ACCEPT";
-            partStatusInput.style.fontWeight = "bold";
-            partStatusInput.style.textAlign = "center";
-            
+            // Display notification to the client
+            showNotification("You have completed the measurement for this job.");
         }
 
-        // Display notification to the client
-        
-        showNotification("You have completed the measurement for this job.");
-
-       
-    }
-
-    // Stop calculation for the current step
-    stopContinuousUpdate();
-    // Move to the next step
-    moveToNextStep();
-},500);
-
+        // Stop calculation for the current step
+        stopContinuousUpdate();
+        // Move to the next step
+        moveToNextStep();
+    }, 500);
 });
+
 
 
 document.getElementById("save-btn").addEventListener("click", function() {
@@ -1467,44 +1465,7 @@ function punchOverwriteCancel() {
             document.getElementById('punch_textarea').style.display = 'none';
         }
     
-       
-// Assuming para_values is passed from Django template as a JavaScript array
-var para_values_str = "{{ para_values|safe }}";
-// Remove square brackets and single quotes
-var para_values_cleaned = para_values_str.replace(/[\[\]']+/g, '');
-// Split the cleaned string into an array of values
-var para_values = para_values_cleaned.split(',');
-
-
-// Assuming nominal_values is passed from Django template as a JavaScript array
-var nominal_values_str = "{{ nominal_values|safe }}";
-// Remove square brackets and single quotes
-var nominal_values_cleaned = nominal_values_str.replace(/[\[\]']+/g, '');
-// Split the cleaned string into an array of values
-var nominal_values = nominal_values_cleaned.split(',');
-
-var lsl_values_str = "{{ lsl_values|safe }}";
-var lsl_values_cleaned = lsl_values_str.replace(/[\[\]']+/g, '');
-var lsl_values = lsl_values_cleaned.split(',');
-
-
-var usl_values_str = "{{ usl_values|safe }}";
-var usl_values_cleaned = usl_values_str.replace(/[\[\]']+/g, '');
-var usl_values = usl_values_cleaned.split(',');
-
-
-var ltl_values_str = "{{ ltl_values|safe }}";
-var ltl_values_cleaned = ltl_values_str.replace(/[\[\]']+/g, '');
-var ltl_values = ltl_values_cleaned.split(',');
-
-
-
-var utl_values_str = "{{ utl_values|safe }}";
-var utl_values_cleaned = utl_values_str.replace(/[\[\]']+/g, '');
-var utl_values = utl_values_cleaned.split(',');
-
-
-
+ 
 var step_no_values_str = "{{ step_no_values|safe }}";
 var step_no_values_cleaned = step_no_values_str.replace(/[\[\]']+/g, '');
 var step_no_values = step_no_values_cleaned.split(',');
@@ -1552,7 +1513,8 @@ console.log("step_no_values:",step_no_values);
         const overallCounts = {
             overall_accept_count: "{{ overall_accept_count }}",
             overall_reject_count: "{{ overall_reject_count }}",
-            overall_rework_count: "{{ overall_rework_count }}"
+            overall_rework_count: "{{ overall_rework_count }}",
+           
         };
         
         // Set values when the page loads
@@ -1560,10 +1522,16 @@ console.log("step_no_values:",step_no_values);
             setOverallCounts(overallCounts);
         };
 
+      
 
+        document.addEventListener("DOMContentLoaded", function() {
+    var master_date = "{{last_stored_dates}}";
+    console.log("master_date", master_date);
 
+    // Parse the master_date string to get the starting timestamp
+    const startDate = new Date(master_date);
+    console.log("Parsed Start Date:", startDate);
 
-document.addEventListener("DOMContentLoaded", function() {
     // Access the interval settings JSON
     const intervalSettings = JSON.parse('{{ interval_settings_json|escapejs }}');
 
@@ -1580,15 +1548,33 @@ document.addEventListener("DOMContentLoaded", function() {
 
             // Calculate the interval in milliseconds
             const interval = (hours * 60 + minutes) * 60 * 1000;
+            
+            // Calculate the first alert time
+            const firstAlertTime = new Date(startDate.getTime() + interval);
+            const now = new Date();
+            const timeUntilFirstAlert = firstAlertTime - now;
 
-            // Set an interval to display the alert message
-            setInterval(() => {
+            console.log("First Alert Time:", firstAlertTime);
+            console.log("Time Until First Alert (ms):", timeUntilFirstAlert);
+
+            // Set a timeout for the first alert
+            setTimeout(() => {
                 if (confirm("Timewise alert: It's time for mastering! Click OK to go to the master page.")) {
                     // Redirect to the master page if OK is clicked
                     window.location.href = '/master/'; // Replace '/master-page' with the actual URL of your master page
                 }
-            }, interval);
+
+                // Set intervals for subsequent alerts
+                setInterval(() => {
+                    if (confirm("Timewise alert: It's time for mastering! Click OK to go to the master page.")) {
+                        // Redirect to the master page if OK is clicked
+                        window.location.href = '/master/'; // Replace '/master-page' with the actual URL of your master page
+                    }
+                }, interval);
+
+            }, timeUntilFirstAlert);
         }
+
         if (setting.componentwise) {
             const componentNo = setting.component_no;
             let clickCount = 0;
@@ -1608,57 +1594,9 @@ document.addEventListener("DOMContentLoaded", function() {
     });
 });
 
-    // Select the table body
-var tableBody = document.getElementById("table-body");
+    
 
-// Generate rows dynamically based on para_values length
-for (var i = 0; i < para_values.length; i++) {
-    // Create a new row
-    var row = document.createElement("tr");
 
-    // Create cells for each column and set their content
-    var srNoCell = document.createElement("td");
-    srNoCell.textContent = i + 1; // Since i starts from 0
-    row.appendChild(srNoCell);
-
-    var parameterNameCell = document.createElement("td");
-    parameterNameCell.textContent = para_values[i];
-    row.appendChild(parameterNameCell);
-
-    var nominalCell = document.createElement("td");
-    nominalCell.textContent = nominal_values[i];
-    row.appendChild(nominalCell);
-
-    // Placeholder for other cells
-
-    var readingsCell = document.createElement("td");
-    var readingsInput = document.createElement("input");
-    readingsInput.type = "text";
-    readingsInput.className = "no-outline"; // Optional: Add class for styling
-    readingsInput.style.width = "100%"; // Optional: Set input width
-    readingsCell.appendChild(readingsInput);
-    row.appendChild(readingsCell);
-
-    var lslCell = document.createElement("td");
-    lslCell.textContent = lsl_values[i];
-    row.appendChild(lslCell);
-
-    // Placeholder for indicator cell
-    var indicatorCell = document.createElement("td");
-    indicatorCell.textContent = ""; // Placeholder for readings
-    row.appendChild(indicatorCell);
-
-    var uslCell = document.createElement("td");
-    uslCell.textContent = usl_values[i];
-    row.appendChild(uslCell);
-
-    var statusCell = document.createElement("td");
-    statusCell.textContent = ""; // Placeholder for status
-    row.appendChild(statusCell);
-
-    // Append the row to the table body
-    tableBody.appendChild(row);
-}
 
 /////////////////////////////////////////////////////////////////////////////////
 

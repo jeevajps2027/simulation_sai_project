@@ -5,7 +5,7 @@ import threading
 from django.http import JsonResponse
 from django.shortcuts import render
 
-from app.models import mastering_data, measure_data, parameter_settings
+from app.models import Master_settings, measure_data, parameter_settings
 
 
 
@@ -31,17 +31,19 @@ def master(request):
             selectedValue = data.get('selectedValue')
             selectedMastering = data.get('selectedMastering')
             date_time_str = data.get('dateTime')
-
+            operator = data.get('operatorValues')
+            machine = data.get('machineValues')
+            shift = data.get('shiftValues')
             
 
-            if None not in [probeNo, a, b, e, d, o1, parameterName, selectedValue, selectedMastering, date_time_str]:
+            if None not in [probeNo, a, b, e, d, o1, parameterName, selectedValue, selectedMastering, date_time_str,operator,machine,shift]:
 
                 if date_time_str:
                     # Parse the date and time string
                     dateTime = datetime.strptime(date_time_str, "%m/%d/%Y, %I:%M:%S %p")
 
                     # Create and save the instance
-                    probe_data_instance = mastering_data(
+                    probe_data_instance = Master_settings(
                         probe_no=probeNo,
                         a=a,
                         b=b,
@@ -51,7 +53,10 @@ def master(request):
                         parameter_name=parameterName,
                         selected_value=selectedValue,
                         selected_mastering=selectedMastering,
-                        date_time=dateTime
+                        date_time=dateTime,
+                        operator = operator,
+                        machine = machine,
+                        shift = shift,
                     )
                     probe_data_instance.save()
                 else:
@@ -80,7 +85,7 @@ def master(request):
                 hide_checkbox=False
             ).values()
 
-            filter_my = mastering_data.objects.filter(
+            filter_my = Master_settings.objects.filter(
                 selected_value=selected_value,
             ).values()
 
@@ -179,13 +184,27 @@ def master(request):
             part_model_values = measure_data.objects.values_list('part_model', flat=True).distinct()
             print('part_model_values:', part_model_values)
 
+            operator_values = ', '.join(measure_data.objects.values_list('operator', flat=True))
+            print('operator_values:', operator_values)
+
+            shift_values = ', '.join(measure_data.objects.values_list('shift', flat=True))
+            print('shift_values:', shift_values)
+
+            machine_values = ', '.join(measure_data.objects.values_list('machine', flat=True))
+            print('machine_values:', machine_values)
+
             context = {
                 'part_model_values': part_model_values,
+                'operator_values': operator_values,
+                'shift_values': shift_values,
+                'machine_values':machine_values,
+
             }
 
         except Exception as e:
             print(f'Exception: {e}')
             return JsonResponse({'key': 'value'})
+        
     
    
     return render(request, 'app/master.html', context)

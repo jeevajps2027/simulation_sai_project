@@ -248,6 +248,10 @@ Mastering Page
 
 
 <script>
+    const operatorValues = "{{ operator_values|safe }}";
+    const shiftValues = "{{ shift_values|safe }}";
+    const machineValues = "{{ machine_values|safe }}";
+    
      document.getElementById('reset-button').addEventListener('click', function() {
         location.reload();
         const preTag = document.getElementById('pre');
@@ -618,6 +622,9 @@ function displayContainerValues(container) {
         selectedValue:selectedValue,
         selectedMastering:selectedMastering,
         dateTime: dateTimeString,
+        operatorValues: operatorValues,
+        shiftValues: shiftValues,
+        machineValues: machineValues
 
 
     };

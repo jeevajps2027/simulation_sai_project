@@ -8,7 +8,7 @@ import pytz
 from django.utils import timezone  
 from django.db.models import Q
 
-from app.models import MasterIntervalSettings, MeasurementData, ResetCount, TableOneData, mastering_data, measure_data, parameter_settings
+from app.models import MasterIntervalSettings, MeasurementData, ResetCount, TableOneData, Master_settings, measure_data, parameter_settings
 
 
 def process_row(row):
@@ -93,7 +93,7 @@ def measurement(request):
 
            
             parameter_settings_qs = parameter_settings.objects.filter(model_id=part_model, hide_checkbox=False)
-            last_stored_parameter = {item['parameter_name']: item for item in mastering_data.objects.filter(selected_value=part_model, parameter_name__in=parameter_settings_qs.values_list('parameter_name', flat=True)).values()}
+            last_stored_parameter = {item['parameter_name']: item for item in Master_settings.objects.filter(selected_value=part_model, parameter_name__in=parameter_settings_qs.values_list('parameter_name', flat=True)).values()}
 
 
             response_data = {
@@ -118,18 +118,7 @@ def measurement(request):
         except Exception as e:
             return JsonResponse({'error': str(e)}, status=500)
         
-    elif request.method == 'DELETE':
-        data = json.loads(request.body)
-        punch_value = data.get('punch_value')
-        part_model = data.get('part_model_value')
-
-        try:
-            MeasurementData.objects.filter(part_model=part_model, comp_sr_no=punch_value).delete()
-            return JsonResponse({'status': 'success', 'message': 'Punch value deleted successfully.'})
-        except MeasurementData.DoesNotExist:
-            return JsonResponse({'status': 'error', 'message': 'Punch value does not exist.'})
-
-
+   
 
     elif request.method == 'GET':
         try:
@@ -141,6 +130,17 @@ def measurement(request):
         except measure_data.MultipleObjectsReturned:
             print("Multiple part models found.")
 
+        parameter_settings_qs = parameter_settings.objects.filter(model_id=part_model, hide_checkbox=False)
+        last_stored_parameters = Master_settings.objects.filter(selected_value=part_model, parameter_name__in=parameter_settings_qs.values_list('parameter_name', flat=True))
+        # Create a dictionary with parameter_name as keys and items as values
+        last_stored_parameter = {item['parameter_name']: item for item in last_stored_parameters.values()}
+        # Extract datetime objects from the values of last_stored_parameter
+        last_dates = [item['date_time'].strftime("%m-%d-%Y %I:%M:%S %p") for item in last_stored_parameter.values()]
+        # Get distinct formatted dates
+        last_stored_dates =', '.join(list(set(last_dates)))
+
+        print("Distinct formatted dates:", last_stored_dates)
+                        
 
         step_no_values_queryset = parameter_settings.objects.filter(model_id=part_model).values_list('step_no', flat=True)
         step_no_values = list(step_no_values_queryset)
@@ -278,6 +278,7 @@ def measurement(request):
             'part_model_values': part_model_values,
             'step_no_values' : step_no_values,
             'interval_settings_json':interval_settings_json,
+            'last_stored_dates':last_stored_dates,
             'machine_values' : machine_values,
             'operator_values' :operator_values,
             'shift_values' : shift_values,

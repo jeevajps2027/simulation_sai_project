@@ -58,7 +58,8 @@ class comport_settings(models.Model):
     def __str__(self):
         return f"COM Port: {self.com_port}, Baud Rate: {self.baud_rate}"
 
-class mastering_data(models.Model):
+
+class Master_settings(models.Model):
     probe_no = models.CharField(max_length=100)
     a = models.FloatField()
     b = models.FloatField()
@@ -68,16 +69,12 @@ class mastering_data(models.Model):
     parameter_name = models.CharField(max_length=100)
     selected_value = models.CharField(max_length=100)
     selected_mastering = models.CharField(max_length=100)
-    date_time = models.CharField(max_length=30)  # Change to CharField
-
-    def save(self, *args, **kwargs):
-        if self.date_time:  # Format the date and time string with AM/PM information
-            self.date_time = self.date_time.strftime("%d/%m/%Y, %I:%M:%S %p")
-        super().save(*args, **kwargs)
-
-    def __str__(self):
-        return f"Probe No: {self.probe_no}, Parameter Name: {self.parameter_name}, DateTime: {self.date_time}"
+    operator = models.CharField(max_length=100)
+    machine = models.CharField(max_length=100)
+    shift = models.CharField(max_length=100)
+    date_time = models.DateTimeField()  # Change to CharField
     
+   
 
 class parameter_settings(models.Model):
     model_id = models.CharField(max_length=255)

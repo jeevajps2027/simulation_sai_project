@@ -3,7 +3,7 @@ from django.http import JsonResponse
 from django.shortcuts import render
 from django.views.decorators.csrf import csrf_exempt
 
-from app.models import TableFiveData, TableFourData, TableOneData, TableThreeData, TableTwoData, mastering_data, parameter_settings,MeasurementData
+from app.models import TableFiveData, TableFourData, TableOneData, TableThreeData, TableTwoData, Master_settings, parameter_settings,MeasurementData
 
 
 @csrf_exempt
@@ -147,7 +147,7 @@ def trace(request, row_id=None):
                     for row in rows:
                         part_model_value = row.part_model
                         delete_parameter = parameter_settings.objects.filter(model_id=part_model_value).delete()
-                        delete_master = mastering_data.objects.filter(selected_value=part_model_value).delete()
+                        delete_master = Master_settings.objects.filter(selected_value=part_model_value).delete()
 
                         delete_measurement = MeasurementData.objects.filter(part_model=part_model_value).delete()
 

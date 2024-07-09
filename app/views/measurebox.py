@@ -58,13 +58,15 @@ def measurebox(request):
             customer_name_values = TableOneData.objects.values_list('customer_name', flat=True).distinct()
             print('customer_name_values:', customer_name_values)
 
+            current_selection = measure_data.objects.first()
+
             context = {
                 'part_model_values': part_model_values,
                 'operator_values': operator_values,
                 'batch_no_values': batch_no_values,
                 'machine_name_values': machine_name_values,
                 'customer_name_values': customer_name_values,
-                
+                'current_selection': current_selection,
 
             }
 
