@@ -98,12 +98,16 @@
         .table-striped tbody tr:nth-of-type(odd) {
             background-color: #f9f9f9; /* Alternate row background color */
         }
-        
+        #prevButton{
+            width: 50px;
+            background-color: red;
+            color: white;
+        }
 
     </style>
 </head>
 <body>
-    
+    <button id="prevButton" class="arrow-button no-pdf">⬅</button>
     <div class="dropdown" id="dropdown">
         <div class="dropdown-content" id="dropdownContent">
             <form id="exportForm" method="post" action="{% url 'paraReport' %}">
@@ -181,6 +185,11 @@
 
 <!-- JavaScript to dynamically update status counts and print to console -->
 <script>
+
+document.getElementById('prevButton').addEventListener('click', function() {
+    // Redirect to the report page
+    window.location.href = '/report/'; // Replace 'report_page.html' with the actual URL of your report page
+});
   
   function exportToExcel(event) {
     fetch("{% url 'paraReport' %}")

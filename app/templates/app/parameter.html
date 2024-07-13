@@ -489,8 +489,18 @@ function saveValues() {
     const job_dia = document.getElementById('job_dia').value;
 
 
+    // Check if any required field is empty
+    const requiredFields = [inputValue, probeNo, measurementMode, nominal, usl, lsl, mastering, stepNo, srNo, digits, utl, ltl, job_dia];
+    const allFieldsFilled = requiredFields.every(field => field !== '' && field !== null);
 
+    // Check if either both highMV and lowMV are filled, or both analogZero and referenceValue are filled
+    const mvFieldsFilled = highMV !== '' && lowMV !== '';
+    const analogReferenceFieldsFilled = analogZero !== '' && referenceValue !== '';
 
+    if (!allFieldsFilled || !(mvFieldsFilled || analogReferenceFieldsFilled)) {
+        alert('Error: Please fill all the Requirement Field in the PARAMETER SETTINGS');
+        return;
+    }
      // Check if high_mv is less than or equal to low_mv (only if the double radio button is not checked)
     if (highMV <= lowMV) {
         alert('Error: HIGH M-V should be greater than LOW M-V.');
@@ -500,6 +510,11 @@ function saveValues() {
     // Check if usl is less than or equal to lsl
     if (usl <= lsl) {
         alert('Error: USL should be greater than LSL.');
+        return; // Stop further processing
+    }
+     // Check if usl is less than or equal to lsl
+    if (utl <= ltl) {
+        alert('Error: UTL should be greater than LTL.');
         return; // Stop further processing
     }
 

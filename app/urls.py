@@ -21,6 +21,7 @@ urlpatterns = [
     path('withoutsrno/',withoutsrno,name="withoutsrno"),
     path('paraReport/',paraReport,name="paraReport"),
     path('jobReport/',jobReport,name="jobReport"),
+   
 
     ]
 

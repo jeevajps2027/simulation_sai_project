@@ -225,6 +225,9 @@ def paraReport(request):
                 th, td {
                     word-wrap: break-word; /* Break long words */
                 }
+                .no-pdf {
+                    display: none;
+                }
             ''')
 
 

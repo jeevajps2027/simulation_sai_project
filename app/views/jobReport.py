@@ -148,6 +148,9 @@ def jobReport(request):
                 th, td {
                     word-wrap: break-word; /* Break long words */
                 }
+                .no-pdf {
+                    display: none;
+                }
             ''')
 
             pdf_filename = f"JobReport{datetime.now().strftime('%Y/%m/%d_%H/%M/%S')}.pdf"

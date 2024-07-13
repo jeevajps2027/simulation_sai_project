@@ -369,20 +369,6 @@ Utility
             </div>
             <textarea id="address" name="address" class="ruled-textarea"></textarea>
         </div>    
-
-        
-
-
-        <div class="container">
-            <div class="label-container">
-                <label for="logo" style="margin-left: 120px;">CUSTOMER LOGO:</label>
-            </div>
-            <input type="file" id="logo" name="logo" accept="image/*" onchange="previewImage(event)">
-            <div class="preview-container">
-                <img id="previewImage" src="#" alt="Image preview" style="display:none;">
-            </div>
-        </div>
-
         <a href="{% url 'index' %}" >
             <button type="button" id="cancel-btn"><b>Cancel</b></button>
             </a>
@@ -390,31 +376,9 @@ Utility
           <button type="button" id="save-btn-3"><b>Save</b></button>  
 
 
-    <script>
-        function previewImage(event) {
-            var previewImage = document.getElementById('previewImage');
-            var file = event.target.files[0];
-            var reader = new FileReader();
-
-            reader.onload = function() {
-                previewImage.src = reader.result;
-                previewImage.style.display = 'block';
-            }
-
-            if (file) {
-                reader.readAsDataURL(file);
-            }
-        }
-
-        
-        
+<script>       
 $(document).ready(function() {
     $('#save-btn-3').click(function() {
-        // Add the image file to the FormData object
-        const imageInput = document.querySelector('#logo');
-        var logoFile = imageInput.files[0];
-        console.log('your image is:',logoFile);
-
         
         const data = {
             id :'customer_details',
@@ -424,9 +388,7 @@ $(document).ready(function() {
             phone_no: $('#phone_no').val(),
             dept: $('#dept').val(),
             address: $('#address').val(),
-            logo: $('#logo').prop('files')[0], // Access the files property and get the first file
-
-        };
+            };
 
         console.log('Data to be sent:', data);  // Debugging information
 
@@ -449,16 +411,15 @@ $(document).ready(function() {
     });
 });
 
-    </script>
-    </div>
-
-   
+</script>
+</div> 
 </div>
 
    
 
 
 <script>
+    
      window.addEventListener('DOMContentLoaded', (event) => {
             var inputs = document.querySelectorAll('input');
             inputs.forEach(input => {

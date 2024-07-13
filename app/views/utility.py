@@ -76,9 +76,6 @@ def utility(request):
                 phone_no = data.get('phone_no')
                 dept = data.get('dept')
                 address = data.get('address')
-                logo_file = data.get('logo')
-                
-                print("Logo File Name:", logo_file)
                
                 print("customer_details:",customer_name,contact_person,email,phone_no,dept,address)
 
