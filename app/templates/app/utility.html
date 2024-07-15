@@ -129,7 +129,7 @@ Utility
 
         .ruled-textarea {
             width: 350px;
-            height: 100px;
+            height: 150px;
             margin-left: 30px;
             line-height: 30px; /* Adjust to match the height of each line */
             background: repeating-linear-gradient(
@@ -269,6 +269,7 @@ Utility
                         dataType: 'json',
                         success: function(response) {
                             alert('Settings saved successfully!');
+                            window.location.reload();  // Reload the page
                             // You can also redirect or update the UI based on the response if needed
                         },
                         error: function(error) {
@@ -290,7 +291,7 @@ Utility
             <input type="text" id="shift" name="shift" style="width: 200px;" value="SHIFT-"><br> 
             <label for="shift_time" style="margin-top: 30px;">START TIME:</label>
             <input type="time" id="shift_time" name="shift_time" step="1" style="width: 200px;"><br><br>
-            <textarea>
+            <textarea readonly>
                 {% for data in shift_settings %}
                 {{ data.shift }} - {{ data.shift_time }}
                 {% endfor %}
@@ -300,118 +301,144 @@ Utility
             <button type="button" id="cancel-btn"><b>Cancel</b></button>
         </a>
         <button type="button" id="save-btn-2"><b>Save</b></button>  
-    </div>
+   
 
     <script>
-        $(document).ready(function() {
-            $('#save-btn-2').click(function() {
-                // Get the value of the time input
-                const rawTime = $('#shift_time').val();
-    
-                // Parse the time into a Date object
-                const parsedTime = new Date('1970-01-01T' + rawTime);
-    
-                // Format the time into HH:MM:SS AM/PM format
-                const formattedTime = parsedTime.toLocaleTimeString([], {hour12: true});
-    
-                // Construct the data object to be sent
-                const data = {
-                    id: 'shift_settings',
-                    shift: $('#shift').val(),
-                    shift_time: formattedTime
-                };
-    
-                console.log('Data to be sent:', data);  // Debugging information
-    
-                $.ajax({
-                    type: 'POST',
-                    url: '/utility/',  // Replace with your actual backend endpoint
-                    data: JSON.stringify(data),
-                    contentType: 'application/json; charset=utf-8',
-                    dataType: 'json',
-                    success: function(response) {
-                        console.log('Response:', response);  // Debugging information
-                        alert('Shift settings saved successfully!');
-                    },
-                    error: function(error) {
-                        console.log('Error:', error);  // Debugging information
-                        alert('An error occurred while saving shift settings.');
-                    }
-                });
-            });
+       $(document).ready(function() {
+    $('#save-btn-2').click(function() {
+        // Get the value of the time input
+        const rawTime = $('#shift_time').val();
+
+        // Parse the time into a Date object
+        const parsedTime = new Date('1970-01-01T' + rawTime);
+
+        // Format the time into HH:MM:SS AM/PM format
+        const formattedTime = parsedTime.toLocaleTimeString([], { hour12: true });
+
+        // Construct the data object to be sent
+        const data = {
+            id: 'shift_settings',
+            shift: $('#shift').val(),
+            shift_time: formattedTime
+        };
+
+        console.log('Data to be sent:', data);  // Debugging information
+
+        $.ajax({
+            type: 'POST',
+            url: '/utility/',  // Replace with your actual backend endpoint
+            data: JSON.stringify(data),
+            contentType: 'application/json; charset=utf-8',
+            dataType: 'json',
+            success: function(response) {
+                console.log('Response:', response);  // Debugging information
+                alert('Shift settings saved successfully!');
+                window.location.reload();  // Reload the page
+                // Select the Shift Settings item after reload
+                sessionStorage.setItem('selectedItem', 'shift_settings');
+                
+            },
+            error: function(error) {
+                console.log('Error:', error);  // Debugging information
+                alert('An error occurred while saving shift settings.');
+            }
         });
-    </script>
-    
+    });
+
+    // Check if an item should be selected after page reload
+    const selectedItem = sessionStorage.getItem('selectedItem');
+        if (selectedItem === 'shift_settings') {
+            enlargeItem(2);
+            showItem('item-2');
+            sessionStorage.removeItem('selectedItem');
+        }
+});
+
+</script>
+</div>
     
 
     <div class="item item-3" id="customer_details">
         <center style="color: purple; text-shadow: 2px 2px 4px rgb(240, 118, 240);">
             <h2><b>Customer Details</b></h2>
         </center>
+        {% for data in customer_details %}
         <label for="customer_name" style="margin-left: 0px;">CUSTOMER NAME:</label>
-        <input type="text" id="customer_name" name="customer_name">
+        <input type="text" id="customer_name" name="customer_name"  value="{{ data.customer_name }}">
 
         <label for="contact_person">CONTACT PERSON:</label>
-        <input type="text" id="contact_person" name="contact_person"><br>
+        <input type="text" id="contact_person" name="contact_person" value="{{ data.contact_person }}"><br>
 
         <label for="email"style="margin-left: 0px;" >EMAIL:</label>
-        <input type="text" id="email" name="email">
+        <input type="text" id="email" name="email" value="{{ data.email }}">
 
         <label for="phone_no">PHONE NO:</label>
-        <input type="text" id="phone_no" name="phone_no"><br>
+        <input type="text" id="phone_no" name="phone_no" value="{{ data.phone_no }}"><br>
 
         <label for="dept" style="margin-left:-400px;">DEPARTMENT:</label>
-        <input type="text" id="dept" name="dept">
+        <input type="text" id="dept" name="dept" value="{{ data.dept }}">
 
         <div class="container">
             <div class="label-container">
                 <label for="address" style="text-align: right;">ADDRESS:</label>
             </div>
-            <textarea id="address" name="address" class="ruled-textarea"></textarea>
-        </div>    
+            <textarea id="address" name="address" class="ruled-textarea">{{ data.address }}</textarea>
+        </div>  
+        {% endfor %}  
         <a href="{% url 'index' %}" >
             <button type="button" id="cancel-btn"><b>Cancel</b></button>
             </a>
         <button type="button" id="clear-btn"><b>Clear values</b></button>  
-          <button type="button" id="save-btn-3"><b>Save</b></button>  
+        <button type="button" id="save-btn-3"><b>Save</b></button>  
 
 
-<script>       
-$(document).ready(function() {
-    $('#save-btn-3').click(function() {
+          <script>
+            $(document).ready(function() {
+                $('#save-btn-3').click(function() {
+                    const data = {
+                        id: 'customer_details',
+                        customer_name: $('#customer_name').val(),
+                        contact_person: $('#contact_person').val(),
+                        email: $('#email').val(),
+                        phone_no: $('#phone_no').val(),
+                        dept: $('#dept').val(),
+                        address: $('#address').val(),
+                    };
         
-        const data = {
-            id :'customer_details',
-            customer_name: $('#customer_name').val(),
-            contact_person: $('#contact_person').val(),
-            email: $('#email').val(),
-            phone_no: $('#phone_no').val(),
-            dept: $('#dept').val(),
-            address: $('#address').val(),
-            };
-
-        console.log('Data to be sent:', data);  // Debugging information
-
-        // Send the data to the backend as JSON
-        $.ajax({
-            type: 'POST',
-            url: '/utility/',  // Replace with your actual backend endpoint
-            data: JSON.stringify(data),
-            contentType: 'application/json',
-            dataType: 'json',
-            success: function(response) {
-                console.log('Response:', response);  // Debugging information
-                alert('Customer details saved successfully!');
-            },
-            error: function(error) {
-                console.error('Error:', error);  // Debugging information
-                alert('An error occurred while saving customer details.');
-            }
-        });
-    });
-});
-
-</script>
+                    console.log('Data to be sent:', data);  // Debugging information
+        
+                    // Send the data to the backend as JSON
+                    $.ajax({
+                        type: 'POST',
+                        url: '/utility/',  // Replace with your actual backend endpoint
+                        data: JSON.stringify(data),
+                        contentType: 'application/json',
+                        dataType: 'json',
+                        success: function(response) {
+                            console.log('Response:', response);  // Debugging information
+                            alert('Customer details saved successfully!');
+                            // Save the selected item in session storage
+                            sessionStorage.setItem('selectedItem', 'customer_details');
+                            // Reload the page after a short delay to ensure session storage is updated
+                            
+                        },
+                        error: function(error) {
+                            console.error('Error:', error);  // Debugging information
+                            alert('An error occurred while saving customer details.');
+                        }
+                    });
+                });
+        
+                // Check if an item should be selected after page reload
+                const selectedItem = sessionStorage.getItem('selectedItem');
+                if (selectedItem === 'customer_details') {
+                    enlargeItem(3);
+                    showItem('item-3');
+                    sessionStorage.removeItem('selectedItem');  // Remove the item from session storage
+                }
+            });
+        </script>
+        
 </div> 
 </div>
 

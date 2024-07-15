@@ -146,6 +146,17 @@ class ShiftSettings(models.Model):
                 pass
         super().save(*args, **kwargs)
 
+class CustomerDetails(models.Model):
+    customer_name = models.CharField(max_length=100)
+    contact_person = models.CharField(max_length=100)
+    email = models.CharField(max_length=100)
+    phone_no = models.CharField(max_length=20)
+    dept = models.CharField(max_length=100)
+    address = models.TextField()
+
+    def __str__(self):
+        return self.customer_name
+
 
 class measure_data(models.Model):
     part_model = models.CharField(max_length=100)

@@ -4,7 +4,7 @@ from django.http import JsonResponse
 from django.shortcuts import render
 from django.views.decorators.csrf import csrf_exempt
 
-from app.models import MasterIntervalSettings, ShiftSettings
+from app.models import CustomerDetails, MasterIntervalSettings, ShiftSettings
 
 @csrf_exempt
 def utility(request):
@@ -78,7 +78,22 @@ def utility(request):
                 address = data.get('address')
                
                 print("customer_details:",customer_name,contact_person,email,phone_no,dept,address)
+                # Check if CustomerDetails with id=1 already exists
+                try:
+                    customer_details = CustomerDetails.objects.get(id=1)
+                except CustomerDetails.DoesNotExist:
+                    customer_details = CustomerDetails(id=1)
 
+                # Update fields with new data
+                customer_details.customer_name = customer_name
+                customer_details.contact_person = contact_person
+                customer_details.email = email
+                customer_details.phone_no = phone_no
+                customer_details.dept = dept
+                customer_details.address = address
+
+                # Save the instance
+                customer_details.save()
 
             return JsonResponse({'status': 'success'})
         
@@ -86,10 +101,16 @@ def utility(request):
             try:
                 master_interval_settings = MasterIntervalSettings.objects.all()
                 shift_settings = ShiftSettings.objects.all()
+                customer_details = CustomerDetails.objects.all()
                 print("Master Interval Settings:", master_interval_settings)
                 print("Shift Settings:", shift_settings)
+                context = {
+                    'master_interval_settings': master_interval_settings,
+                    'shift_settings':shift_settings,
+                    'customer_details':customer_details,
+                }
                 # Pass the retrieved data to the template for rendering
-                return render(request, 'app/utility.html', {'master_interval_settings': master_interval_settings,'shift_settings':shift_settings})
+                return render(request, 'app/utility.html', context)
 
             except Exception as e:
                 return JsonResponse({'error': str(e)}, status=500)
