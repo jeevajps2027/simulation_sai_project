@@ -17,7 +17,7 @@ def jobReport(request):
         print("job_no:", job_no)
 
         # Filter MeasurementData objects based on part_model and job_no
-        job_number_value = MeasurementData.objects.filter(part_model=part_model, comp_sr_no=job_no)
+        job_number_value = MeasurementData.objects.filter(part_model=part_model, comp_sr_no=job_no).order_by('id')
 
         if not job_number_value:
             # Handle case where no comp_sr_no values are found

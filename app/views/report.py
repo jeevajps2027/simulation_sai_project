@@ -127,7 +127,7 @@ def report(request):
             
 
             # Filter parameter_settings where model_id matches part_model and get distinct parameter_name
-            parameter_data = parameter_settings.objects.filter(model_id=part_model).values_list('parameter_name', flat=True).distinct()
+            parameter_data = parameter_settings.objects.order_by('id').filter(model_id=part_model).values_list('parameter_name', flat=True).distinct()
             print('Filtered parameter_name:', parameter_data)
 
             punch_data = MeasurementData.objects.filter(part_model=part_model).values_list('comp_sr_no', flat=True).distinct()

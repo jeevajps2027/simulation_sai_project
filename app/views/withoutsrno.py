@@ -10,6 +10,8 @@ from django.http import HttpResponse
 from weasyprint import CSS, HTML
 from app.models import MeasurementData, consolidate_without_srno, parameter_settings
 
+
+
 def withoutsrno(request):
     if request.method == 'GET':
         consolidate_without_values = consolidate_without_srno.objects.all()
@@ -48,7 +50,7 @@ def withoutsrno(request):
             filter_kwargs['shift'] = shift
 
         filtered_data = MeasurementData.objects.filter(**filter_kwargs).values()
-        distinct_comp_sr_nos = filtered_data.filter(Q(comp_sr_no__isnull=True) | Q(comp_sr_no__exact=''))
+        distinct_comp_sr_nos = filtered_data.filter(Q(comp_sr_no__isnull=True) | Q(comp_sr_no__exact='')).order_by('date')
         if not distinct_comp_sr_nos:
             context = {
                 'no_results': True

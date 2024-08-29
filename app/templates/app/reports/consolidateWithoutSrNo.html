@@ -113,7 +113,9 @@
         <div class="dropdown-content" id="dropdownContent">
             <form id="exportForm" method="post" action="{% url 'withoutsrno' %}">
                 {% csrf_token %}
-                <button type="submit" name="export_type" value="pdf">Export to PDF</button>
+                <button type="submit" name="export_type" value="pdf" onclick="return confirmSendEmail()">Export to PDF</button>
+                <input type="checkbox" id="sendEmail" name="send_email" value="yes">
+                <label for="sendEmail">Send PDF to Email</label>
             </form>
             <button type="submit" name="export_type" onclick="exportToExcel(event)" value="excel">Export to Excel</button>
         </div>
@@ -246,6 +248,15 @@ function exportToExcel(event) {
     function toggleDropdown() {
     var dropdownContent = document.getElementById("dropdownContent");
     dropdownContent.style.display = (dropdownContent.style.display === "block") ? "none" : "block";
+}
+
+
+function confirmSendEmail() {
+    const sendEmail = document.getElementById('sendEmail').checked;
+    if (sendEmail) {
+        return confirm('Do you want to send this PDF via email?');
+    }
+    return true;
 }
 
  </script>

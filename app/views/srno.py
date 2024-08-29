@@ -60,7 +60,7 @@ def srno(request):
 
         filtered_data = MeasurementData.objects.filter(**filter_kwargs).values()
 
-        distinct_comp_sr_nos = filtered_data.exclude(comp_sr_no__isnull=True).exclude(comp_sr_no__exact='').values_list('comp_sr_no', flat=True).distinct()
+        distinct_comp_sr_nos = filtered_data.exclude(comp_sr_no__isnull=True).exclude(comp_sr_no__exact='').values_list('comp_sr_no', flat=True).distinct().order_by('date')
         print("distinct_comp_sr_nos:", distinct_comp_sr_nos)
         if not distinct_comp_sr_nos:
             context = {
