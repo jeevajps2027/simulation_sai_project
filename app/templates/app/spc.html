@@ -1,0 +1,124 @@
+function saveValues() {
+    const selectedUL = document.querySelector('.model-ul .nested-ul.active');
+    const inputValue = document.getElementById('parameter_name').value.trim();
+    const singleRadio = document.getElementById('single').checked;
+    const doubleRadio = document.getElementById('double').checked;
+    const probeNo = document.getElementById('probe_no').value;
+    const analogZero = document.getElementById('analog_zero').value;
+    const highMV = document.getElementById('high_mv').value;
+    const measurementMode = document.getElementById('measurement_mode').value;
+    const referenceValue = document.getElementById('reference_value').value;
+    const lowMV = document.getElementById('low_mv').value;
+    const nominal = document.getElementById('nominal').value;
+    const usl = document.getElementById('usl').value;
+    const lsl = document.getElementById('lsl').value;
+    const mastering = document.getElementById('mastering').value;
+    const stepNo = document.getElementById('step_no').value;
+    const hideCheckbox = document.getElementById('hide').checked;
+    const srNo = document.getElementById('sr_no').value;
+    const digits = document.getElementById('digits').value;
+    const utl = document.getElementById('utl').value;
+    const ltl = document.getElementById('ltl').value;
+    const job_dia = document.getElementById('job_dia').value;
+
+    // Check if high_mv is greater than low_mv
+    if (!doubleRadio && parseFloat(highMV) <= parseFloat(lowMV)) {
+        alert('Error: HIGH M-V should be greater than LOW M-V.');
+        return; // Stop further processing
+    }
+
+    // Check if usl is greater than lsl
+    if (parseFloat(usl) <= parseFloat(lsl)) {
+        alert('Error: USL should be greater than LSL.');
+        return; // Stop further processing
+    }
+
+    if (selectedUL) {
+        // Prepare data to be sent to the server
+        const data = {
+            modelId: selectedUL.parentElement.querySelector('.model-name').textContent.trim(),
+            parameterValue: inputValue,
+            singleRadio: singleRadio,
+            doubleRadio: doubleRadio,
+            probeNo: probeNo,
+            analogZero: analogZero,
+            highMV: highMV,
+            measurementMode: measurementMode,
+            referenceValue: referenceValue,
+            lowMV: lowMV,
+            nominal: nominal,
+            usl: usl,
+            lsl: lsl,
+            mastering: mastering,
+            stepNo: stepNo,
+            hideCheckbox: hideCheckbox,
+            srNo: srNo,
+            digits: digits,
+            utl: utl,
+            ltl: ltl,
+            job_dia: job_dia,
+        };
+
+        console.log('Your data is:', data);
+
+        // Get CSRF token from the cookie
+        const csrfToken = document.cookie.match(/csrftoken=([^;]+)/);
+        if (!csrfToken) {
+            alert("CSRF token not found.");
+            return;
+        }
+
+        // Perform AJAX POST request with CSRF token in headers
+        $.ajax({
+            type: 'POST',
+            url: '/parameter/',  // Adjust the URL based on your Django app's configuration
+            contentType: 'application/json',
+            data: JSON.stringify(data),
+            headers: {
+                'X-CSRFToken': csrfToken[1],
+            },
+            success: function (response) {
+                // Handle the success response from the server if needed
+                console.log('Data saved successfully:', response);
+                showNotification('Data saved successfully', true);
+
+                // Store the selected item in session storage
+                sessionStorage.setItem('selectedItem', 'parameter');
+            },
+            error: function (error) {
+                // Handle the error response from the server if needed
+                console.error('Error saving data:', error);
+                showNotification('Error saving data', false);
+            }
+        });
+    } else {
+        alert('Please select a model to add parameters.');
+    }
+}
+
+
+
+window.onload = function() {
+            // Replace these with actual values from server-side context if needed
+            const partModelValue = '{{ value.part_model }}';
+            const parameterNameValue = '{{ value.parameter_name }}';
+
+            // Set the values in the fields
+            document.getElementById('partModel').value = partModelValue;
+            document.getElementById('parameter_name').value = parameterNameValue;
+
+            // Automatically select the part model from the list and parameter name from the nested list
+            const partModelElement = document.querySelector('.model-ul .model-name[data-model-id="' + partModelValue + '"]');
+            if (partModelElement) {
+                partModelElement.click(); // Simulate a click to show the nested list
+                const parameterNameList = partModelElement.nextElementSibling;
+                if (parameterNameList) {
+                    const parameterNameItems = parameterNameList.querySelectorAll('li');
+                    parameterNameItems.forEach(item => {
+                        if (item.textContent.trim() === parameterNameValue) {
+                            item.classList.add('selected'); // Add a class to indicate selection
+                        }
+                    });
+                }
+            }
+        };

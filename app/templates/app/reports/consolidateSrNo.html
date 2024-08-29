@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Consolidate Report</title>
+
+    <style>
+        .data-box {
+            border: 1px solid #ccc;
+            padding: 10px;
+            margin-bottom: 20px;
+            overflow-x: auto;
+            overflow-y: auto;
+        }
+        
+        .first-table {
+            background-color: #fff;
+            border: 1px solid #ccc;
+            text-align: center;
+        }
+        .label {
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 10px;
+        }
+        .value {
+            font-weight: bold;
+            font-size: 13px;
+        }
+        
+        th, td {
+            border: 1px solid #ccc;
+            text-align: center;
+            font-weight: bold;
+            width: 100px;
+            font-size: 15px;
+            border: 1px solid black; /* Add borders to table cells */
+            padding: 4px; /* Add padding to table cells */
+        }
+        
+        .table_data {
+            width: 5000px;
+        }
+        .table_data th:nth-child(3) {
+            width: 300px; /* Specific width for the 2nd th element */
+        }
+        .table_data th:nth-child(2) {
+            width: 200px; /* Specific width for the 2nd th element */
+        }
+        .table_data th:nth-child(1) {
+            width: 20px; /* Specific width for the 2nd th element */
+        }
+        .first-table td{
+            width: 230px;
+        }
+        #h1{
+            color: red; 
+            text-align: center;
+            margin-top: 0px;
+            margin-bottom: 0px;
+        }
+/* Dropdown menu style */
+#dropdownContent {
+    display: none; /* Hide dropdown content by default */
+}
+
+.dropdown {
+            position: absolute;
+            top: 10px;
+            right: 50px;
+            display: inline-block;
+        }
+        .dropdown-content {
+            display: none;
+            position: absolute;
+            background-color: #f9f9f9;
+            min-width: 120px;
+            box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+            z-index: 1;
+            left: -120px; /* Adjusted left position for the dropdown content */
+        }
+        .dropdown-content button {
+            color: black;
+            padding: 10px 10px;
+            text-decoration: none;
+            display: block;
+            text-align: center;
+            display: block;
+            background-color: lightpink;
+            display: block;
+        }
+           
+        table {
+            width: auto; /* Allow the table to size based on content */
+            table-layout: auto; /* Allow the table to adjust its layout based on content */
+            border-collapse: collapse; /* Collapse table borders */
+        }
+       
+        .table-striped tbody tr:nth-of-type(odd) {
+            background-color: #f9f9f9; /* Alternate row background color */
+        }
+        #prevButton{
+            width: 50px;
+            background-color: red;
+            color: white;
+        }
+
+       
+
+    </style>
+</head>
+<body>
+    <button id="prevButton" class="arrow-button no-pdf">⬅</button>
+    
+    <div class="dropdown" id="dropdown">
+        <div class="dropdown-content" id="dropdownContent">
+            <form id="exportForm" method="post" action="{% url 'srno' %}">
+                {% csrf_token %}
+                <button type="submit" name="export_type" value="pdf">Export to PDF</button>
+            </form>
+            <button type="submit" name="export_type" onclick="exportToExcel(event)" value="excel">Export to Excel</button>
+        </div>
+        <button id="save_btn" onclick="toggleDropdown()">&#8285;</button>
+    </div>
+    
+   
+    
+    <table class="first-table">
+        <h1 id="h1">Consolidate With SrNo</h1>
+        {% for data in consolidate_values %}
+        <tr>
+            <td>
+                <span class="label">PARTMODEL:</span>
+                <span class="value">{{ data.part_model }}</span>
+            </td>
+            <td>
+                <span class="label">PARAMETER NAME:</span>
+                <span class="value">{{ data.parameter_name }}</span>
+            </td>
+            <td>
+                <span class="label">OPERATOR:</span>
+                <span class="value">{{ data.operator }}</span>
+            </td>
+            <td>
+                <span class="label">FROM DATE:</span>
+                <span class="value">{{ data.formatted_from_date }}</span>
+            </td>
+            <td>
+                <span class="label">TO DATE:</span>
+                <span class="value">{{ data.formatted_to_date }}</span>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <span class="label">MACHINE:</span>
+                <span class="value">{{ data.machine }}</span>
+            </td>
+            <td>
+                <span class="label">VENDOR CODE:</span>
+                <span class="value">{{ data.vendor_code }}</span>
+            </td>
+            <td>
+                <span class="label">JOB NO:</span>
+                <span class="value">{{ data.job_no }}</span>
+            </td>
+            <td>
+                <span class="label">SHIFT:</span>
+                <span class="value">{{ data.shift }}</span>
+            </td>
+            <td>
+                <span class="label">CURRENT DATE:</span>
+                <span class="value">{{ data.current_date_time }}</span>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <span class="label">ACCEPT:</span>
+                <span class="value" id="accept-count">{{ accept_count }}</span>
+            </td>
+            <td>
+                <span class="label">REJECT:</span>
+                <span class="value" id="reject-count">{{ reject_count }}</span>
+            </td>
+            <td>
+                <span class="label">REWORK:</span>
+                <span class="value" id="rework-count">{{ rework_count }}</span>
+            </td>
+            <td colspan="2">
+                <span class="label">TOTAL:</span>
+                <span class="value" id="total-count">{{ total_count }}</span>
+            </td>
+        </tr>
+        {% endfor %}
+    </table>
+    
+{% if no_results %}
+    <div class="data-box">
+        <p>No Data Found</p>
+    </div>
+{% else %}
+    <div class="data-box">
+        <div class="table_data">
+            {{ table_html | safe }}
+        </div>
+    </div>
+{% endif %}
+
+<!-- JavaScript to dynamically update status counts and print to console -->
+<script>
+
+document.getElementById('prevButton').addEventListener('click', function() {
+    // Redirect to the report page
+    window.location.href = '/report/'; // Replace 'report_page.html' with the actual URL of your report page
+});
+
+
+function exportToExcel(event) {
+    fetch("{% url 'srno' %}")
+    .then(response => response.blob())
+    .then(blob => {
+        const url = window.URL.createObjectURL(new Blob([blob]));
+        
+        // Generate filename with date and time segments
+        const currentDate = new Date();
+        const year = currentDate.getFullYear();
+        const month = String(currentDate.getMonth() + 1).padStart(2, '0');
+        const day = String(currentDate.getDate()).padStart(2, '0');
+        const hours = String(currentDate.getHours()).padStart(2, '0');
+        const minutes = String(currentDate.getMinutes()).padStart(2, '0');
+        const seconds = String(currentDate.getSeconds()).padStart(2, '0');
+        
+        const filename = `consolidatewise_report_${year}_${month}_${day}_${hours}_${minutes}_${seconds}.xlsx`;
+
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        window.URL.revokeObjectURL(url);
+
+        // Prevent default link behavior (optional)
+        event.preventDefault();
+
+        // Hide the dropdown after exporting (if needed)
+        hideDropdown();
+    });
+}
+
+
+function toggleDropdown() {
+            var dropdownContent = document.getElementById("dropdownContent");
+            dropdownContent.style.display = (dropdownContent.style.display === "block") ? "none" : "block";
+        }
+
+ </script>
+</body>
+</html>
