@@ -162,6 +162,52 @@ Utility
             border: 2px solid black;
         }
        
+         /* Basic styling for the custom dropdown container */
+.dropdown {
+    position: relative;
+    display: inline-block;
+}
+
+       /* Styling for the custom dropdown button */
+    .dropdown-button {
+        padding: 7px;
+        border: 1px solid #d1d1d1; /* Light gray border */
+        background-color: #f0f0f0; /* Mild gray background */
+        cursor: pointer;
+        width: 230px;
+    border: 1px solid black;
+}
+
+   .dropdown-button.green {
+            background-color: rgb(57, 248, 57);
+        }
+        .dropdown-button.red {
+            background-color: rgb(248, 68, 68);
+        }
+
+/* Styling for the dropdown content */
+.dropdown-content {
+    display: none;
+    position: absolute;
+    background-color: #e3f2fd; /* Very light mild blue background */
+    border: 1px solid #10232b; /* Mild blue border */
+    z-index: 1;
+    width: 230px;
+    box-sizing: border-box;
+    color: black; /* Softer dark blue text color */
+}
+
+/* Styling for the input boxes inside the dropdown */
+.dropdown-content input {
+    width: calc(100% - 20px);
+    margin: 10px;
+    padding: 5px;
+    box-sizing: border-box;
+    background-color: #e1f5fe; /* Very light mild blue background for inputs */
+    border: 1px solid #81d4fa; /* Mild blue border for inputs */
+    color: #0277bd; /* Softer blue text color for inputs */
+}
+
 
 </style>
 
@@ -371,129 +417,235 @@ Utility
 
 </script>
 </div>
-    
+<div class="item item-3" id="customer_details">
+    <center style="color: purple; text-shadow: 2px 2px 4px rgb(240, 118, 240);">
+        <h2><b>Customer Details</b></h2>
+    </center>
 
-    <div class="item item-3" id="customer_details">
-        <center style="color: purple; text-shadow: 2px 2px 4px rgb(240, 118, 240);">
-            <h2><b>Customer Details</b></h2>
-        </center>
-        {% if customer_details %}
-        {% for data in customer_details %}
+    <form id="customer-form" onsubmit="return validateForm()">
+        {% for customer in customer_details %}
         <label for="customer_name" style="margin-left: 0px;">CUSTOMER NAME:</label>
-        <input type="text" id="customer_name" name="customer_name" value="{{ data.customer_name }}">
+        <input type="text" id="customer_name" name="customer_name" value="{{ customer.customer_name|default_if_none:'' }}" required>
 
         <label for="contact_person">CONTACT PERSON:</label>
-        <input type="text" id="contact_person" name="contact_person" value="{{ data.contact_person }}"><br>
+        <div class="dropdown">
+            <div class="dropdown-button" id="contact_person_btn" onclick="toggleDropdown('contact_person')">Enter Contact Person:</div>
+            <div id="dropdown-content-contact_person" class="dropdown-content">
+                <input type="text" id="primary_contact_person" placeholder="Primary Contact Person" value="{{ customer.primary_contact_person|default_if_none:'' }}" required>
+                <input type="text" id="secondary_contact_person" placeholder="Secondary Contact Person" value="{{ customer.secondary_contact_person|default_if_none:'' }}" required>
+            </div>
+        </div>
 
         <label for="email" style="margin-left: 0px;">EMAIL:</label>
-        <input type="text" id="email" name="email" value="{{ data.email }}">
+        <div class="dropdown">
+            <div class="dropdown-button" id="email_btn" onclick="toggleDropdown('email')">Enter Email:</div>
+            <div id="dropdown-content-email" class="dropdown-content">
+                <input type="email" id="primary_email" placeholder="Primary Email" value="{{ customer.primary_email|default_if_none:'' }}" required>
+                <input type="email" id="secondary_email" placeholder="Secondary Email" value="{{ customer.secondary_email|default_if_none:'' }}" required>
+            </div>
+        </div>
 
-        <label for="phone_no">PHONE NO:</label>
-        <input type="text" id="phone_no" name="phone_no" value="{{ data.phone_no }}"><br>
+        <label for="phone_no" style="margin-left: 5px;">PHONE NO:</label>
+        <div class="dropdown">
+            <div class="dropdown-button" id="phone_no_btn" onclick="toggleDropdown('phone_no')">Enter Phone No:</div>
+            <div id="dropdown-content-phone_no" class="dropdown-content">
+                <input type="tel" id="primary_phone_no" placeholder="Primary Phone No" value="{{ customer.primary_phone_no|default_if_none:'' }}" required>
+                <input type="tel" id="secondary_phone_no" placeholder="Secondary Phone No" value="{{ customer.secondary_phone_no|default_if_none:'' }}" required>
+            </div>
+        </div><br>
 
         <label for="dept" style="margin-left: -400px;">DEPARTMENT:</label>
-        <input type="text" id="dept" name="dept" value="{{ data.dept }}">
+        <input type="text" id="dept" name="dept" value="{{ customer.dept|default_if_none:'' }}" required><br>
+
+        <label for="mac_address" style="margin-left: -10px;">MAC ADDRESS:</label>
+        <input type="text" id="mac_address" name="mac_address" value="{{ mac_address }}" disabled>
+
+        <label for="ip_address">IP ADDRESS:</label>
+        <input type="text" id="ip_address" name="ip_address" value="{{ ip_address }}" disabled><br>
 
         <div class="container">
             <div class="label-container">
                 <label for="address" style="text-align: right;">ADDRESS:</label>
             </div>
-            <textarea id="address" name="address" class="ruled-textarea">{{ data.address }}</textarea>
+            <textarea id="address" name="address" class="ruled-textarea" required>{{ customer.address|default_if_none:'' }}</textarea>
+        </div>
+        {% empty %}
+        <!-- Display an empty form when there are no customer details -->
+        <label for="customer_name" style="margin-left: 0px;">CUSTOMER NAME:</label>
+        <input type="text" id="customer_name" name="customer_name" value="" required>
+
+        <label for="contact_person">CONTACT PERSON:</label>
+        <div class="dropdown">
+            <div class="dropdown-button" id="contact_person_btn" onclick="toggleDropdown('contact_person')">Enter Contact Person:</div>
+            <div id="dropdown-content-contact_person" class="dropdown-content">
+                <input type="text" id="primary_contact_person" placeholder="Primary Contact Person" required>
+                <input type="text" id="secondary_contact_person" placeholder="Secondary Contact Person" required>
+            </div>
+        </div>
+
+        <label for="email" style="margin-left: 0px;">EMAIL:</label>
+        <div class="dropdown">
+            <div class="dropdown-button" id="email_btn" onclick="toggleDropdown('email')">Enter Email:</div>
+            <div id="dropdown-content-email" class="dropdown-content">
+                <input type="email" id="primary_email" placeholder="Primary Email" required>
+                <input type="email" id="secondary_email" placeholder="Secondary Email" required>
+            </div>
+        </div>
+
+        <label for="phone_no" style="margin-left: 5px;">PHONE NO:</label>
+        <div class="dropdown">
+            <div class="dropdown-button" id="phone_no_btn" onclick="toggleDropdown('phone_no')">Enter Phone No:</div>
+            <div id="dropdown-content-phone_no" class="dropdown-content">
+                <input type="tel" id="primary_phone_no" placeholder="Primary Phone No" required>
+                <input type="tel" id="secondary_phone_no" placeholder="Secondary Phone No" required>
+            </div>
+        </div><br>
+
+        <label for="dept" style="margin-left: -400px;">DEPARTMENT:</label>
+        <input type="text" id="dept" name="dept" value="" required><br>
+
+        <label for="mac_address" style="margin-left: -10px;">MAC ADDRESS:</label>
+        <input type="text" id="mac_address" name="mac_address" value="{{ mac_address }}" disabled>
+
+        <label for="ip_address">IP ADDRESS:</label>
+        <input type="text" id="ip_address" name="ip_address" value="{{ ip_address }}" disabled><br>
+
+        <div class="container">
+            <div class="label-container">
+                <label for="address" style="text-align: right;">ADDRESS:</label>
+            </div>
+            <textarea id="address" name="address" class="ruled-textarea" required></textarea>
         </div>
         {% endfor %}
-    {% else %}
-        <label for="customer_name" style="margin-left: 0px;">CUSTOMER NAME:</label>
-        <input type="text" id="customer_name" name="customer_name" value="">
 
-        <label for="contact_person">CONTACT PERSON:</label>
-        <input type="text" id="contact_person" name="contact_person" value=""><br>
-
-        <label for="email" style="margin-left: 0px;">EMAIL:</label>
-        <input type="text" id="email" name="email" value="">
-
-        <label for="phone_no">PHONE NO:</label>
-        <input type="text" id="phone_no" name="phone_no" value=""><br>
-
-        <label for="dept" style="margin-left: -400px;">DEPARTMENT:</label>
-        <input type="text" id="dept" name="dept" value="">
-
-        <div class="container">
-            <div class="label-container">
-                <label for="address" style="text-align: right;">ADDRESS:</label>
-            </div>
-            <textarea id="address" name="address" class="ruled-textarea"></textarea>
-        </div>
-    {% endif %}
-    
-        <a href="{% url 'index' %}" >
+        <a href="{% url 'index' %}">
             <button type="button" id="cancel-btn"><b>Cancel</b></button>
-            </a>
-        <button type="button" id="clear-btn-3"><b>Clear values</b></button>  
-        <button type="button" id="save-btn-3"><b>Save</b></button>  
+        </a>
+        <button type="button" id="clear-btn-3"><b>Clear values</b></button>
+        <button type="submit" id="save-btn-3"><b>Save</b></button>
+    </form>
 
+    <script>
+         function toggleDropdown(id) {
+            var dropdownContent = document.getElementById('dropdown-content-' + id);
+            var dropdownButton = document.getElementById(id + '_btn');
+            if (dropdownContent.style.display === "none" || dropdownContent.style.display === "") {
+                dropdownContent.style.display = "block";
+            } else {
+                dropdownContent.style.display = "none";
+            }
+            // Update the button style based on the content
+            updateButtonStyle(id);
+        }
 
-          <script>
-             $(document).ready(function() {
-                $('#clear-btn-3').click(function() {
-                    // Call the clearValues function to clear all input values
-                    clearValues();
-                });
-                function clearValues() {
-                    $('#customer_name').val('');
-                    $('#contact_person').val('');
-                    $('#email').val('');
-                    $('#phone_no').val('');
-                    $('#dept').val('');
-                    $('#address').val('');
-                   
-                }
+        function updateButtonStyle(id) {
+            var dropdownButton = document.getElementById(id + '_btn');
+            var dropdownContent = document.getElementById('dropdown-content-' + id);
+            var inputs = dropdownContent.querySelectorAll('input');
+            var hasValue = Array.from(inputs).some(input => input.value.trim() !== '');
+
+            if (hasValue) {
+                dropdownButton.classList.add('green');
+                dropdownButton.classList.remove('red');
+            } else {
+                dropdownButton.classList.add('red');
+                dropdownButton.classList.remove('green');
+            }
+        }
+         function validateForm() {
+            var isValid = true;
+            var requiredFields = document.querySelectorAll('#customer-form [required]');
             
-            
-                $('#save-btn-3').click(function() {
-                    const data = {
-                        id: 'customer_details',
-                        customer_name: $('#customer_name').val(),
-                        contact_person: $('#contact_person').val(),
-                        email: $('#email').val(),
-                        phone_no: $('#phone_no').val(),
-                        dept: $('#dept').val(),
-                        address: $('#address').val(),
-                    };
-        
-                    console.log('Data to be sent:', data);  // Debugging information
-        
-                    // Send the data to the backend as JSON
-                    $.ajax({
-                        type: 'POST',
-                        url: '/utility/',  // Replace with your actual backend endpoint
-                        data: JSON.stringify(data),
-                        contentType: 'application/json',
-                        dataType: 'json',
-                        success: function(response) {
-                            console.log('Response:', response);  // Debugging information
-                            alert('Customer details saved successfully!');
-                            // Save the selected item in session storage
-                            sessionStorage.setItem('selectedItem', 'customer_details');
-                            // Reload the page after a short delay to ensure session storage is updated
-                            
-                        },
-                        error: function(error) {
-                            console.error('Error:', error);  // Debugging information
-                            alert('An error occurred while saving customer details.');
-                        }
-                    });
-                });
-        
-                // Check if an item should be selected after page reload
-                const selectedItem = sessionStorage.getItem('selectedItem');
-                if (selectedItem === 'customer_details') {
-                    enlargeItem(3);
-                    showItem('item-3');
-                    sessionStorage.removeItem('selectedItem');  // Remove the item from session storage
+            requiredFields.forEach(function(field) {
+                if (!field.value.trim()) {
+                    isValid = false;
+                    alert('Please fill out all required fields.');
+                    field.focus();
                 }
             });
+
+            return isValid;
+        }
+
+        // Initial call to set styles based on current values
+        document.addEventListener('DOMContentLoaded', function() {
+            ['contact_person', 'email', 'phone_no'].forEach(function(id) {
+                updateButtonStyle(id);
+            });
+        });
     
-        </script>
+        $(document).ready(function() {
+            $('#clear-btn-3').click(function() {
+                // Call the clearValues function to clear all input values
+                clearValues();
+            });
+    
+            function clearValues() {
+                $('#customer_name').val('');
+                $('#primary_contact_person').val(''); // Clear contact person fields
+                $('#secondary_contact_person').val('');
+                $('#primary_email').val(''); // Clear email fields
+                $('#secondary_email').val('');
+                $('#primary_phone_no').val(''); // Clear phone number fields
+                $('#secondary_phone_no').val('');
+                $('#dept').val('');
+                $('#mac_address').val(''); // Clear MAC address
+                $('#ip_address').val(''); // Clear IP address
+                $('#address').val(''); // Clear address textarea
+            }
+    
+            $('#save-btn-3').click(function() {
+                const data = {
+                    id: 'customer_details',
+                    customer_name: $('#customer_name').val(),
+                    primary_contact_person: $('#primary_contact_person').val(),
+                    secondary_contact_person: $('#secondary_contact_person').val(),
+                    primary_email: $('#primary_email').val(),
+                    secondary_email: $('#secondary_email').val(),
+                    primary_phone_no: $('#primary_phone_no').val(),
+                    secondary_phone_no: $('#secondary_phone_no').val(),
+                    dept: $('#dept').val(),
+                    mac_address: $('#mac_address').val(),
+                    ip_address: $('#ip_address').val(),
+                    address: $('#address').val(),
+                };
+    
+                console.log('Data to be sent:', data);  // Debugging information
+    
+                // Send the data to the backend as JSON
+                $.ajax({
+                    type: 'POST',
+                    url: '/utility/',  // Replace with your actual backend endpoint
+                    data: JSON.stringify(data),
+                    contentType: 'application/json',
+                    dataType: 'json',
+                    success: function(response) {
+                        console.log('Response:', response);  // Debugging information
+                        alert('Customer details saved successfully!');
+                        // Save the selected item in session storage
+                        sessionStorage.setItem('selectedItem', 'customer_details');
+                        // Reload the page after a short delay to ensure session storage is updated
+                        setTimeout(function() {
+                            location.reload();
+                        }, 500); // Adjust the delay as needed
+                    },
+                    error: function(error) {
+                        console.error('Error:', error);  // Debugging information
+                        alert('An error occurred while saving customer details.');
+                    }
+                });
+            });
+    
+            // Check if an item should be selected after page reload
+            const selectedItem = sessionStorage.getItem('selectedItem');
+            if (selectedItem === 'customer_details') {
+                enlargeItem(3);
+                showItem('item-3');
+                sessionStorage.removeItem('selectedItem');  // Remove the item from session storage
+            }
+        });
+    </script>
+    
         
 </div> 
 </div>

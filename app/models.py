@@ -164,14 +164,23 @@ class measure_data(models.Model):
 
 class CustomerDetails(models.Model):
     customer_name = models.CharField(max_length=100)
-    contact_person = models.CharField(max_length=100)
-    email = models.CharField(max_length=100)
-    phone_no = models.CharField(max_length=20)
+    
+    primary_contact_person = models.CharField(max_length=100)
+    secondary_contact_person = models.CharField(max_length=100, blank=True, null=True)
+    
+    primary_email = models.CharField(max_length=100)
+    secondary_email = models.CharField(max_length=100, blank=True, null=True)
+    
+    primary_phone_no = models.CharField(max_length=20)
+    secondary_phone_no = models.CharField(max_length=20, blank=True, null=True)
+    
     dept = models.CharField(max_length=100)
+    mac_address = models.CharField(max_length=50, blank=True, null=True)
+    ip_address = models.CharField(max_length=50, blank=True, null=True)
+    
     address = models.TextField()
 
-    def __str__(self):
-        return self.customer_name
+ 
       
 class UserLogin(models.Model):
     username = models.CharField(max_length=255)
