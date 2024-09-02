@@ -11,7 +11,7 @@ def parameter(request):
     from app.models import TableOneData, parameter_settings
     if request.method == 'GET':
         try:
-            table_body_1_data = TableOneData.objects.all()
+            table_body_1_data = TableOneData.objects.all().order_by('id')
 
             # Dynamically filter constvalue objects based on the model_id parameter
             model_id = request.GET.get('model_name')
@@ -94,7 +94,10 @@ def parameter(request):
             parameter_value = data.get('parameterValue')
             print('Parameter Name:', parameter_value)
             
-            
+              # Check if parameter_name already exists for the same model_id
+            if parameter_settings.objects.filter(model_id=model_id, parameter_name=parameter_value).exists():
+                return JsonResponse({'success': False, 'message': 'This Parameter Name is already used for this model.'})
+
             existing_instance = parameter_settings.objects.filter(model_id=model_id, sr_no=sr_no).first()
 
             if existing_instance:

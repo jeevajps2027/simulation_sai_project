@@ -149,6 +149,7 @@ def measurement(request):
         last_stored_parameters = Master_settings.objects.filter(selected_value=part_model, parameter_name__in=parameter_settings_qs.values_list('parameter_name', flat=True))
         # Create a dictionary with parameter_name as keys and items as values
         last_stored_parameter = {item['parameter_name']: item for item in last_stored_parameters.values()}
+        print("last_stored_parameter",last_stored_parameter)
         # Extract datetime objects from the values of last_stored_parameter
         last_dates = [item['date_time'].strftime("%m-%d-%Y %I:%M:%S %p") for item in last_stored_parameter.values()]
         # Get distinct formatted dates

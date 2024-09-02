@@ -4,7 +4,7 @@ from django.shortcuts import redirect, render
 
 
 def probe(request):
-    from app.models import find
+    from app.models import probe_calibrations
     if request.method == 'POST':
         probe_id = request.POST.get('probeId')
         a_values = [float(value) for value in request.POST.getlist('a[]')]
@@ -15,7 +15,7 @@ def probe(request):
 
         print('THESE ARE THE DATA YOU WANT TO DISPLAY:', probe_id, a_values, a1_values, b_values, b1_values, e_values)
 
-        probe, created = find.objects.get_or_create(probe_id=probe_id)
+        probe, created = probe_calibrations.objects.get_or_create(probe_id=probe_id)
 
         probe.low_ref = a_values[0] if a_values else None
         probe.low_count = a1_values[0] if a1_values else None
@@ -30,7 +30,7 @@ def probe(request):
     elif request.method == 'GET':
         
         # Retrieve the distinct probe IDs
-        probe_ids = find.objects.values_list('probe_id', flat=True).distinct()
+        probe_ids = probe_calibrations.objects.values_list('probe_id', flat=True).distinct()
         
         # Create a dictionary to store coefficient values for each probe ID
         probe_coefficients = {}
@@ -38,7 +38,7 @@ def probe(request):
         
         for probe_id in probe_ids:
             # Retrieve the latest coefficient value for the current probe ID
-            latest_calibration = find.objects.filter(probe_id=probe_id).latest('id')
+            latest_calibration = probe_calibrations.objects.filter(probe_id=probe_id).latest('id')
             
             # Extract the coefficient value
             coefficient_value = latest_calibration.coefficent

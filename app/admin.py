@@ -1,10 +1,10 @@
 
 from django.contrib import admin
 from.models import comport_settings,Master_settings,parameter_settings,MeasurementData,MasterIntervalSettings
-from.models import find,TableOneData,TableTwoData,TableThreeData,TableFourData,TableFiveData,ShiftSettings,measure_data,UserLogin
+from.models import probe_calibrations,TableOneData,TableTwoData,TableThreeData,TableFourData,TableFiveData,ShiftSettings,measure_data,UserLogin
 # Register your models here.
 
-admin.site.register(find)
+admin.site.register(probe_calibrations)
 admin.site.register(TableOneData)
 admin.site.register(TableTwoData)
 admin.site.register(TableThreeData)

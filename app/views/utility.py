@@ -121,7 +121,7 @@ def utility(request):
         elif request.method == 'GET':
             try:
                 master_interval_settings = MasterIntervalSettings.objects.all()
-                shift_settings = ShiftSettings.objects.all()
+                shift_settings = ShiftSettings.objects.all().order_by('id')
                 customer_details = CustomerDetails.objects.all()
                 print("Master Interval Settings:", master_interval_settings)
                 print("Shift Settings:", shift_settings)

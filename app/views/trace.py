@@ -11,8 +11,16 @@ def trace(request, row_id=None):
     from app.models import TableFiveData, TableFourData, TableOneData, TableThreeData, TableTwoData, Master_settings, parameter_settings,MeasurementData
     if request.method == 'POST':
         try:
+              # Ensure the request body is not empty
+            if not request.body:
+                return JsonResponse({'error': 'Empty request body'}, status=400)
+
             received_data = json.loads(request.body)
             print('received_data', received_data)
+
+            if not received_data:
+                return JsonResponse({'error': 'Invalid or empty data'}, status=400)
+
 
             if 'rowId' in received_data:
                 row_id = received_data['rowId']
@@ -26,11 +34,12 @@ def trace(request, row_id=None):
                     if table_body_id == 'tableBody-1':
                         try:
                             table_data = TableOneData.objects.get(pk=row_id)
-                            table_data.part_name = values[0]
+                            table_data.part_model = values[0]
                             table_data.customer_name = values[1]
-                            table_data.part_model = values[2]
+                            table_data.part_name = values[2]
                             table_data.part_no = values[3]
-                            table_data.hide = values[4]
+                            table_data.char_lmt = values[4]
+                            table_data.hide = values[5]
                             table_data.save()
                             return JsonResponse({'message': 'Data updated successfully'}, status=200)
                         except TableOneData.DoesNotExist:
@@ -83,11 +92,12 @@ def trace(request, row_id=None):
                             values = row['values']
                             if item_id == 'tableBody-1':
                                 table_data = TableOneData.objects.create(
-                                    part_name=values[0],
+                                    part_model=values[0],
                                     customer_name=values[1],
-                                    part_model=values[2],
+                                    part_name=values[2],
                                     part_no=values[3],
-                                    hide=values[4]
+                                    char_lmt=values[4],
+                                    hide=values[5]
                                 )
                             elif item_id == 'tableBody-2':
                                 table_data = TableTwoData.objects.create(
@@ -116,6 +126,9 @@ def trace(request, row_id=None):
 
         except json.decoder.JSONDecodeError:
             return JsonResponse({'message': 'Invalid JSON format'}, status=400)
+        except Exception as e:
+            print('Error:', e)
+            return JsonResponse({'error': 'An error occurred'}, status=500)
 
         
 
@@ -123,11 +136,11 @@ def trace(request, row_id=None):
         try:
             # Fetch stored data for tableBody-1 from your database or any storage mechanism
             # Replace this with your actual logic to fetch data for tableBody-1
-            table_body_1_data = TableOneData.objects.all()
-            table_body_2_data = TableTwoData.objects.all()
-            table_body_3_data = TableThreeData.objects.all()
-            table_body_4_data = TableFourData.objects.all()
-            table_body_5_data = TableFiveData.objects.all()
+            table_body_1_data = TableOneData.objects.all().order_by('id')
+            table_body_2_data = TableTwoData.objects.all().order_by('id')
+            table_body_3_data = TableThreeData.objects.all().order_by('id')
+            table_body_4_data = TableFourData.objects.all().order_by('id')
+            table_body_5_data = TableFiveData.objects.all().order_by('id')
             # Pass the retrieved data for tableBody-1 to the template for rendering
             return render(request, 'app/trace.html', {'table_body_1_data': table_body_1_data,'table_body_2_data':table_body_2_data,'table_body_3_data': table_body_3_data,'table_body_4_data': table_body_4_data,'table_body_5_data': table_body_5_data})
 
@@ -147,10 +160,9 @@ def trace(request, row_id=None):
                     # Print the column values of each row before deleting
                     for row in rows:
                         part_model_value = row.part_model
-                        delete_parameter = parameter_settings.objects.filter(model_id=part_model_value).delete()
-                        delete_master = Master_settings.objects.filter(selected_value=part_model_value).delete()
-                        
-                        delete_measurement = MeasurementData.objects.filter(part_model=part_model_value).delete()
+                        #delete_parameter = parameter_settings.objects.filter(model_id=part_model_value).delete()
+                        #delete_master = Master_settings.objects.filter(selected_value=part_model_value).delete()
+                        #delete_measurement = MeasurementData.objects.filter(part_model=part_model_value).delete()
 
                 elif item_id == 'tableBody-2':
                     rows = TableTwoData.objects.filter(id__in=row_ids)

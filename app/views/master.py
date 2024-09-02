@@ -4,7 +4,7 @@ import threading
 
 from django.http import JsonResponse
 from django.shortcuts import render
-import pytz
+
 
 from app.models import measure_data, parameter_settings,Master_settings
 
@@ -41,17 +41,14 @@ def master(request):
                 selectedValue = row.get('selectedValue')
                 selectedMastering = row.get('selectedMastering')
 
-                # Convert date string to datetime object
+              
+                 # Convert date string to naive datetime object
                 date_obj = datetime.strptime(dateTime, '%d/%m/%Y %I:%M:%S %p')
+                print("date_obj", date_obj)
 
-                # Set the timezone to 'Asia/Kolkata' (so it's aware of the original timezone)
-                timezone = pytz.timezone('Asia/Kolkata')
-                date_obj_aware = timezone.localize(date_obj)
+               
 
-                # Convert the aware datetime to UTC manually
-                date_obj_utc = date_obj_aware.astimezone(pytz.UTC)
-
-                print("date_obj_naive", date_obj_utc)
+               
                 print("parameterName",parameterName)
                 print("probeNumber",probeNumber)
                 print("a",a)
@@ -81,7 +78,7 @@ def master(request):
                     operator=operatorValues,
                     shift=shiftValues,
                     machine=machineValues,
-                    date_time=date_obj_utc,
+                    date_time=date_obj,
                 )
 
            # Filtering logic based on selected_value and selected_mastering

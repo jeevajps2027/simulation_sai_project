@@ -142,10 +142,11 @@ th, td {
             <thead>
                 <tr>
                     <th style="width: 5%;">Sr.No</th>
-                    <th style="width: 20%;" id="partname">Part Name</th>
-                    <th style="width: 20%;" id="customername">Customer Name</th>
                     <th style="width: 20%;" id="partmodel">Part Model</th>
+                    <th style="width: 20%;" id="customername">Customer Name</th>
+                    <th style="width: 20%;" id="partname">Part Name</th>
                     <th style="width: 20%;" id="partno">Part No</th>
+                    <th style="width: 20%;" id="char_lmt">Char Lmt</th>
                     <th style="width: 20%;" id="hide">Punch no</th>
                 </tr>
             </thead>
@@ -153,19 +154,18 @@ th, td {
                 {% for data in table_body_1_data %}
                 <tr data-id="{{ data.id }}">
                     <td>{{ forloop.counter }}</td>
-
-                     <td><input type="text" value="{{ data.part_name }}" class="no-outline" style="width: 100%;"></td>
-                    <td><input type="text" value="{{ data.customer_name }}" class="no-outline" style="width: 100%;"></td>
                     <td><input type="text" value="{{ data.part_model }}" class="no-outline" style="width: 100%;"></td>
+                    <td><input type="text" value="{{ data.customer_name }}" class="no-outline" style="width: 100%;"></td>
+                    <td><input type="text" value="{{ data.part_name }}" class="no-outline" style="width: 100%;"></td>
                     <td><input type="text" value="{{ data.part_no }}" class="no-outline" style="width: 100%;"></td>
-
+                    <td><input type="text" value="{{ data.char_lmt }}" class="no-outline" style="width: 100%;"></td>
                     <td><input type="checkbox" {% if data.hide %}checked{% endif %}></td>
                 </tr>
                 {% endfor %}
         
             </tbody>
         </table><br>
-        <button onclick="addRow('item-1', 5)">Add New</button>
+        <button onclick="addRow('item-1', 6)">Add New</button>
     </div>
 
     <div class="item item-2" id="item2">
@@ -283,25 +283,63 @@ th, td {
     
     
     
-        function enlargeItem(index) {
-            document.querySelectorAll('.box-1 > div').forEach(function (el) {
-                el.style.backgroundColor = ''; 
-            });
-            var clickedInnerBox = document.querySelector(`.box-1 .inner-box-${index}`);
-            clickedInnerBox.style.backgroundColor = 'red';
+    // Function to handle clicking based on session storage
+function clickBasedOnSessionStorage() {
+    // Get the session storage value
+    var selectedTableBodyId = sessionStorage.getItem('selectedTableBodyId');
+    console.log("Selected Table Body ID:", selectedTableBodyId);
+
+    // Determine which inner box to click based on the tableBodyId value
+    if (selectedTableBodyId === 'tableBody-1') {
+        enlargeItem(1);  // Simulate clicking inner-box-1
+        showItem('item-1');
+    } else if (selectedTableBodyId === 'tableBody-2') {
+        enlargeItem(2);  // Simulate clicking inner-box-2
+        showItem('item-2');
+    } else if (selectedTableBodyId === 'tableBody-3') {
+        enlargeItem(3);  // Simulate clicking inner-box-3
+        showItem('item-3');
+    } else if (selectedTableBodyId === 'tableBody-4') {
+        enlargeItem(4);  // Simulate clicking inner-box-4
+        showItem('item-4');
+    } else if (selectedTableBodyId === 'tableBody-5') {
+        enlargeItem(5);  // Simulate clicking inner-box-5
+        showItem('item-5');
+    } else {
+            console.log('Invalid session storage value. Defaulting to item-1.');
+            enlargeItem(1);  // Default to inner-box-1
+            showItem('item-1');  // Default to item-1
         }
-        
-        function showItem(itemClassName) {
-            var itemClasses = document.querySelectorAll('.item');
-            itemClasses.forEach(function (item) {
-                item.style.display = 'none';
-            });
-        
-            var selectedItem = document.querySelector('.' + itemClassName);
-            if (selectedItem) {
-                selectedItem.style.display = 'block';
-            }
-        }
+}
+
+// Function to highlight and enlarge an item
+function enlargeItem(index) {
+    document.querySelectorAll('.box-1 > div').forEach(function (el) {
+        el.style.backgroundColor = '';  // Reset background color for all boxes
+    });
+    var clickedInnerBox = document.querySelector(`.box-1 .inner-box-${index}`);
+    if (clickedInnerBox) {
+        clickedInnerBox.style.backgroundColor = 'red';  // Highlight the clicked box
+    } else {
+        console.log('No inner-box found with index:', index);
+    }
+}
+
+// Function to display the selected item
+function showItem(itemClassName) {
+    var itemClasses = document.querySelectorAll('.item');
+    itemClasses.forEach(function (item) {
+        item.style.display = 'none';  // Hide all items
+    });
+
+    var selectedItem = document.querySelector('.' + itemClassName);
+    if (selectedItem) {
+        selectedItem.style.display = 'block';  // Show the selected item
+    } else {
+        console.log('No item found with class:', itemClassName);
+    }
+}
+
         
         var rowData = {};
         
@@ -380,7 +418,6 @@ function saveData() {
             var cells = tableBody.rows[rowData.rowIndex - 1].cells;
             for (var i = 1; i < cells.length; i++) {
                 if (key === 'tableBody-1' && i === cells.length - 1) {
-                    // Check if it's the last column (checkbox column) for tableBody-1
                     row.values.push(cells[i].querySelector('input').checked);
                 } else {
                     row.values.push(cells[i].querySelector('input').value);
@@ -389,93 +426,89 @@ function saveData() {
             rows.push(row);
         });
         tableData[key] = rows;
-    });    
+    });
 
-    // Send the tableData object to the server
     sendDataToServer(tableData);
 
-
+    // Get selected row data
     var selectedRow = document.querySelector('.selected');
-if (!selectedRow) {
-    console.error('No row selected.');
-    return;
-}
-
-var selectedTableBodyId = selectedRow.closest('tbody').id;
-
-var selectedRowId = selectedRow.getAttribute('data-id'); // Assuming data-id holds the row ID
-
-var selectedRowCells = selectedRow.querySelectorAll('td');
-var values = [];
-selectedRowCells.forEach(function(cell, index) {
-    if (cell.querySelector('input')) {
-        if (selectedTableBodyId === 'tableBody-1' && index === selectedRowCells.length - 1) { // Checkbox is only in the last column of tableBody-1
-            values.push(cell.querySelector('input').checked); // Push checkbox state (true/false) instead of its value
-        } else {
-            values.push(cell.querySelector('input').value);
-        }
+    if (!selectedRow) {
+        console.error('No row selected.');
+        return;
     }
-});
-var dataToSend = {
-    tableBodyId: selectedTableBodyId,
-    rowId: selectedRowId,
-    values: values
-};
 
-console.log('Updated values:', values);
-console.log('Data to send:', dataToSend);
+    var selectedTableBodyId = selectedRow.closest('tbody').id;
+    var selectedRowId = selectedRow.getAttribute('data-id');
+    var selectedRowCells = selectedRow.querySelectorAll('td');
+    var values = [];
+    selectedRowCells.forEach(function(cell, index) {
+        if (cell.querySelector('input')) {
+            if (selectedTableBodyId === 'tableBody-1' && index === selectedRowCells.length - 1) {
+                values.push(cell.querySelector('input').checked);
+            } else {
+                values.push(cell.querySelector('input').value);
+            }
+        }
+    });
 
-sendDataToServer(dataToSend);
+    var dataToSend = {
+        tableBodyId: selectedTableBodyId,
+        rowId: selectedRowId,
+        values: values
+    };
+
+    console.log('Data to send:', dataToSend);
+
+    // Store the tableBodyId in session storage
+    sessionStorage.setItem('selectedTableBodyId', selectedTableBodyId);
+    console.log("sessionStorage",sessionStorage);
+
+    // Send the selected row's data to the server
+    sendDataToServer(dataToSend);
 }
-
-
-
-    
 
 function sendDataToServer(data) {
     const csrftoken = getCookie('csrftoken');
     
     $.ajax({
-        type: 'POST',
         url: '/trace/',
+        type: 'POST',
         data: JSON.stringify(data),
         contentType: 'application/json',
-        beforeSend: function(xhr, settings) {
-            xhr.setRequestHeader('X-CSRFToken', csrftoken);
+        headers: {
+            'X-CSRFToken': csrftoken  // Ensure CSRF token is included or disable CSRF for testing
         },
+        contentType: 'application/json; charset=utf-8',
+        dataType: 'json',
         success: function(response) {
-            // Handle successful response from the server
-            // Update the UI or perform any additional actions
-            console.log(response);
+            console.log(response);  // Log successful response
             showNotification('Data saved successfully', true);
         },
-        error: function(error) {
-            // Handle error from the server
-            console.error('Error:', error);
+        error: function(xhr, status, error) {
+            console.log('Error:', error);  // Log the error for debugging
+            console.log('Status:', status);  // Log status for debugging
+            console.log('Response:', xhr.responseText);  // Log server response for further inspection
             showNotification('Error: Failed to save the data', false);
         }
     });
 }
-
+  
  
-
-    
-    
-    // Function to get the CSRF token from the cookie
-    function getCookie(name) {
-        var cookieValue = null;
-        if (document.cookie && document.cookie !== '') {
-            var cookies = document.cookie.split(';');
-            for (var i = 0; i < cookies.length; i++) {
-                var cookie = cookies[i].trim();
-                if (cookie.substring(0, name.length + 1) === (name + '=')) {
-                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                    break;
-                }
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
             }
         }
-        return cookieValue;
     }
+    return cookieValue;
+}
+
 ////////////////////////////////
 
 
@@ -590,7 +623,8 @@ function deleteSelectedRows() {
         });
     });
 
-    function showNotification(message, isSuccess) {
+  // Function to show a notification with an OK button
+function showNotification(message, isSuccess) {
     var notificationElement = document.getElementById('notification');
     notificationElement.textContent = message;
 
@@ -613,9 +647,13 @@ function deleteSelectedRows() {
     okButton.style.backgroundColor = 'orangered'; // Red background color
     okButton.style.color = 'white';     // White text color
 
+    // Add event listener to the OK button
     okButton.addEventListener('click', function() {
-        // Redirect to the desired page
+        // Redirect to the desired page (adjust the URL if needed)
         window.location.href = '{% url "trace" %}';
+
+        // Call clickBasedOnSessionStorage to simulate clicking the right box
+        clickBasedOnSessionStorage();
     });
 
     notificationElement.appendChild(okButton);
@@ -631,10 +669,14 @@ function deleteSelectedRows() {
     notificationElement.style.transform = 'translate(-50%, -50%)';
     notificationElement.style.zIndex = '1000';
 
-   
     // Display the notification
     notificationElement.style.display = 'block';
 }
+
+// Ensure the session storage based logic runs after page load
+window.onload = function() {
+    clickBasedOnSessionStorage();
+};
 
          </script>
     {% endblock %}

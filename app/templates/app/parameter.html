@@ -590,19 +590,24 @@ function saveValues() {
                 'X-CSRFToken': csrfToken[1],
             },
             success: function (response) {
-                // Handle the success response from the server if needed
-                console.log('Data saved successfully:', response);
-                showNotification('Data saved successfully', true);
+                if (response.success === false) {
+                    // Display alert with the server's error message
+                    alert(response.message);
+                    window.location.reload(); // Refresh the page
+                } else {
+                    // Handle the success response from the server if needed
+                    console.log('Data saved successfully:', response);
+                    showNotification('Data saved successfully', true);
 
-                // Store the selected item and additional data in session storage
-                sessionStorage.setItem('modelId', data.modelId);
-                sessionStorage.setItem('parameterValue', data.parameterValue);
+                    // Store the selected item and additional data in session storage
+                    sessionStorage.setItem('modelId', data.modelId);
+                    sessionStorage.setItem('parameterValue', data.parameterValue);
 
-                // Log the stored values
-                console.log('Stored values in sessionStorage:');
-                console.log('modelId:', sessionStorage.getItem('modelId'));
-                console.log('parameterValue:', sessionStorage.getItem('parameterValue'));
-
+                    // Log the stored values
+                    console.log('Stored values in sessionStorage:');
+                    console.log('modelId:', sessionStorage.getItem('modelId'));
+                    console.log('parameterValue:', sessionStorage.getItem('parameterValue'));
+                }
             },
             error: function (error) {
                 // Handle the error response from the server if needed

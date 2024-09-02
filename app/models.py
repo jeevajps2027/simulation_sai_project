@@ -5,7 +5,7 @@ from django.db import models # type: ignore
 
   
 
-class find(models.Model):
+class probe_calibrations(models.Model):
     probe_id = models.CharField(max_length=50, unique=True)
     low_ref = models.JSONField(default=list)  # Storing a_values as a JSON array
     low_count = models.JSONField(default=list)  # Storing a1_values as a JSON array
@@ -14,14 +14,14 @@ class find(models.Model):
     coefficent = models.JSONField(default=list)  # Storing e_values as a JSON array
 
 class TableOneData(models.Model):
-    part_name = models.CharField(max_length=100)
-    customer_name = models.CharField(max_length=100)
     part_model = models.CharField(max_length=100)
+    customer_name = models.CharField(max_length=100)
+    part_name = models.CharField(max_length=100)
     part_no = models.CharField(max_length=100)
+    char_lmt = models.CharField(max_length=100)
     hide = models.BooleanField(default=False)    
 
-def __str__(self):
-        return self.model_name
+
 
 
 
