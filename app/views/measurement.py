@@ -165,9 +165,16 @@ def measurement(request):
 
         if part_model:
             hide = TableOneData.objects.filter(part_model = part_model).values_list('hide', flat=True).distinct()
+             # Retrieve the distinct 'part_no' and 'char_lmt' values
+            part_no_char_lmt = TableOneData.objects.filter(part_model=part_model).values_list('part_no', 'char_lmt').distinct()
+
             if hide.exists():  # Check if queryset has any results
                 hide = hide[0]  # Access the first value
                 print('hide:', hide)
+             # Loop through the 'part_no' and 'char_lmt' values
+            for part_no, char_lmt in part_no_char_lmt:
+                print('part_no:', part_no)
+                print('char_lmt:', char_lmt)
 
 
         # Retrieve the datetime_value from the specified part_model in ResetCount
@@ -299,6 +306,8 @@ def measurement(request):
             'operator_values' :operator_values,
             'shift_values' : shift_values,
             'hide':hide,
+            'part_no':part_no,
+            'char_lmt':char_lmt,
             'overall_accept_count': overall_status_counts['ACCEPT'],
             'overall_reject_count': overall_status_counts['REJECT'],
             'overall_rework_count': overall_status_counts['REWORK'],

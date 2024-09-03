@@ -219,9 +219,7 @@ Mastering Page
         <div class="box" id="clock-box"></div>
     </div>
     
-    <button class="reset-button" id="reset-button">
-        <span class="reset-symbol">&#8634;</span>
-    </button>
+   
 
     <div class="left-box">
         <label for="partModel">PART MODEL:</label>
@@ -296,12 +294,7 @@ Mastering Page
     const machineValues = "{{ machine_values|safe }}";
     
     
-     document.getElementById('reset-button').addEventListener('click', function() {
-        location.reload();
-        const preTag = document.getElementById('pre');
-        preTag.innerText = "New Mastering is Started";
-    });
-
+    
     // document.getElementById("lowMasterBtn").disabled = false;
     // document.getElementById("lowMasterBtn").style.opacity = '1';
     // document.getElementById("highMasterBtn").disabled = true;

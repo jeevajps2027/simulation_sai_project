@@ -123,16 +123,19 @@ Measurement Page
         left: 40%;
         transform: translate(-50%, -50%);
         background-color: white;
-        height: 150px;
-        width: 350px;
+        height: 200px;
+        width: 500px;
         z-index: 1000; 
         border: 2px solid black;
     }
     
     #punch_textarea{
-        margin-top: 20px;
+        margin-top: 4%;
         margin-left: 10px;
-        width: 330px;
+        width: 450px;
+        height: 100px;
+        font-weight: bold;    /* Makes the text bold */
+        font-size: 18px;      /* Increases the font size */
     }
     .disabled {
         display: none;
@@ -463,6 +466,8 @@ input[type=checkbox] {
 </div>
 
 <div id="customAlert" ></div>
+<input type="hidden" id="char_limit" value="{{ char_lmt }}"> <!-- Pass char_lmt here -->
+<input type="hidden" id="partNo" value="{{ part_no }}"> <!-- Assuming part_no is passed -->
 
 
 
@@ -1310,6 +1315,36 @@ function getCookie(name) {
 }
 ///////////////////////////////////////////
     
+// Custom alert function
+function showCustomAlert(message) {
+    // Create the modal HTML if it doesn't exist
+    if (!document.getElementById('customAlertModal')) {
+    var modalHtml = `
+        <div id="customAlertModal" style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; border: 2px solid #000; padding: 20px; z-index: 1000; display: none;">
+            <p id="customAlertMessage" style="font-weight: bold;"></p>
+            <button onclick="closeCustomAlert()" style="margin-top: 10px; float: right; background-color: red; color: white; width: 70px; height: 30px; border: none; cursor: pointer;">OK</button>
+        </div>
+        <div id="customAlertOverlay" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.5); z-index: 999; display: none;"></div>
+    `;
+    document.body.insertAdjacentHTML('beforeend', modalHtml);
+}
+
+
+    // Show the modal and overlay
+    document.getElementById('customAlertMessage').innerHTML = message;
+    document.getElementById('customAlertModal').style.display = 'block';
+    document.getElementById('customAlertOverlay').style.display = 'block';
+}
+
+// Close the custom alert
+function closeCustomAlert() {
+    document.getElementById('customAlertModal').style.display = 'none';
+    document.getElementById('customAlertOverlay').style.display = 'none';
+    window.location.reload();  // Reload the page after closing alert
+}
+
+
+
 document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('punch_textarea').focus();
 });
@@ -1318,6 +1353,22 @@ function handleEnterKeyPress(event) {
     if (event.key === 'Enter') {
         var punchValue = $('#punch_textarea').val();
         var partModelValue = $('#partModel').val();
+        var partNo = $('#partNo').val();  // Get the partNo value
+
+        // Get the `char_lmt` from a hidden field or data attribute
+        var charLmt = parseInt($('#char_limit').val());  // Assuming you pass `char_lmt` to a hidden input in your template
+
+        // Check if punchValue starts with partNo
+if (!punchValue.startsWith(partNo)) {
+    showCustomAlert('This partNo doesn\'t match for this Part Model.');
+    return;  // Stop further execution if partNo doesn't match
+}
+
+// Check if the punch value matches the required length
+if (punchValue.length !== charLmt) {
+    showCustomAlert('The value must contain exactly ' + charLmt + ' characters.');
+    return;  // Stop further execution if length doesn't match
+}
 
         $('#comp_srno').val(punchValue);
         $('#notification-container').hide();
@@ -1335,7 +1386,7 @@ function handleEnterKeyPress(event) {
             type: 'POST',
             url: '/measurement/',  // Replace with your actual backend endpoint
             headers: {
-                'X-CSRFToken': csrftoken  // Include CSRF token in headers
+                'X-CSRFToken': csrftoken,  // Include CSRF token in headers
             },
             data: JSON.stringify(data),
             contentType: 'application/json; charset=utf-8',
@@ -1364,7 +1415,6 @@ function handleEnterKeyPress(event) {
         });
     }
 }
-
 
 // Function to get CSRF cookie value
 function getCookie(name) {

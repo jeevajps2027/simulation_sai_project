@@ -160,9 +160,9 @@ def trace(request, row_id=None):
                     # Print the column values of each row before deleting
                     for row in rows:
                         part_model_value = row.part_model
-                        #delete_parameter = parameter_settings.objects.filter(model_id=part_model_value).delete()
-                        #delete_master = Master_settings.objects.filter(selected_value=part_model_value).delete()
-                        #delete_measurement = MeasurementData.objects.filter(part_model=part_model_value).delete()
+                        delete_parameter = parameter_settings.objects.filter(model_id=part_model_value).delete()
+                        delete_master = Master_settings.objects.filter(selected_value=part_model_value).delete()
+                        delete_measurement = MeasurementData.objects.filter(part_model=part_model_value).delete()
 
                 elif item_id == 'tableBody-2':
                     rows = TableTwoData.objects.filter(id__in=row_ids)
