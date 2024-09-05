@@ -145,7 +145,7 @@ def measurement(request):
         except measure_data.MultipleObjectsReturned:
             print("Multiple part models found.")
 
-        parameter_settings_qs = parameter_settings.objects.filter(model_id=part_model, hide_checkbox=False)
+        parameter_settings_qs = parameter_settings.objects.filter(model_id=part_model, hide_checkbox=False).order_by('id')
         last_stored_parameters = Master_settings.objects.filter(selected_value=part_model, parameter_name__in=parameter_settings_qs.values_list('parameter_name', flat=True))
         # Create a dictionary with parameter_name as keys and items as values
         last_stored_parameter = {item['parameter_name']: item for item in last_stored_parameters.values()}
@@ -158,7 +158,7 @@ def measurement(request):
         print("Distinct formatted dates:", last_stored_dates)
                         
 
-        step_no_values_queryset = parameter_settings.objects.filter(model_id=part_model).values_list('step_no', flat=True)
+        step_no_values_queryset = parameter_settings.objects.filter(model_id=part_model).values_list('step_no', flat=True).order_by('id')
         step_no_values = list(step_no_values_queryset)
         print('your step_no values are:',step_no_values)
 
