@@ -1328,15 +1328,24 @@ function handleEnterKeyPress(event) {
         var charLmt = parseInt("{{ char_lmt }}");  // Assuming char_lmt is passed from your Django view
         var partNo = "{{ part_no }}";  // Assuming part_no is passed from your Django view
 
+
+         // If charLmt is not a valid number or is less than 0, default to 0
+         if (isNaN(charLmt) || charLmt < 0) {
+            charLmt = 0;
+        }
+
         // Check if punchValue starts with partNo
         if (!punchValue.startsWith(partNo)) {
             alert('This partNo doesn\'t match for this Part Model.');
+            window.location.reload();  // Reload the current page
             return;  // Stop further execution if partNo doesn't match
         }
 
-        // Check if the punch value matches the required length
-        if (punchValue.length !== charLmt) {
+        
+        // Check if the punch value matches the required length, unless charLmt is 0
+        if (charLmt > 0 && punchValue.length !== charLmt) {
             alert('The value must contain exactly ' + charLmt + ' characters.');
+            window.location.reload();  // Reload the current page
             return;  // Stop further execution if length doesn't match
         }
 

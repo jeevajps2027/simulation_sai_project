@@ -1,3 +1,4 @@
+
 import json
 from django.http import  JsonResponse
 from django.shortcuts import render, get_object_or_404
@@ -82,27 +83,27 @@ def parameter(request):
     elif request.method == 'POST':
         try:
             data = json.loads(request.body.decode('utf-8'))
-            print(f'Your values received from the frontend: {data}')
-
             model_id = data.get('modelId')
-            print('Model ID:', model_id)
-
-            # Extract sr_no from the data
-            sr_no = data.get('srNo')
-            print('SR_NO:', sr_no)
-
             parameter_value = data.get('parameterValue')
-            print('Parameter Name:', parameter_value)
+            sr_no = data.get('srNo')
             
-              # Check if parameter_name already exists for the same model_id
-            if parameter_settings.objects.filter(model_id=model_id, parameter_name=parameter_value).exists():
-                return JsonResponse({'success': False, 'message': 'This Parameter Name is already used for this model.'})
-
+            # Check if the same parameter_name already exists for the given model_id
+            existing_parameter = parameter_settings.objects.filter(
+                model_id=model_id, parameter_name=parameter_value
+            ).exclude(sr_no=sr_no).first()
+            
+            if existing_parameter:
+                return JsonResponse({
+                    'success': False,
+                    'message': f'The parameter name "{parameter_value}" already exists for this "{model_id}".'
+                }, status=400)
+            
+            # Now proceed to update or create the parameter
             existing_instance = parameter_settings.objects.filter(model_id=model_id, sr_no=sr_no).first()
 
             if existing_instance:
                 # Update the existing instance with the received values
-                existing_instance.parameter_name = data.get('parameterValue')          
+                existing_instance.parameter_name = parameter_value          
                 existing_instance.single_radio = data.get('singleRadio')
                 existing_instance.double_radio = data.get('doubleRadio')
 
@@ -117,9 +118,7 @@ def parameter(request):
                     existing_instance.analog_zero = None
                     existing_instance.reference_value = None
 
-                # Update other values
                 existing_instance.probe_no = data.get('probeNo')
-                existing_instance.parameter_name = data.get('parameterValue')
                 existing_instance.measurement_mode = data.get('measurementMode')
                 existing_instance.nominal = data.get('nominal')
                 existing_instance.usl = data.get('usl')
@@ -127,8 +126,6 @@ def parameter(request):
                 existing_instance.mastering = data.get('mastering')
                 existing_instance.step_no = data.get('stepNo')
                 existing_instance.hide_checkbox = data.get('hideCheckbox')
-
-                existing_instance.parameter_name = data.get('parameterValue')
                 existing_instance.utl = data.get('utl')
                 existing_instance.ltl = data.get('ltl')
                 existing_instance.digits = data.get('digits')
@@ -136,11 +133,10 @@ def parameter(request):
 
                 existing_instance.save()
 
-                print("Your values in the server (updated):", existing_instance)
-
+                return JsonResponse({'success': True, 'message': 'Parameter updated successfully.'})
 
             else:    
-                # Handle radio button values
+                # Handle radio button values and create new instance
                 single_radio = data.get('singleRadio')
                 double_radio = data.get('doubleRadio')
                 if single_radio:
@@ -154,22 +150,6 @@ def parameter(request):
                     analog_zero = None
                     reference_value = None
 
-                # Continue handling other values
-                probe_no = data.get('probeNo')
-                measurement_mode = data.get('measurementMode')
-                nominal = data.get('nominal')
-                usl = data.get('usl')
-                lsl = data.get('lsl')
-                mastering = data.get('mastering')
-                step_no = data.get('stepNo')
-                hide_checkbox = data.get('hideCheckbox')
-                utl = data.get('utl')
-                ltl = data.get('ltl')
-                digits = data.get('digits')
-                job_dia = data.get('job_dia')
-                
-
-                # Create an instance of your model with the received values
                 const_value_instance = parameter_settings.objects.create(
                     model_id=model_id,
                     parameter_name=parameter_value,
@@ -180,25 +160,22 @@ def parameter(request):
                     reference_value=reference_value,
                     high_mv=high_mv,
                     low_mv=low_mv,
-                    probe_no=probe_no,
-                    measurement_mode=measurement_mode,
-                    nominal=nominal,
-                    usl=usl,
-                    lsl=lsl,
-                    mastering=mastering,
-                    step_no=step_no,
-                    hide_checkbox=hide_checkbox,
-                    utl=utl,
-                    ltl=ltl,
-                    digits=digits,
-                    job_dia=job_dia
+                    probe_no=data.get('probeNo'),
+                    measurement_mode=data.get('measurementMode'),
+                    nominal=data.get('nominal'),
+                    usl=data.get('usl'),
+                    lsl=data.get('lsl'),
+                    mastering=data.get('mastering'),
+                    step_no=data.get('stepNo'),
+                    hide_checkbox=data.get('hideCheckbox'),
+                    utl=data.get('utl'),
+                    ltl=data.get('ltl'),
+                    digits=data.get('digits'),
+                    job_dia=data.get('job_dia')
                 )
-
-                print("Your values in the server:", const_value_instance)
-                # Save the instance to the database
-                const_value_instance.save()
-
-            
+                
+                return JsonResponse({'success': True, 'message': 'Parameter created successfully.'})
+                
         except Exception as e:
             return JsonResponse({'success': False, 'message': str(e)})
             
@@ -237,7 +214,6 @@ def parameter(request):
             return JsonResponse({'success': False, 'message': str(e)})
 
    
-
     return render(request, 'app/parameter.html')
 
 

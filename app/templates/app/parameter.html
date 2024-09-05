@@ -503,7 +503,6 @@ document.querySelectorAll('.model-name').forEach(model => {
 
 
 ///////////////////////////////////////////////    
-
 function saveValues() {
     const selectedUL = document.querySelector('.model-ul .nested-ul.active');
     const inputValue = document.getElementById('parameter_name').value.trim();
@@ -527,26 +526,25 @@ function saveValues() {
     const ltl = document.getElementById('ltl').value;
     const job_dia = document.getElementById('job_dia').value;
 
-    // Check if high_mv is greater than low_mv
+    // Validation for high_mv and low_mv
     if (!doubleRadio && parseFloat(highMV) <= parseFloat(lowMV)) {
         alert('Error: HIGH M-V should be greater than LOW M-V.');
         return; // Stop further processing
     }
 
-    // Check if usl is greater than lsl
+    // Validation for USL and LSL
     if (parseFloat(usl) <= parseFloat(lsl)) {
         alert('Error: USL should be greater than LSL.');
         return; // Stop further processing
     }
 
-    // Check if usl is greater than lsl
+    // Validation for UTL and LTL
     if (parseFloat(utl) <= parseFloat(ltl)) {
         alert('Error: UTL should be greater than LTL.');
         return; // Stop further processing
     }
 
     if (selectedUL) {
-        // Prepare data to be sent to the server
         const data = {
             modelId: selectedUL.parentElement.querySelector('.model-name').textContent.trim(),
             parameterValue: inputValue,
@@ -568,57 +566,63 @@ function saveValues() {
             digits: digits,
             utl: utl,
             ltl: ltl,
-            job_dia: job_dia,
+            job_dia: job_dia
         };
 
-        console.log('Your data is:', data);
-
-        // Get CSRF token from the cookie
+        // Get CSRF token from cookies
         const csrfToken = document.cookie.match(/csrftoken=([^;]+)/);
         if (!csrfToken) {
             alert("CSRF token not found.");
             return;
         }
 
-        // Perform AJAX POST request with CSRF token in headers
-        $.ajax({
-            type: 'POST',
-            url: '/parameter/',  // Adjust the URL based on your Django app's configuration
-            contentType: 'application/json',
-            data: JSON.stringify(data),
-            headers: {
-                'X-CSRFToken': csrfToken[1],
-            },
-            success: function (response) {
-                if (response.success === false) {
-                    // Display alert with the server's error message
-                    alert(response.message);
-                    window.location.reload(); // Refresh the page
-                } else {
-                    // Handle the success response from the server if needed
-                    console.log('Data saved successfully:', response);
-                    showNotification('Data saved successfully', true);
-
-                    // Store the selected item and additional data in session storage
-                    sessionStorage.setItem('modelId', data.modelId);
-                    sessionStorage.setItem('parameterValue', data.parameterValue);
-
-                    // Log the stored values
-                    console.log('Stored values in sessionStorage:');
-                    console.log('modelId:', sessionStorage.getItem('modelId'));
-                    console.log('parameterValue:', sessionStorage.getItem('parameterValue'));
+       // Perform AJAX POST request with CSRF token
+$.ajax({
+    type: 'POST',
+    url: '/parameter/',  // Update this URL if necessary
+    contentType: 'application/json',
+    data: JSON.stringify(data),
+    headers: {
+        'X-CSRFToken': csrfToken[1],
+    },
+    success: function (response) {
+        // Handle the success response
+        if (response.success) {
+            showNotification(response.message, true);  // Show success notification
+        } else {
+                    alert(response.message);  // Show error message as an alert
                 }
-            },
-            error: function (error) {
-                // Handle the error response from the server if needed
-                console.error('Error saving data:', error);
-                showNotification('Error saving data', false);
+        // Handle the success response from the server if needed
+        console.log('Data saved successfully:', response);
+
+        // Store the selected item and additional data in session storage
+        sessionStorage.setItem('modelId', data.modelId);
+        sessionStorage.setItem('parameterValue', data.parameterValue);
+
+        // Log the stored values
+        console.log('Stored values in sessionStorage:');
+        console.log('modelId:', sessionStorage.getItem('modelId'));
+        console.log('parameterValue:', sessionStorage.getItem('parameterValue'));
+    },
+    error: function (error) {
+                try {
+                    // Parse the error response JSON if it's a valid JSON string
+                    const errorMessage = JSON.parse(error.responseText).message;
+                    alert('Error saving data: ' + errorMessage);  // Show error message as an alert
+                } catch (e) {
+                    // Handle cases where the response is not valid JSON
+                    alert('Error saving data: ' + error.responseText);  // Show the raw response
+                }
             }
         });
+
     } else {
         alert('Please select a model to add parameters.');
     }
 }
+
+
+
 
 window.onload = function() {
     // Retrieve values from sessionStorage
