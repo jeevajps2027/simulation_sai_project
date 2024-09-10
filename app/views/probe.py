@@ -1,5 +1,5 @@
 from django.shortcuts import redirect, render
-
+from collections import OrderedDict
 
 
 
@@ -27,33 +27,41 @@ def probe(request):
         
         return redirect('master_page', probe_id=probe_id)
 
+    
+
+# In your view:
     elif request.method == 'GET':
-        
-        # Retrieve the distinct probe IDs
-        probe_ids = probe_calibrations.objects.values_list('probe_id', flat=True).distinct()
-        
-        # Create a dictionary to store coefficient values for each probe ID
-        probe_coefficients = {}
-        low_count = {}
-        
-        for probe_id in probe_ids:
-            # Retrieve the latest coefficient value for the current probe ID
-            latest_calibration = probe_calibrations.objects.filter(probe_id=probe_id).latest('id')
-            
-            # Extract the coefficient value
-            coefficient_value = latest_calibration.coefficent
-            low_value = latest_calibration.low_count
-            
-            
-            # Store the coefficient value in the dictionary with the probe ID as the key
-            probe_coefficients[probe_id] = coefficient_value
-            low_count[probe_id] = low_count
+      # Retrieve the distinct probe IDs
+      probe_ids = probe_calibrations.objects.values_list('probe_id', flat=True).distinct()
 
-            print(f'Probe ID: {probe_id}, Coefficient: {coefficient_value}')
-            print(f'Probe ID: {probe_id}, Low values: {low_value}')
-        
+      # Create dictionaries to store coefficient and low count values for each probe ID
+      probe_coefficients = {}
+      low_count = {}
 
-    return render(request, 'app/probe.html', {'probe_coefficients': probe_coefficients ,'low_count':low_count })
+      for probe_id in probe_ids:
+          # Retrieve the latest coefficient value for the current probe ID
+          latest_calibration = probe_calibrations.objects.filter(probe_id=probe_id).latest('id')
+
+          # Extract the coefficient and low count values
+          coefficient_value = latest_calibration.coefficent
+          low_value = latest_calibration.low_count
+
+          # Store the coefficient and low count values in the dictionaries with the probe ID as the key
+          probe_coefficients[probe_id] = coefficient_value
+          low_count[probe_id] = low_value
+
+          print(f'Probe ID: {probe_id}, Coefficient: {coefficient_value}')
+          print(f'Probe ID: {probe_id}, Low values: {low_value}')
+
+      # Sort the dictionaries by probe ID in ascending order
+      sorted_probe_coefficients = OrderedDict(sorted(probe_coefficients.items()))
+      sorted_low_count = OrderedDict(sorted(low_count.items()))
+      
+
+    # Pass the sorted dictionaries to the template
+    return render(request, 'app/probe.html', {'probe_coefficients': sorted_probe_coefficients, 'low_count': sorted_low_count})
+
+
 
 """
 1.import re
@@ -65,6 +73,5 @@ def probe(request):
 
 3.Threading
   Threads enable concurrent execution, allowing multiple tasks to run simultaneously and improve performance
-
 
 """

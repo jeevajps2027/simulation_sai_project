@@ -582,6 +582,15 @@ function calculateAndDisplayResult() {
 setInterval(calculateAndDisplayResult,0.5);
 
 
+
+const probeCoefficients = "{{ probe_coefficients|safe }}";
+console.log("probeCoefficients",probeCoefficients);
+const lowCount =" {{ low_count|safe }}";
+console.log("lowCount",lowCount);
+
+
+
+
 let calculateEnabled = true;
 
 

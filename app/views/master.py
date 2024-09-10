@@ -119,10 +119,12 @@ def master(request):
                 'usl': [item['usl'] for item in filtered_data],
                 'utl': [item['utl'] for item in filtered_data],
                 'ltl': [item['ltl'] for item in filtered_data],
+                'job_dia':[item['job_dia'] for item in filtered_data],
                 'digits': [item['digits'] for item in filtered_data],
                 'e_values': [values.get('e') for values in last_stored_parameter.values()],
                 'd_values': [values.get('d') for values in last_stored_parameter.values()],
-                'o1_values': [values.get('o1') for values in last_stored_parameter.values()]
+                'o1_values': [values.get('o1') for values in last_stored_parameter.values()],
+                'id': [values.get('id') for values in last_stored_parameter.values()]
             
             }
 

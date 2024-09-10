@@ -347,7 +347,7 @@ window.addEventListener('load', function() {
         radioButtons.forEach(function(radio) {
             radio.style.display = 'none'; // Hide the radio buttons
         });
-    }}, 100);
+    }}, 200);
 });
 
  
@@ -396,18 +396,14 @@ function displayContainerValues(container) {
     console.log('Container values:', container);
 }
 
-var lowMasteringIntervalIds = []; // Separate array for low mastering intervals
-var highMasteringIntervalIds = []; // Separate array for high mastering intervals
+var lowMasteringIntervalIds = []; // Array to store interval IDs for low mastering
+var highMasteringIntervalIds = []; // Array to store interval IDs for high mastering
 
 function lowMasteringClick(response) {
     console.log('Low Mastering button clicked');
-    // document.getElementById("lowMasterBtn").disabled = true;
-    // document.getElementById("lowMasterBtn").style.opacity = '0.6';
-    // document.getElementById("highMasterBtn").disabled = false;
-    // document.getElementById("highMasterBtn").style.opacity = '1';
     const preTag = document.getElementById('pre');
     preTag.innerText = `Low Mastering is Started for ${selectedRadioOption}`;
-    
+
     // Clear all low mastering intervals
     lowMasteringIntervalIds.forEach(function(intervalId) {
         clearInterval(intervalId);
@@ -420,8 +416,79 @@ function lowMasteringClick(response) {
     });
     highMasteringIntervalIds = []; // Reset high mastering array
 
-    processContainers('low', response);
+    // Process the containers for low mastering (your existing logic)
+    const result = processContainers('low', response);
+    console.log("Low mastering data sent:", result);
+
+    if (result && result.data) {
+        var csrfToken = "{{ csrf_token }}"; // Get CSRF token for the request
+
+        // Send the data to the server (saving to the database)
+        $.ajax({
+            type: "POST",
+            url: "/master/",
+            data: JSON.stringify({ data: result.data }),
+            contentType: "application/json",
+            headers: {
+                'X-CSRFToken': csrfToken
+            },
+            success: function(response) {
+                console.log('Low mastering data sent successfully', response);
+                showCustomAlert('Data sent successfully: ' + response.message);
+
+                // After a successful submission, wait for 3 seconds to retrieve new values
+                setTimeout(function() {
+                    var selectedValue = document.getElementById('partModel').value;
+                    console.log('Selected Value for low mastering: ' + selectedValue);
+
+                    var data = {
+                        selectedValue: selectedValue,
+                    };
+
+                    $.ajax({
+                        url: '{% url "master" %}', // Replace with your server URL if necessary
+                        type: 'POST',
+                        headers: {
+                            'X-CSRFToken': getCookie('csrftoken'), // Include CSRF token
+                        },
+                        contentType: 'application/json',
+                        data: JSON.stringify(data),
+                        success: function(response) {
+                            console.log('Updated response received for low mastering:', response);
+
+                            // Perform the calculation based on updated values
+                            calculateMastering(response);
+
+                            // Store the interval IDs for low mastering
+                            var containers = document.querySelectorAll('.input-box-container');
+                            containers.forEach(function(container) {
+                                var intervalId = containerIntervals[container.id];
+                                if (intervalId) {
+                                    lowMasteringIntervalIds.push(intervalId); // Track intervals for low mastering
+                                }
+                            });
+                        },
+                        error: function(xhr, status, error) {
+                            console.error('Error retrieving new values for low mastering', error);
+                            showCustomAlert('Error retrieving new values: ' + xhr.responseText);
+                        }
+                    });
+                }, 500); // Wait for 3 seconds before retrieving the new values
+            },
+            error: function(xhr, status, error) {
+                console.error('Error sending low mastering data', error);
+                console.log('Response text:', xhr.responseText); // Log response text
+                showCustomAlert('Error sending low mastering data: ' + xhr.responseText); // Show error alert
+            }
+        });
+    }
 }
+
+
+
+
+////////////////////////////////////////////////////////////
+
 
 function showCustomAlert(message) {
     const customAlert = document.getElementById('customAlert');
@@ -433,12 +500,9 @@ function showCustomAlert(message) {
     }, 3000); // Hide after 3 seconds
 }
 
+// Function for high mastering button click
 function highMasteringClick(response) {
     console.log('High Mastering button clicked');
-    // document.getElementById("lowMasterBtn").disabled = true;
-    // document.getElementById("lowMasterBtn").style.opacity = '0.6';
-    // document.getElementById("highMasterBtn").disabled = true;
-    // document.getElementById("highMasterBtn").style.opacity = '0.6';
     const preTag = document.getElementById('pre');
     preTag.innerText = `High Mastering is Started for ${selectedRadioOption}`;
 
@@ -446,11 +510,20 @@ function highMasteringClick(response) {
     const result = processContainers('high', response);
     console.log("the data which is sent from the front end:", result);
 
-    // Clear all open reading intervals
-    openReadingIntervalIds.forEach(function(intervalId) {
-        clearInterval(intervalId); // Stop the open reading intervals
+    // Get the active containers based on the current mastering group
+    var selectedMastering = parseInt(document.getElementById('mastering').value);
+    var activeContainers = [];
+    var containers = document.querySelectorAll('.input-box-container');
+
+    containers.forEach(function(container) {
+        var containerMastering = parseInt(container.getAttribute('data-mastering'));
+        if (containerMastering === selectedMastering) {
+            activeContainers.push(container);
+        }
     });
-    openReadingIntervalIds = []; // Reset the open reading interval array
+
+    // Clear intervals only for active containers
+    clearActiveIntervals(activeContainers);
 
     // Clear all inputBox2 values after processing
     clearInputValues();
@@ -458,6 +531,7 @@ function highMasteringClick(response) {
     if (result && result.data) {
         var csrfToken = "{{ csrf_token }}";
 
+        // Send the data to the server (saving to the database)
         $.ajax({
             type: "POST",
             url: "/master/",
@@ -469,6 +543,38 @@ function highMasteringClick(response) {
             success: function(response) {
                 console.log('Data sent successfully', response);
                 showCustomAlert('Data sent successfully: ' + response.message); // Show success alert
+
+                // Wait for 3 seconds and then retrieve the new values
+                setTimeout(function() {
+                    var selectedValue = document.getElementById('partModel').value;
+                    console.log('Selected Value: ' + selectedValue);
+
+                    var data = {
+                        selectedValue: selectedValue,
+                    };
+                    console.log("data in high mastering to backend",data);
+
+                    $.ajax({
+                        url: '{% url "master" %}', // Replace with your server URL if necessary
+                        type: 'POST',
+                        headers: {
+                            'X-CSRFToken': getCookie('csrftoken') // Include CSRF token in the request headers
+                        },
+                        contentType: 'application/json',
+                        data: JSON.stringify(data),
+                        success: function(response) {
+                            console.log('Response received:', response); // Log the response for debugging
+
+                            calculateMastering(response);
+
+                            
+                        },
+                        error: function(xhr, status, error) {
+                            console.error('Error retrieving new values', error);
+                            showCustomAlert('Error retrieving new values: ' + xhr.responseText);
+                        }
+                    });
+                }, 3000); // Wait for 3 seconds before retrieving the new values
             },
             error: function(xhr, status, error) {
                 console.error('Error sending data', error);
@@ -479,25 +585,43 @@ function highMasteringClick(response) {
     }
 }
 
-// Function to clear the values in inputBox2 elements
-function clearInputValues() {
-    var containers = document.querySelectorAll('.input-box-container');
-    console.log('Found containers:', containers); // Debugging line
 
+function clearInputValues() {
+    var selectedMastering = parseInt(document.getElementById('mastering').value); // Get the selected mastering group
+
+    // Get all containers
+    var containers = document.querySelectorAll('.input-box-container');
+
+    // Get selected radio button, if any
+    var selectedRadioButton = document.querySelector('input[name="radio-container"]:checked');
+    
     containers.forEach(function(container) {
-        var inputBox2 = container.querySelector('.input2-box');
-        console.log('Found inputBox2:', inputBox2); // Debugging line
-        if (inputBox2) {
-            inputBox2.value = ''; // Or set to '0' if needed: inputBox2.value = '0';
-            inputBox2.style.backgroundColor = ''; // Reset the background color if needed
+        var containerMastering = parseInt(container.getAttribute('data-mastering'));
+        
+        // Determine if the container should be processed
+        var shouldClear = !selectedRadioButton || selectedRadioButton.closest('.input-box-container') === container;
+        
+        if (containerMastering === selectedMastering && shouldClear) {
+            var inputBox2 = container.querySelector('.input2-box');
+            if (inputBox2) {
+                inputBox2.value = ''; // Clear the value (or set to '0' if needed: inputBox2.value = '0')
+                inputBox2.style.backgroundColor = ''; // Reset the background color if needed
+                console.log('Cleared inputBox2 for container:', container.id); // Debugging line
+            }
         }
     });
 }
 
+
+
+
+
+//////////////////////////////////////////////////////////////////////////////////////////////
+
 function processContainers(type, response) {
     var selectedMastering = parseInt(document.getElementById('mastering').value); // Get the selected mastering group
 
-    if (!response || !response.probe_no || !response.nominal) {
+    if (!response || !response.probe_no || !response.nominal || !response.job_dia) {
         console.error('Response or required properties are undefined');
         return;
     }
@@ -505,7 +629,17 @@ function processContainers(type, response) {
     var dataArray = [];
     var containers = document.querySelectorAll('.input-box-container');
 
+    // Get selected radio button, if any
+    var selectedRadioButton = document.querySelector('input[name="radio-container"]:checked');
+
     containers.forEach(function (container, index) {
+        var containerMastering = parseInt(container.getAttribute('data-mastering')); // Get the mastering group of the container
+
+        // Check if this container should be processed based on radio button selection
+        var shouldProcess = !selectedRadioButton || selectedRadioButton.closest('.input-box-container') === container;
+
+        // Only process containers with matching mastering group and according to radio button selection
+        if (containerMastering === selectedMastering && shouldProcess) {
             var parameterName = response.parameter_names[index];
             var probeNumber = response.probe_no[index];
             var e = response.nominal[index];
@@ -514,6 +648,7 @@ function processContainers(type, response) {
             var usl = response.usl[index];
             var utl = response.utl[index];
             var digits = response.digits[index];
+            var jobDia = response.job_dia[index]; // Get the job_dia ("ID" or "OD")
 
             var inputBoxValue;
             var a, a1, b, b1;
@@ -536,7 +671,6 @@ function processContainers(type, response) {
                     console.log('Textarea Value:', textareaValue);
 
                     if (type === 'low') {
-                        // Initialize 'a' and 'a1'
                         a = parseFloat(inputBoxValue);
                         a1 = textareaValue;
                         console.log('a:', a);
@@ -551,7 +685,6 @@ function processContainers(type, response) {
                         a = parseFloat(container.dataset.a);
                         a1 = parseFloat(container.dataset.a1);
 
-                        // Ensure 'a' and 'a1' are retrieved correctly
                         if (isNaN(a) || isNaN(a1)) {
                             console.error('Cannot calculate high mastering values. Ensure "low" type process is completed first.');
                             return;
@@ -564,6 +697,15 @@ function processContainers(type, response) {
                         console.log('a:', a);
                         console.log('a1:', a1);
                         console.log('e:', e); // Log 'e' for high mastering
+
+                        // Validate based on job_dia (either "ID" or "OD")
+                        if (jobDia === "OD" && b1 <= a1) {
+                            showCustomAlert(`Please Do Proper mastering ${container.id}: High must be greater than Low for OD.`);
+                            return;
+                        } else if (jobDia === "ID" && b1 >= a1) {
+                            showCustomAlert(`Please Do Proper mastering ${container.id}: Low must be greater than High a1 for ID.`);
+                            return;
+                        }
 
                         // Perform calculations
                         const c = b - a;
@@ -588,7 +730,7 @@ function processContainers(type, response) {
                                     const displayOutput = e + (newSerialData * d + o1);
                                     console.log("displayOutput value is:", displayOutput);
                                     inputBox2.value = displayOutput.toFixed(digits); // Update inputBox2 with the displayOutput value
-                                    
+
                                     // Update background color based on 'k' value (displayOutput)
                                     var k = displayOutput;
                                     if (k >= lsl && k <= usl) {
@@ -600,9 +742,6 @@ function processContainers(type, response) {
                                     }
                                 }
                             }
-
-                            // Clear any existing intervals for this container
-                            clearExistingIntervals(container);
 
                             // Set an interval to update displayOutput every 500 ms
                             const intervalId = setInterval(updateDisplayOutput, 500);
@@ -628,7 +767,6 @@ function processContainers(type, response) {
                             selectedMastering: document.getElementById('mastering').value,
                         };
 
-
                         dataArray.push(rowData);
                     }
                 } else {
@@ -637,37 +775,105 @@ function processContainers(type, response) {
             } else {
                 console.error('No textarea ID found for probe number:', probeNumber);
             }
+        }
     });
 
     return { data: dataArray };
 }
 
-// Function to clear any existing intervals for a specific container
-function clearExistingIntervals(container) {
-    var containerId = container.id;
-    lowMasteringIntervalIds = lowMasteringIntervalIds.filter(function(intervalId) {
-        if (intervalId.containerId === containerId) {
-            clearInterval(intervalId);
-            return false;
+
+
+
+
+
+
+
+
+
+
+
+var containerIntervals = {}; // Object to store intervals for each container by ID
+
+// Function to start open reading
+function calculateMastering(response) {
+    var containers = document.querySelectorAll('.input-box-container');
+
+    if (containers.length !== response.parameter_names.length) {
+        console.error('The number of containers does not match the number of parameters.');
+        return;
+    }
+
+    containers.forEach(function(container, index) {
+        var inputBox2 = container.querySelector('.input2-box');
+        if (inputBox2) {
+            var e = response.e_values[index];
+            var d = response.d_values[index];
+            var o1 = response.o1_values[index];
+            var id = response.id[index];
+            var lsl = response.lsl[index];
+            var ltl = response.ltl[index];
+            var usl = response.usl[index];
+            var utl = response.utl[index];
+            var digits = response.digits[index];
+            var probeNumber = response.probe_no[index];
+            var textareaId = mapProbeToTextareaId(probeNumber);
+
+            console.log("id",id);
+
+            if (textareaId) {
+                var textarea = document.getElementById(textareaId);
+                if (textarea) {
+                    function updateDisplayOutput() {
+                        var newSerialData = textarea.value === null || textarea.value === '' ? 0 : parseFloat(textarea.value);
+                        if (!isNaN(newSerialData)) {
+                            const displayOutput = e + (newSerialData * d + o1);
+                            inputBox2.value = displayOutput.toFixed(digits);
+
+                            var k = displayOutput;
+                            if (k >= lsl && k <= usl) {
+                                inputBox2.style.backgroundColor = '#00ff00'; // Green
+                            } else if ((k > usl && k <= utl) || (k >= ltl && k < lsl)) {
+                                inputBox2.style.backgroundColor = 'yellow'; // Yellow
+                            } else if (k > utl || k < ltl) {
+                                inputBox2.style.backgroundColor = 'red'; // Red
+                            }
+                        }
+                    }
+
+                    // Clear any existing interval for this container before starting a new one
+                    if (containerIntervals[container.id]) {
+                        clearInterval(containerIntervals[container.id]);
+                    }
+
+                    // Start the interval and store the interval ID for this container
+                    var intervalId = setInterval(updateDisplayOutput, 500);
+                    containerIntervals[container.id] = intervalId; // Store interval ID for this container
+                }
+            }
         }
-        return true;
-    });
-    highMasteringIntervalIds = highMasteringIntervalIds.filter(function(intervalId) {
-        if (intervalId.containerId === containerId) {
-            clearInterval(intervalId);
-            return false;
-        }
-        return true;
     });
 }
 
+// Function to stop intervals only for active containers
+function clearActiveIntervals(activeContainers) {
+    activeContainers.forEach(function(container) {
+        if (containerIntervals[container.id]) {
+            clearInterval(containerIntervals[container.id]); // Stop the interval
+            delete containerIntervals[container.id]; // Remove it from the tracking object
+        }
+    });
+}
+
+// Start open reading on page load
+window.onload = function() {
+    // Assuming `response` is fetched from somewhere
+    calculateMastering(response); // Call your open reading function
+};
 
 
 
 
-
-
-function updateMastering() {
+function updateMastering(selectedRadioButtonId) {
     var selectedMastering = parseInt(document.getElementById('mastering').value);
     
     // Get all container divs
@@ -678,7 +884,8 @@ function updateMastering() {
 
     // Variable to track if a matching container is found
     var matchingContainers = [];
-
+    var selectedRadioButton = document.getElementById(selectedRadioButtonId);
+    
     containers.forEach(function(container, index) {
         // Get the mastering value for this container (assuming it's stored in a data attribute)
         var containerMastering = parseInt(container.getAttribute('data-mastering'));
@@ -712,7 +919,52 @@ function updateMastering() {
     } else {
         console.log('No containers found for Mastering Group ' + selectedMastering);
     }
+
+    if (selectedRadioButton) {
+        console.log('Selected Radio Button ID:', selectedRadioButton.id);
+    }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+function onRadioButtonChange(event) {
+        // Get the selected radio button ID
+        var selectedRadioButtonId = event.target.id;
+        console.log('Selected Radio Button ID:', selectedRadioButtonId);
+        
+        // Call updateMastering with the selected radio button ID
+        updateMastering(selectedRadioButtonId);
+    }
+
+
+
+
 
 function updateValues() {
     var selectedValue = document.getElementById('partModel').value;
@@ -749,11 +1001,16 @@ function updateValues() {
                 container.setAttribute('data-mastering', response.mastering[i]);
 
                 // Create radio button
+               
+
+
                 var radioButton = document.createElement('input');
                 radioButton.type = 'radio';
                 radioButton.name = 'radio-container';
                 radioButton.id = 'container-' + i + '_radioButton';
                 radioButton.className = 'container_radio';
+                radioButton.addEventListener('change', onRadioButtonChange);
+                
                 
                 // Create label and input boxes
                 var label1 = document.createElement('label');
@@ -831,6 +1088,7 @@ function updateValues() {
                 console.log('Probe No:', response.probe_no[i]);
                 console.log('USL:', response.usl[i]);
                 console.log('UTL:', response.utl[i]);
+                console.log('job_dia:', response.job_dia[i]);
                 console.log('e_values:', response.e_values[i]);
                 console.log('d_values:', response.d_values[i]);
                 console.log('o1_values:', response.o1_values[i]);
@@ -865,58 +1123,9 @@ document.addEventListener('DOMContentLoaded', function() {
     updateValues();
 });
 
-var openReadingIntervalIds = []; // Array to store interval IDs for open reading
 
-function calculateMastering(response) {
-    var containers = document.querySelectorAll('.input-box-container');
 
-    if (containers.length !== response.parameter_names.length) {
-        console.error('The number of containers does not match the number of parameters.');
-        return;
-    }
-
-    containers.forEach(function(container, index) {
-        var inputBox2 = container.querySelector('.input2-box');
-        if (inputBox2) {
-            var e = response.e_values[index];
-            var d = response.d_values[index];
-            var o1 = response.o1_values[index];
-            var lsl = response.lsl[index];
-            var ltl = response.ltl[index];
-            var usl = response.usl[index];
-            var utl = response.utl[index];
-            var digits = response.digits[index];
-            var probeNumber = response.probe_no[index];
-            var textareaId = mapProbeToTextareaId(probeNumber);
-
-            if (textareaId) {
-                var textarea = document.getElementById(textareaId);
-                if (textarea) {
-                    function updateDisplayOutput() {
-                        var newSerialData = textarea.value === null || textarea.value === '' ? 0 : parseFloat(textarea.value);
-                        if (!isNaN(newSerialData)) {
-                            const displayOutput = e + (newSerialData * d + o1);
-                            inputBox2.value = displayOutput.toFixed(digits);
-
-                            var k = displayOutput;
-                            if (k >= lsl && k <= usl) {
-                                inputBox2.style.backgroundColor = '#00ff00'; // Green
-                            } else if ((k > usl && k <= utl) || (k >= ltl && k < lsl)) {
-                                inputBox2.style.backgroundColor = 'yellow';
-                            } else if (k > utl || k < ltl) {
-                                inputBox2.style.backgroundColor = 'red';
-                            }
-                        }
-                    }
-
-                    // Set an interval for open reading and store the interval ID
-                    var intervalId = setInterval(updateDisplayOutput, 500);
-                    openReadingIntervalIds.push(intervalId); // Store the open reading interval ID
-                }
-            }
-        }
-    });
-}
+   
 
 function mapProbeToTextareaId(probeNumber) {
     const probeMap = {
