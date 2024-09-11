@@ -15,9 +15,10 @@ Measurement Page
     }
     .box-2{
         height: 440px;
-        width: 1130px;
+        width: 1000px;
         background-color:lightgrey;
-        border: 1px solid black;    
+        border: 1px solid black; 
+        margin-top: -440px;   
     }
     label {
             display: inline-block;
@@ -48,9 +49,7 @@ Measurement Page
        .center-image-1{
         margin-top: -130px;
        }
-       #box2{
-        margin-top: -440px;
-       }
+      
     
        table {
         border-collapse: collapse;
@@ -82,14 +81,14 @@ Measurement Page
     margin-top: 10px;
             width: 100px;
             height: 80px;
-            margin-left: 1150px;
+            margin-left: 1210px;
             background-color: pink;
             
         }
         #master-btn{
             width: 100px;
             height: 80px;
-            margin-left: 1150px;
+            margin-left: 1210px;
             background-color: rgb(240, 96, 240);
             
         }
@@ -97,7 +96,7 @@ Measurement Page
         #start-btn{
             width: 100px;
             height:80px ;
-            margin-left: 1150px;
+            margin-left: 1210px;
             margin-top: 10px;
             background-color: lightgreen;
         }
@@ -105,37 +104,37 @@ Measurement Page
         #stop-btn{
             width: 100px;
             height:80px ;
-            margin-left: 1150px;
+            margin-left: 1210px;
             margin-top: 10px;
             background-color: coral;
         }
         #back-btn{
             width: 100px;
             height:80px ;
-            margin-left: 1150px;
+            margin-left: 1210px;
             margin-top: 10px;
             background-color: rgb(233, 177, 73);
         }
 
         .notification-container {
         position: absolute;
-        top: 50%;
-        left: 40%;
+        top: 60%;
+        left: 30%;
         transform: translate(-50%, -50%);
-        background-color: white;
-        height: 200px;
-        width: 500px;
+        background-color:orange;
+        height: 150px;
+        width: 1000px;
         z-index: 1000; 
         border: 2px solid black;
     }
     
     #punch_textarea{
-        margin-top: 4%;
+        margin-top: 5px;
         margin-left: 10px;
-        width: 450px;
-        height: 100px;
+        width: 900px;
+        height: 70px;
         font-weight: bold;    /* Makes the text bold */
-        font-size: 18px;      /* Increases the font size */
+        font-size: 30px;      /* Increases the font size */
     }
     .disabled {
         display: none;
@@ -304,20 +303,32 @@ input[type=checkbox] {
     font-weight: bold;
 
 }
+
 #customAlert{
     display: none;
     position: fixed; 
     top: 20px;
+    width: 500px;
+    height: 100px;
     left: 50%;
+    text-align: center;
+    font-weight: bold;
     transform: translateX(-50%);
-    background-color: #f8d7da; 
-    color: #721c24; 
-    border: 1px solid #f5c6cb; 
+    background-color: yellow; 
+    color: black; 
+    border: 1px solid black ; 
     padding: 10px;
     z-index: 1000;
 }
-  
 
+#box3{
+    height: 440px;
+    width: 200px;
+    background-color:lightgray;
+    margin-left:1005px;
+    margin-top:-440px;
+    border: 1px solid black;
+}
 </style>
 
 <div class="box-1" id="box1">
@@ -329,13 +340,13 @@ input[type=checkbox] {
        </button>
     
     <label for="date" style="width: 50px; margin-left:10px;">DATE:</label>
-    <input type="text" id="date" style="width: 190px;background-color:#1a7d9e ;color: white;">
+    <input type="text" id="date" style="width: 210px;background-color:#1a7d9e ;color: white;">
 
     <label for="operator">OPERATOR:</label>
     <input type="text" id="operator" >
 
     <label for="shift" style="width: 70px;">SHIFT:</label>
-    <input type="text" id="shift" >
+    <input type="text" id="shift" style="width: 8%;" >
     
     
     <label for="accept" style="width: 70px;">ACCEPT:</label>
@@ -349,42 +360,42 @@ input[type=checkbox] {
     
     <button class="reset-button" id="reset-button">
         <span class="reset-symbol">&#8634;</span>
-    </button>
+    </button><br>
       
-<br>
+
 
     
-    <label for="machine" style="margin-left: 150px;" >MACHINE:</label>
-    <input type="text" id="machine" >
+    <label for="machine" style="margin-left: 120px;" >MACHINE:</label>
+    <input type="text" id="machine" style="width: 8%;">
 
-    <label for="partModel" style="width: 130px;" >PART MODEL:</label>
-    <select id="partModel" name="partModel" style="width: 200px;" >
+    <label for="partModel" style="width: 110px;" >PART MODEL:</label>
+    <select id="partModel" name="partModel" style="width: 150px;" >
         {% for value in part_model_values %}
             <option value="{{ value }}"><b>{{ value }}</b></option>
         {% endfor %}
     </select>
 
-    <label for="cycle_mode" style="margin-left: 50px;">CYCLE MODE:</label>
-    <input type="text" id="cycle_mode" ><br>
+    <label for="comp_srno" style="width: 80px;">COMP NO:</label>
+    <input type="text" id="comp_srno" style="width: 400px;"><br>
 
     <label for="part_status" style="font-size: 15px; width: 120px;margin-left: 130px;" >PART STATUS</label>
     <input type="text" id="part_status" style="width: 170px;height: 40px;">
     
-    <input type="text" id="customer_name" style="width: 300px;height: 40px; margin-left: 10px;text-align: center;font-weight: bold;">
+    <input type="text" id="customer_name" style="width: 300px;height: 40px; margin-left: 20px;text-align: center;font-weight: bold;">
     
-    <label for="comp_srno" style="width: 130px;">COMP SR.NO:</label>
-    <input type="text" id="comp_srno" style="width: 200px;"><br>
+    <label for="cycle_mode" style="margin-left: 50px;">CYCLE MODE:</label>
+    <input type="text" id="cycle_mode" ><br>
 
-    <input type="text" id="pre" style="width: 930px;height: 30px;margin-left: 140px;">
+    <input type="text" id="pre" style="width: 950px;height: 30px;margin-left: 140px;">
 
     {% load static %}
     <div class="center-image">
-            <img src="{% static 'images/Gauge.jpg' %}" style="height: 130px;width: 120px; border: 4px solid white;">
+            <img src="{% static 'images/Gauge.jpg' %}" style="height: 130px;width: 120px; margin-left: 20px; border: 4px solid white;">
         </div>
     
         {% load static %}
         <div class="center-image-1">
-                <img src="{% static 'images/Gauge.jpg' %}" style="height: 130px;width: 120px; border: 4px solid black;">
+                <img src="{% static 'images/Gauge.jpg' %}" style="height: 130px;width: 120px;  border: 4px solid black;">
             </div>    
 </div>
 
@@ -424,7 +435,7 @@ input[type=checkbox] {
     <div class="exit-symbol-container" onclick="closeNotification()">
         <span class="exit-symbol">❌</span>
     </div>
-    <pre style="margin-top: 10px;"><b>Enter Your Punch Number here:</b></pre>
+    <pre style="margin-top: 10px; font-size: large; font-weight: bold;">Enter Your Punch Number here:</pre>
     <textarea id="punch_textarea" onkeydown="handleEnterKeyPress(event)"></textarea>
 </div>
 
@@ -468,7 +479,7 @@ input[type=checkbox] {
 <div id="customAlert" ></div>
 
 
-
+<div class="box-3" id="box3"></div><br>
 
 <textarea id="probe-A"></textarea>
     <textarea id="probe-B"></textarea>
@@ -1283,11 +1294,11 @@ function showNotification(message) {
     // Apply styling to the input box
     inputBox.style.fontWeight = 'bold';
     inputBox.style.textAlign = 'center';
-    inputBox.style.color = 'red';
+    inputBox.style.color = 'white';
 
     // Apply highlighting to the input box
-    inputBox.style.backgroundColor = 'pink'; // Or any other background color
-    inputBox.style.border = '2px solid blue'; // Or any other border style
+    inputBox.style.backgroundColor = 'maroon'; // Or any other background color
+    inputBox.style.border = '2px solid white'; // Or any other border style
 }
 
 

@@ -91,7 +91,7 @@ class parameter_settings(models.Model):
     double_radio = models.BooleanField(default=False)
     high_mv = models.FloatField(blank=True, null=True)
     low_mv = models.FloatField(blank=True, null=True)    
-    probe_no = models.FloatField()
+    probe_no = models.CharField(max_length=255)
     measurement_mode = models.CharField(max_length=50)
     nominal = models.FloatField()
     usl = models.FloatField()
@@ -103,6 +103,7 @@ class parameter_settings(models.Model):
     mastering = models.FloatField()
     step_no = models.FloatField()
     hide_checkbox = models.BooleanField(default=False)
+    attribute = models.BooleanField(default=False)
 
 
 def __str__(self):

@@ -145,18 +145,23 @@ def measurement(request):
         except measure_data.MultipleObjectsReturned:
             print("Multiple part models found.")
 
+        if part_model:
+            # Filter Master_settings for the specific part_model
+            latest_entry = Master_settings.objects.filter(selected_value=part_model).order_by('-date_time').first()
+            
+            if latest_entry:
+                # Extract and format the latest date_time
+                last_stored_dates = latest_entry.date_time.strftime("%m-%d-%Y %I:%M:%S %p")
+                print("Latest date_time:", last_stored_dates)
+            else:
+                print("No entries found for the given part_model.")
+
         parameter_settings_qs = parameter_settings.objects.filter(model_id=part_model, hide_checkbox=False).order_by('id')
         last_stored_parameters = Master_settings.objects.filter(selected_value=part_model, parameter_name__in=parameter_settings_qs.values_list('parameter_name', flat=True))
         # Create a dictionary with parameter_name as keys and items as values
         last_stored_parameter = {item['parameter_name']: item for item in last_stored_parameters.values()}
         print("last_stored_parameter",last_stored_parameter)
-        # Extract datetime objects from the values of last_stored_parameter
-        last_dates = [item['date_time'].strftime("%m-%d-%Y %I:%M:%S %p") for item in last_stored_parameter.values()]
-        # Get distinct formatted dates
-        last_stored_dates =', '.join(list(set(last_dates)))
-
-        print("Distinct formatted dates:", last_stored_dates)
-                        
+                              
 
         step_no_values_queryset = parameter_settings.objects.filter(model_id=part_model).values_list('step_no', flat=True).order_by('id')
         step_no_values = list(step_no_values_queryset)

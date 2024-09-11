@@ -49,6 +49,7 @@ def parameter(request):
                     'mastering': parameter.mastering,
                     'step_no': parameter.step_no,
                     'hide_checkbox': parameter.hide_checkbox,
+                    'attribute': parameter.attribute,
                     'utl':parameter.utl,
                     'ltl':parameter.ltl,
                     'digits':parameter.digits,
@@ -126,6 +127,7 @@ def parameter(request):
                 existing_instance.mastering = data.get('mastering')
                 existing_instance.step_no = data.get('stepNo')
                 existing_instance.hide_checkbox = data.get('hideCheckbox')
+                existing_instance.attribute = data.get('attribute')
                 existing_instance.utl = data.get('utl')
                 existing_instance.ltl = data.get('ltl')
                 existing_instance.digits = data.get('digits')
@@ -168,6 +170,7 @@ def parameter(request):
                     mastering=data.get('mastering'),
                     step_no=data.get('stepNo'),
                     hide_checkbox=data.get('hideCheckbox'),
+                    attribute=data.get('attribute'),
                     utl=data.get('utl'),
                     ltl=data.get('ltl'),
                     digits=data.get('digits'),

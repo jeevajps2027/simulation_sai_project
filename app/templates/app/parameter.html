@@ -24,12 +24,14 @@ Parameter Settings
 
 
     .box-3{
-        height: 50px;
+        height: 60px;
         width: 900px;
         margin-left: 20px;
         border: 2px solid black;
-        margin-top: 65px;
-        background-color: black;
+        margin-top: 50px;
+        background-color: rgb(102, 9, 102);
+        border-radius: 10px;
+        
     }
     .box-2{
         height:530px;
@@ -75,28 +77,35 @@ Parameter Settings
         #add-btn{
             width: 200px;
             height: 40px;
-            margin-top: 3px;
+            margin-top: 7px;
             margin-left: 20px;
             background-color: orange;
+            border-radius: 15px;
+            border: 2px solid white;
         }
         #deleteParameterBtn{
             width: 200px;
             height: 40px;
-            margin-top: 3px;
             margin-left: 10px;
             background-color:red;
+            border-radius: 15px;
+            border: 2px solid white;
         }
         #save-btn{
             width: 200px;
             height: 40px;
             margin-left: 10px;
             background-color: rgb(142, 230, 11);
+            border-radius: 15px;
+            border: 2px solid white;
         }
         #cancel-btn{
             width: 200px;
             height:40px ;
             margin-left: 10px;
             background-color: yellow;
+            border-radius: 15px;
+            border: 2px solid white;
         }
 
         .box-2 {
@@ -171,8 +180,15 @@ Parameter Settings
     <label for="low_mv" style="text-align: right; margin-left: 5px;">LOW M-V:</label>
     <input type="text" id="low_mv" style="width: 10%;" value="{{ value.low_mv }}" oninput="validateInteger(this)" ><br>
 
-    <label for="probe_no">PROBE NO:</label>
-    <input type="number" id="probe_no" name="probe_no" oninput="validateInteger(this)" value="{{ value.probe_no }}" required>
+    <label for="measurement_mode">MEASUREMENT MODE:</label>
+    <select id="measurement_mode" name="measurement_mode" required>
+        <option value="CUR" {% if value.measurement_mode == 'CUR' %}selected{% endif %}>CUR</option>
+        <option value="MAX" {% if value.measurement_mode == 'MAX' %}selected{% endif %}>MAX</option>
+        <option value="MIN" {% if value.measurement_mode == 'MIN' %}selected{% endif %}>MIN</option>
+        <option value="TIR" {% if value.measurement_mode == 'TIR' %}selected{% endif %}>TIR</option>
+    </select>
+
+    
 
     <label for="job_dia">JOB DIA:</label>
     <select id="job_dia" style="width: 10%;" name="job_dia" required>
@@ -183,13 +199,8 @@ Parameter Settings
     <label for="nominal" style="margin-left: 40px;">NOMINAL:</label>
     <input type="text" id="nominal" style="width: 10%;margin-left: -35px;" value="{{ value.nominal }}" oninput="validateInteger(this)" required><br>
 
-    <label for="measurement_mode">MEASUREMENT MODE:</label>
-    <select id="measurement_mode" name="measurement_mode" required>
-        <option value="CUR" {% if value.measurement_mode == 'CUR' %}selected{% endif %}>CUR</option>
-        <option value="MAX" {% if value.measurement_mode == 'MAX' %}selected{% endif %}>MAX</option>
-        <option value="MIN" {% if value.measurement_mode == 'MIN' %}selected{% endif %}>MIN</option>
-        <option value="TIR" {% if value.measurement_mode == 'TIR' %}selected{% endif %}>TIR</option>
-    </select>
+    <label for="probe_no">PROBE NO:</label>
+    <input type="text" id="probe_no" name="probe_no"  value="{{ value.probe_no }}" required>
 
     <label for="usl" style="margin-left: 75px;">USL:</label>
     <input type="text" id="usl" style="width: 10%;margin-left: -55px;" value="{{ value.usl }}" oninput="validateInteger(this)" required>
@@ -231,7 +242,10 @@ Parameter Settings
     </select>
 
     <label for="hide" style="text-align: right;margin-left: 5px;">HIDE:</label>
-    <input type="checkbox" id="hide" style="width: 5%;margin-left:0px;" name="hideCheckbox" {% if value.hide_checkbox %}checked{% endif %}><br>
+    <input type="checkbox" id="hide" style="width: 5%;margin-left:0px;" name="hideCheckbox" ><br>
+
+    <label for="attribute" style="text-align: right;margin-left: 5px;">ATTRIBUTE:</label>
+    <input type="checkbox" id="attribute" style="width: 5%;margin-left:0px;" name="attributeCheckbox"><br>
 
     <div class="box-3">
         <button type="button" id="add-btn"><b> Add New</b></button>
@@ -415,6 +429,7 @@ function updateUI(data) {
                                 document.getElementById('ltl').value = details.parameter_details.ltl;
                                 document.getElementById('digits').value = details.parameter_details.digits;
                                 document.getElementById('job_dia').value = details.parameter_details.job_dia;
+                                document.getElementById('attribute').checked = details.parameter_details.attribute;
 
                         })
                         .catch(error => console.error('Error fetching details:', error));
@@ -525,7 +540,8 @@ function saveValues() {
     const utl = document.getElementById('utl').value;
     const ltl = document.getElementById('ltl').value;
     const job_dia = document.getElementById('job_dia').value;
-
+    const attribute = document.getElementById('attribute').checked;
+    
     // Validation for high_mv and low_mv
     if (!doubleRadio && parseFloat(highMV) <= parseFloat(lowMV)) {
         alert('Error: HIGH M-V should be greater than LOW M-V.');
@@ -566,7 +582,8 @@ function saveValues() {
             digits: digits,
             utl: utl,
             ltl: ltl,
-            job_dia: job_dia
+            job_dia: job_dia,
+            attribute:attribute,
         };
 
         // Get CSRF token from cookies
@@ -745,6 +762,7 @@ function validateInteger(input) {
 
                 // Clear checkbox state
                 document.getElementById('hide').checked = false;
+                document.getElementById('attribute').checked = false;
 
                 // Clear dropdown selection
                 document.getElementById('measurement_mode').value = ''; // You can set the default value here if needed
@@ -757,6 +775,7 @@ function validateInteger(input) {
                 document.getElementById('ltl').value = '';
                 document.getElementById('digits').value = '';
                 document.getElementById('job_dia').value = '';
+                
                 
                 if(lastSelectedParameterElement){
                     lastSelectedParameterElement.style.backgroundColor ='';

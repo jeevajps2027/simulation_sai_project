@@ -196,11 +196,15 @@ Mastering Page
     display: none;
     position: fixed; 
     top: 20px;
+    width: 500px;
+    height: 100px;
     left: 50%;
+    text-align: center;
+    font-weight: bold;
     transform: translateX(-50%);
-    background-color: #f8d7da; 
-    color: #721c24; 
-    border: 1px solid #f5c6cb; 
+    background-color: yellow; 
+    color: black; 
+    border: 1px solid black ; 
     padding: 10px;
     z-index: 1000;
 }
@@ -294,14 +298,6 @@ Mastering Page
     const machineValues = "{{ machine_values|safe }}";
     
     
-    
-    // document.getElementById("lowMasterBtn").disabled = false;
-    // document.getElementById("lowMasterBtn").style.opacity = '1';
-    // document.getElementById("highMasterBtn").disabled = true;
-    // document.getElementById("highMasterBtn").style.opacity = '0.6';
-
-
-
     function MeasureBtnClick() {
         window.location.href = '/measurement/'; // Replace '/measurement' with the actual URL of the measurement page
     }
@@ -351,13 +347,16 @@ window.addEventListener('load', function() {
 });
 
  
-  // Global variable to store the selected radio button
-var selectedRadioOption = 'All Parameter';
+
+// Global variable to store the selected radio button
+var selectedRadioOption = 'All Parameters';
 
 // Function to handle radio button click
 function handleRadioClick(element) {
     selectedRadioOption = element.id === 'all_parameter' ? 'All Parameters' : 'Parameterwise';
-    document.getElementById('pre').textContent = selectedRadioOption + " selected for mastering";
+    
+    // Update the 'pre' element with the selected radio option and its group
+    updatePreText();
 
     // Show or hide the dynamically created radio buttons
     var radioButtons = document.querySelectorAll('.container_radio');
@@ -371,6 +370,14 @@ function handleRadioClick(element) {
         });
     }
 }
+
+// Function to update 'pre' text with selected radio and mastering group
+function updatePreText() {
+    var selectedMastering = parseInt(document.getElementById('mastering').value);
+    var preTag = document.getElementById('pre');
+    preTag.textContent = selectedRadioOption + " selected for mastering Group " + selectedMastering ;
+}
+
 
 
 
@@ -434,7 +441,7 @@ function lowMasteringClick(response) {
             },
             success: function(response) {
                 console.log('Low mastering data sent successfully', response);
-                showCustomAlert('Data sent successfully: ' + response.message);
+               
 
                 // After a successful submission, wait for 3 seconds to retrieve new values
                 setTimeout(function() {
@@ -470,7 +477,7 @@ function lowMasteringClick(response) {
                         },
                         error: function(xhr, status, error) {
                             console.error('Error retrieving new values for low mastering', error);
-                            showCustomAlert('Error retrieving new values: ' + xhr.responseText);
+                           
                         }
                     });
                 }, 500); // Wait for 3 seconds before retrieving the new values
@@ -478,7 +485,7 @@ function lowMasteringClick(response) {
             error: function(xhr, status, error) {
                 console.error('Error sending low mastering data', error);
                 console.log('Response text:', xhr.responseText); // Log response text
-                showCustomAlert('Error sending low mastering data: ' + xhr.responseText); // Show error alert
+               
             }
         });
     }
@@ -542,7 +549,11 @@ function highMasteringClick(response) {
             },
             success: function(response) {
                 console.log('Data sent successfully', response);
-                showCustomAlert('Data sent successfully: ' + response.message); // Show success alert
+                // Check if result.data contains values
+                if (result.data.length > 0) {
+                    // Only show alert if data is not empty
+                    showCustomAlert('Data sent successfully: ' + response.message);
+                }
 
                 // Wait for 3 seconds and then retrieve the new values
                 setTimeout(function() {
@@ -571,7 +582,7 @@ function highMasteringClick(response) {
                         },
                         error: function(xhr, status, error) {
                             console.error('Error retrieving new values', error);
-                            showCustomAlert('Error retrieving new values: ' + xhr.responseText);
+                            
                         }
                     });
                 }, 3000); // Wait for 3 seconds before retrieving the new values
@@ -579,7 +590,7 @@ function highMasteringClick(response) {
             error: function(xhr, status, error) {
                 console.error('Error sending data', error);
                 console.log('Response text:', xhr.responseText); // Log the response text
-                showCustomAlert('Error sending data: ' + xhr.responseText); // Show error alert
+                
             }
         });
     }
@@ -923,6 +934,7 @@ function updateMastering(selectedRadioButtonId) {
     if (selectedRadioButton) {
         console.log('Selected Radio Button ID:', selectedRadioButton.id);
     }
+    updatePreText();
 }
 
 

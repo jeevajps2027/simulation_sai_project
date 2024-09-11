@@ -195,12 +195,16 @@
         console.log('Server Response:', data);
         if (data.status === 'success') {
           displayNotification('Your part selection was successful.');
+          // Set a 5-second delay before reloading the page
+          setTimeout(() => {
+            location.reload();
+          }, 2000);
         }
       })
       .catch(error => {
         console.error('Error:', error);
       });
-    location.reload();
+    
     });
 
     function displayNotification(message) {
