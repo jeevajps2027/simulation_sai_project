@@ -329,6 +329,39 @@ input[type=checkbox] {
     margin-top:-440px;
     border: 1px solid black;
 }
+#attribute{
+    background-color: red;
+    height: 40px;
+}
+
+#attributeParameter{
+    width: 180px;
+    margin-left: 10px;
+    height: 40px;
+}
+#attributeAccept{
+    background-color: #23e909;
+    width: 120px;
+    margin-left: 10px;
+    height: 35px;
+    margin-top: 10px;
+    font-weight: bold;
+}
+#attributeReject{
+    background-color: red;
+    width: 120px;
+    margin-left: 10px;
+    height: 35px;
+    font-weight: bold;
+}
+#attributeStatus{
+    width: 180px;
+    margin-left: 10px;
+    height: 70px;
+    margin-top: 30px;
+    text-align: center;
+}
+
 </style>
 
 <div class="box-1" id="box1">
@@ -479,7 +512,17 @@ input[type=checkbox] {
 <div id="customAlert" ></div>
 
 
-<div class="box-3" id="box3"></div><br>
+<div class="box-3" id="box3">
+    <center id="attribute" ><b>ATTRIBUTE PARAMETER</b></center>
+    <label for="attributeParameter" style="width: 200px;">Parameter Name:</label><br>
+    <input type="text" id="attributeParameter" ><br><br>
+
+    <button type="button" id="attributeReject">REJECT</button><br>
+    <button type="button" id="attributeAccept">ACCEPT</button>
+
+    <input type="text" id="attributeStatus" ><br><br>
+  </div><br>
+  
 
 <textarea id="probe-A"></textarea>
     <textarea id="probe-B"></textarea>

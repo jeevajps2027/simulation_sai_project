@@ -9,7 +9,7 @@ from openpyxl import Workbook
 @csrf_exempt
 def report(request):
     from app.models import MeasurementData, TableFiveData,parameter_settings,TableOneData,TableThreeData,TableTwoData,TableFourData
-    from app.models import consolidate_with_srno,consolidate_without_srno,parameterwise_report,jobwise_report
+    from app.models import consolidate_with_srno,consolidate_without_srno,parameterwise_report,jobwise_report,ShiftSettings
     if request.method == 'POST':
         try:
             data = json.loads(request.body)
@@ -162,6 +162,15 @@ def report(request):
            
             vendor_data = TableFiveData.objects.order_by('id').values_list('vendor_code', flat=True).distinct()
             print('your vendor from that views:',vendor_data)
+
+            shift_values = ShiftSettings.objects.order_by('id').values_list('shift', 'shift_time').distinct()
+    
+            # Convert the QuerySet to a list of lists
+            shift_values_list = list(shift_values)
+            
+            # Serialize the list to JSON
+            shift_values_json = json.dumps(shift_values_list)
+            print("shift_values_json",shift_values_json)
             
             # Create a context dictionary to pass the data to the template
             context = {
@@ -170,6 +179,7 @@ def report(request):
                 'shift_data' : shift_data,
                 'operator_data' : operator_data,
                 'vendor_data' : vendor_data,
+                'shift_values': shift_values_json,
 
             }
         except json.JSONDecodeError as e:

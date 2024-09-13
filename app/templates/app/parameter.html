@@ -245,7 +245,7 @@ Parameter Settings
     <input type="checkbox" id="hide" style="width: 5%;margin-left:0px;" name="hideCheckbox" ><br>
 
     <label for="attribute" style="text-align: right;margin-left: 5px;">ATTRIBUTE:</label>
-    <input type="checkbox" id="attribute" style="width: 5%;margin-left:0px;" name="attributeCheckbox"><br>
+    <input type="checkbox" id="attribute" style="width: 5%;margin-left:0px;" name="attributeCheckbox" onchange="handleAttributeChange()"><br>
 
     <div class="box-3">
         <button type="button" id="add-btn"><b> Add New</b></button>
@@ -274,59 +274,110 @@ Parameter Settings
 
 
 <script>
+////////////////////////////////////////////////////////////////////////////////////
 
+document.getElementById("measurement_mode").addEventListener("change", function () {
+    const selectedMode = this.value;
 
-function validateForm() {
-        const requiredFields = document.querySelectorAll('#box1 input[required], #box1 select[required]');
-        let allFilled = true;
+    // Get all elements that need to be disabled/enabled
+    const analogZero = document.getElementById("analog_zero");
+    const highMv = document.getElementById("high_mv");
+    const referenceValue = document.getElementById("reference_value");
+    const lowMv = document.getElementById("low_mv");
+    const single = document.getElementById("single");
+    const double = document.getElementById("double");
+    const jobDia = document.getElementById("job_dia");
 
-        requiredFields.forEach(field => {
-            if (!field.value) {
-                allFilled = false;
-                field.style.border = "1px solid red"; // Highlight empty fields
-            } else {
-                field.style.border = ""; // Reset if filled
-            }
+    if (selectedMode === "TIR") {
+        // Disable and blur fields
+        [analogZero, highMv, referenceValue, lowMv].forEach(field => {
+            field.disabled = true;
+            field.value = ''; // Clear value if required
+            field.style.filter = "blur(2px)";
         });
-
-        if (allFilled) {
-            saveValues();
-        } else {
-            alert('Please fill All required fields before *Saving*.');
-        }
+        
+        // Disable radio buttons
+        single.disabled = true;
+        double.disabled = true;
+        
+        // Disable job diameter select box
+        jobDia.disabled = true;
+        jobDia.style.filter = "blur(2px)";
+    } else {
+        // Enable and remove blur from fields
+        [analogZero, highMv, referenceValue, lowMv].forEach(field => {
+            field.disabled = false;
+            field.style.filter = "";
+        });
+        
+        // Enable radio buttons
+        single.disabled = false;
+        double.disabled = false;
+        
+        // Enable job diameter select box
+        jobDia.disabled = false;
+        jobDia.style.filter = "";
     }
+});
+///////////////////////////////////////////////////////////////////////////////////////
+
+function handleAttributeChange() {
+    var isAttributeChecked = document.getElementById('attribute').checked;
+    var fieldsToDisable = [
+        'analog_zero', 'high_mv', 'reference_value', 'low_mv', 
+        'measurement_mode', 'job_dia', 'nominal', 'probe_no', 
+        'usl', 'lsl', 'mastering', 'utl', 'ltl', 'digits', 'hide'
+    ];
+
+    fieldsToDisable.forEach(function(fieldId) {
+        var field = document.getElementById(fieldId);
+        if (field) {
+            field.disabled = isAttributeChecked;
+            if (isAttributeChecked) {
+                field.blur(); // Remove focus if checkbox is checked
+            }
+        }
+    });
+
+    // Ensure the fields that should remain enabled are not affected
+    ['sr_no', 'partModel', 'parameter_name', 'step_no'].forEach(function(fieldId) {
+        var field = document.getElementById(fieldId);
+        if (field) {
+            field.disabled = false;
+        }
+    });
+}
+
+
+////////////////////////////////////////////////////////////////////////////////////////
+
+
+// Updated validateForm function to only check required fields that are not disabled
+function validateForm() {
+    const requiredFields = document.querySelectorAll('#box1 input[required]:not([disabled]), #box1 select[required]:not([disabled])');
+    let allFilled = true;
+
+    requiredFields.forEach(field => {
+        if (!field.value) {
+            allFilled = false;
+            field.style.border = "1px solid red"; // Highlight empty fields
+        } else {
+            field.style.border = ""; // Reset if filled
+        }
+    });
+
+    if (allFilled) {
+        saveValues();
+    } else {
+        alert('Please fill All required fields before *Saving*.');
+    }
+}
+
 
     
 
 
-    function handleRadioClick(option) {
-    var analogZero = document.getElementById('analog_zero');
-    var referenceValue = document.getElementById('reference_value');
-    var lowMv = document.getElementById('low_mv');
-    var highMv = document.getElementById('high_mv');
-
-    if (option === 'single') {
-        // Single: analog_zero, reference_value required; low_mv, high_mv not required
-        analogZero.required = true;
-        referenceValue.required = true;
-        lowMv.required = false;
-        highMv.required = false;
-
-        // Optionally, clear low_mv and high_mv values when not required
-        lowMv.value = '';
-        highMv.value = '';
-    } else if (option === 'double') {
-        // Double: low_mv, high_mv required; analog_zero, reference_value not required
-        analogZero.required = false;
-        referenceValue.required = false;
-        lowMv.required = true;
-        highMv.required = true;
-
-        // Optionally, clear analog_zero and reference_value values when not required
-        analogZero.value = '';
-        referenceValue.value = '';
-    }
-}
+ 
 
      window.addEventListener('DOMContentLoaded', (event) => {
             var inputs = document.querySelectorAll('input');
@@ -399,12 +450,21 @@ function updateUI(data) {
                             // Access the HTML elements and update their values
                                 document.getElementById('parameter_name').value = details.parameter_details.parameter_name;
                                 document.getElementById('sr_no').value = details.parameter_details.sr_no;
-                                // Handle radio buttons
-                                if (details.parameter_details.single_radio) {
-                                    document.getElementById('single').checked = true;
-                                } else if (details.parameter_details.double_radio) {
-                                    document.getElementById('double').checked = true;
-                                }
+                                 // Handle radio buttons
+                        const singleRadio = document.getElementById('single');
+                        const doubleRadio = document.getElementById('double');
+                        
+                        if (details.parameter_details.single_radio) {
+                            singleRadio.checked = true;
+                            doubleRadio.checked = false;
+                        } else if (details.parameter_details.double_radio) {
+                            doubleRadio.checked = true;
+                            singleRadio.checked = false;
+                        } else {
+                            // Unselect both radio buttons if no radio is specified
+                            singleRadio.checked = false;
+                            doubleRadio.checked = false;
+                        }
 
                                 document.getElementById('probe_no').value = details.parameter_details.probe_no;
                                 document.getElementById('analog_zero').value = details.parameter_details.analog_zero;
@@ -585,6 +645,7 @@ function saveValues() {
             job_dia: job_dia,
             attribute:attribute,
         };
+        console.log("the data to be send to the backend:",data)
 
         // Get CSRF token from cookies
         const csrfToken = document.cookie.match(/csrftoken=([^;]+)/);
@@ -697,52 +758,64 @@ function validateInteger(input) {
 });
 
     
-          function handleRadioClick(option) {
-                 // Get references to the input fields
-                 var analogZeroInput = document.getElementById('analog_zero');
-                 var highMvInput = document.getElementById('high_mv');
-                 var referenceValueInput = document.getElementById('reference_value');
-                 var lowMvInput = document.getElementById('low_mv');
-          
-                 // Reset all fields to enabled
-                 analogZeroInput.disabled = false;
-                 highMvInput.disabled = false;
-                 referenceValueInput.disabled = false;
-                 lowMvInput.disabled = false;
-          
-                 // Disable specific fields based on the radio button clicked
-                 if (option === 'single') {
-                     document.getElementById('high_mv').disabled = true;
-                     document.getElementById('low_mv').disabled = true;
-                 } else if (option === 'double') {
-                     document.getElementById('analog_zero').disabled = true;
-                     document.getElementById('reference_value').disabled = true;
-                 }
-             }
-            document.getElementById('high_mv').addEventListener('input', function(event) {
-                if (!document.getElementById('double').checked) {
-                    alert('Please select the "double" radio button first.');
-                }
-            });
+function handleRadioClick(option) {
+    // Get references to the input fields
+    var analogZeroInput = document.getElementById('analog_zero');
+    var highMvInput = document.getElementById('high_mv');
+    var referenceValueInput = document.getElementById('reference_value');
+    var lowMvInput = document.getElementById('low_mv');
 
-            document.getElementById('low_mv').addEventListener('input', function(event) {
-                if (!document.getElementById('double').checked) {
-                    alert('Please select the "double" radio button first.');
-                }
-            });
+    // Clear values of all fields
+    analogZeroInput.value = '';
+    highMvInput.value = '';
+    referenceValueInput.value = '';
+    lowMvInput.value = '';
 
-            document.getElementById('analog_zero').addEventListener('input', function(event) {
-                if (!document.getElementById('single').checked) {
-                    alert('Please select the "single" radio button first.');
-                }
-            });
+    // Reset all fields to enabled
+    analogZeroInput.disabled = false;
+    highMvInput.disabled = false;
+    referenceValueInput.disabled = false;
+    lowMvInput.disabled = false;
 
-            document.getElementById('reference_value').addEventListener('input', function(event) {
-                if (!document.getElementById('single').checked) {
-                    alert('Please select the "single" radio button first.');
-                }
-            });
+    // Disable specific fields based on the radio button clicked
+    if (option === 'single') {
+        highMvInput.disabled = true;
+        lowMvInput.disabled = true;
+    } else if (option === 'double') {
+        analogZeroInput.disabled = true;
+        referenceValueInput.disabled = true;
+    }
+}
 
+// Add event listeners for input fields to handle clearing and validation
+document.getElementById('high_mv').addEventListener('input', function(event) {
+    if (!document.getElementById('double').checked) {
+        alert('Please select the "double" radio button first.');
+        event.target.value = ''; // Clear the input field
+    }
+});
+
+document.getElementById('low_mv').addEventListener('input', function(event) {
+    if (!document.getElementById('double').checked) {
+        alert('Please select the "double" radio button first.');
+        event.target.value = ''; // Clear the input field
+    }
+});
+
+document.getElementById('analog_zero').addEventListener('input', function(event) {
+    if (!document.getElementById('single').checked) {
+        alert('Please select the "single" radio button first.');
+        event.target.value = ''; // Clear the input field
+    }
+});
+
+document.getElementById('reference_value').addEventListener('input', function(event) {
+    if (!document.getElementById('single').checked) {
+        alert('Please select the "single" radio button first.');
+        event.target.value = ''; // Clear the input field
+    }
+});
+       
 
           
           

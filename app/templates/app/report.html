@@ -113,16 +113,15 @@ Report
        
 
 
-        <label for="sr.no" style="margin-top: 20px;" >PART.NO:</label>
-        <select class="sr_no" name="sr_no" disabled>
+        <label for="sr.no" style="margin-top: 20px;">PART.NO:</label>
+        <select class="sr_no" id="sr_no" name="sr_no" disabled>
             <option value="1" selected>1</option>
         </select>
         
-
         <label for="partModel">PART MODEL:</label>
-        <select class="partModel"  name="partModel">
-          {% for model in model_data %}
-                <option>{{ model }}</option>
+        <select class="partModel" id="partModel" name="partModel">
+            {% for model in model_data %}
+                <option>{{ model }}</option> <!-- No need for value="{{ forloop.counter }}" -->
             {% endfor %}
         </select><br>
 
@@ -140,11 +139,11 @@ Report
 
         
         <label for="from_date" style="margin-top: 30px;">FROM DATE TIME:</label>
-        <input type="datetime-local" id="from_date" name="from_date"><br>
+        <input type="datetime-local" class="from-date" id="from_date" name="from_date"><br>
         
 
         <label for="to_date"style="margin-top: 30px;">TO DATE TIME:</label>
-        <input type="datetime-local" id="to_date" name="to_date"><br>
+        <input type="datetime-local" class="to-date"  id="to_date" name="to_date"><br>
 
         <label for="machine" style="margin-top: 30px;">MACHINE:</label>
         <select class="machine" name="machine">
@@ -194,8 +193,8 @@ Report
 
         <label for="partModel">PART MODEL:</label>
         <select class="partModel" id="partModel" name="partModel">
-          {% for model in model_data %}
-                <option>{{ model }}</option>
+            {% for model in model_data %}
+                <option>{{ model }}</option> <!-- No need for value="{{ forloop.counter }}" -->
             {% endfor %}
         </select><br>
 
@@ -213,11 +212,11 @@ Report
 
         
         <label for="from_date" style="margin-top: 30px;">FROM DATE TIME:</label>
-        <input type="datetime-local" id="from_date" name="from_date"><br>
+        <input type="datetime-local" class="from-date" id="from_date" name="from_date"><br>
         
 
         <label for="to_date"style="margin-top: 30px;">TO DATE TIME:</label>
-        <input type="datetime-local" id="to_date" name="to_date"><br>
+        <input type="datetime-local" class="to-date" id="to_date" name="to_date"><br>
 
        <label for="machine" style="margin-top: 30px;">MACHINE:</label>
         <select class="machine" name="machine">
@@ -263,9 +262,9 @@ Report
         
 
         <label for="partModel">PART MODEL:</label>
-        <select class="partModel"id="partModel" name="partModel">
-          {% for model in model_data %}
-                <option>{{ model }}</option>
+        <select class="partModel" id="partModel" name="partModel">
+            {% for model in model_data %}
+                <option>{{ model }}</option> <!-- No need for value="{{ forloop.counter }}" -->
             {% endfor %}
         </select><br>
 
@@ -282,11 +281,11 @@ Report
 
         
         <label for="from_date" style="margin-top: 30px;">FROM DATE TIME:</label>
-        <input type="datetime-local" id="from_date" name="from_date"><br>
+        <input type="datetime-local" class="from-date" id="from_date" name="from_date"><br>
         
 
         <label for="to_date"style="margin-top: 30px;">TO DATE TIME:</label>
-        <input type="datetime-local" id="to_date" name="to_date"><br>
+        <input type="datetime-local" class="to-date" id="to_date" name="to_date"><br>
 
        <label for="machine" style="margin-top: 30px;">MACHINE:</label>
         <select class="machine" name="machine">
@@ -335,11 +334,11 @@ Report
     
 
       <label for="partModel">PART MODEL:</label>
-      <select class="partModel" id="partModel" name="partModel">
-        {% for model in model_data %}
-                <option>{{ model }}</option>
+        <select class="partModel" id="partModel" name="partModel">
+            {% for model in model_data %}
+                <option>{{ model }}</option> <!-- No need for value="{{ forloop.counter }}" -->
             {% endfor %}
-      </select><br>
+        </select><br>
 
         <label for="job_no" style="margin-top: 20px;">JOB NO:</label>
         <input style="width: 40%;"  id="job_no" name="job_no">
@@ -367,8 +366,8 @@ Report
 
         <label for="partModel">PART MODEL:</label>
         <select class="partModel" id="partModel" name="partModel">
-          {% for model in model_data %}
-                <option>{{ model }}</option>
+            {% for model in model_data %}
+                <option>{{ model }}</option> <!-- No need for value="{{ forloop.counter }}" -->
             {% endfor %}
         </select><br>
 
@@ -386,11 +385,11 @@ Report
 
         
         <label for="from_date" style="margin-top: 30px;">FROM DATE TIME:</label>
-        <input type="datetime-local" id="from_date" name="from_date"><br>
+        <input type="datetime-local" class="from-date" id="from_date" name="from_date"><br>
         
 
         <label for="to_date"style="margin-top: 30px;">TO DATE TIME:</label>
-        <input type="datetime-local" id="to_date" name="to_date"><br>
+        <input type="datetime-local" class="to-date" id="to_date" name="to_date"><br>
 
        <label for="machine" style="margin-top: 30px;">MACHINE:</label>
         <select class="machine" name="machine">
@@ -435,6 +434,34 @@ Report
 
 
 <script>
+   document.querySelectorAll('.partModel').forEach(function(partModelDropdown) {
+    partModelDropdown.addEventListener("change", function() {
+        // Get the selected index of the partModel
+        var selectedIndex = this.selectedIndex + 1; // Add 1 to match sr_no with index (starting from 1)
+
+        // Update all sr_no dropdowns
+        document.querySelectorAll('.sr_no').forEach(function(srNoDropdown) {
+            srNoDropdown.innerHTML = ""; // Clear previous options
+
+            // Set the new value for sr_no to match selected partModel index
+            var option = document.createElement("option");
+            option.value = selectedIndex;
+            option.text = selectedIndex;
+            option.selected = true;
+
+            srNoDropdown.appendChild(option);
+        });
+
+        // Optionally, if you want to update all partModel dropdowns as well
+        document.querySelectorAll('.partModel').forEach(function(otherPartModelDropdown) {
+            if (otherPartModelDropdown !== partModelDropdown) {
+                otherPartModelDropdown.selectedIndex = selectedIndex - 1;
+            }
+        });
+    });
+});
+
+
 ///////////////////////////////////////////////////////////////////////////////////
 
 //cursor to blink always in the job_no report
@@ -442,6 +469,66 @@ Report
 function focusJobNoInput() {
         document.getElementById('job_no').focus();
     }
+
+  // Parse the shift values from your JSON object
+  var shiftValues = JSON.parse('{{ shift_values|escapejs }}');
+        console.log('Shift values:', shiftValues);
+
+        // Helper function to convert 12-hour time format to 24-hour format
+        function convertTo24Hour(timeString) {
+            let [time, modifier] = timeString.trim().split(' ');
+            let [hours, minutes, seconds] = time.split(':');
+            if (modifier === 'PM' && hours !== '12') {
+                hours = parseInt(hours, 10) + 12;
+            }
+            if (modifier === 'AM' && hours === '12') {
+                hours = 0;
+            }
+            return `${hours.toString().padStart(2, '0')}:${minutes}:${seconds}`;
+        }
+
+        // Function to determine the from-date based on the current time
+        function setDateTimes() {
+            let now = new Date();
+            let currentTime = now.toTimeString().split(' ')[0]; // 'HH:MM:SS'
+            let currentDate = now.toISOString().split('T')[0]; // 'YYYY-MM-DD'
+
+            // Remove seconds from the current time for to-date
+            let [hours, minutes] = currentTime.split(':');
+            let toDateTime = `${currentDate}T${hours}:${minutes}`;
+
+            // Set the to-date input
+            let toDateElements = document.getElementsByClassName('to-date');
+            for (let element of toDateElements) {
+                element.value = toDateTime;
+            }
+
+            // Determine the from-date based on the shift values
+            let fromDateTime = null;
+            for (let i = shiftValues.length - 1; i >= 0; i--) {
+                let [shiftName, shiftTime] = shiftValues[i];
+                let shift24HourTime = convertTo24Hour(shiftTime);
+                if (currentTime >= shift24HourTime) {
+                    fromDateTime = `${currentDate}T${shift24HourTime}`;
+                    break;
+                }
+            }
+            if (!fromDateTime) {
+                fromDateTime = `${currentDate}T00:00:00`; // Default to start of the day if no shift is found
+            }
+
+            // Set the from-date input
+            let fromDateElements = document.getElementsByClassName('from-date');
+            for (let element of fromDateElements) {
+                element.value = fromDateTime;
+            }
+
+            console.log('Current time:', currentTime);
+            console.log('To date-time (without seconds):', toDateTime);
+            console.log('From date-time:', fromDateTime);
+        }
+
+        setDateTimes();
 
 /////////////////////////////////////////////////////////////////////////////////
 

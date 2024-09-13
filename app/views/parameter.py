@@ -84,103 +84,133 @@ def parameter(request):
     elif request.method == 'POST':
         try:
             data = json.loads(request.body.decode('utf-8'))
+
             model_id = data.get('modelId')
             parameter_value = data.get('parameterValue')
             sr_no = data.get('srNo')
-            
+
             # Check if the same parameter_name already exists for the given model_id
             existing_parameter = parameter_settings.objects.filter(
                 model_id=model_id, parameter_name=parameter_value
             ).exclude(sr_no=sr_no).first()
-            
+
             if existing_parameter:
                 return JsonResponse({
                     'success': False,
                     'message': f'The parameter name "{parameter_value}" already exists for this "{model_id}".'
                 }, status=400)
-            
-            # Now proceed to update or create the parameter
+
+            # Retrieve or create a new instance
             existing_instance = parameter_settings.objects.filter(model_id=model_id, sr_no=sr_no).first()
+
+            def get_valid_number(value):
+                """Convert value to float if it's a valid number, else return 0 (or another default)."""
+                try:
+                    return float(value) if value and value.strip() else 0.0
+                except ValueError:
+                    return 0.0
+
+            def get_valid_integer(value):
+                """Convert value to int if it's a valid integer, else return 0 (or another default)."""
+                try:
+                    return int(value) if value and value.strip() else 0
+                except ValueError:
+                    return 0
 
             if existing_instance:
                 # Update the existing instance with the received values
-                existing_instance.parameter_name = parameter_value          
-                existing_instance.single_radio = data.get('singleRadio')
-                existing_instance.double_radio = data.get('doubleRadio')
+                existing_instance.parameter_name = parameter_value
+                existing_instance.single_radio = data.get('singleRadio', False)
+                existing_instance.double_radio = data.get('doubleRadio', False)
 
+                # Initialize variables
+                analog_zero = None
+                reference_value = None
+                high_mv = None
+                low_mv = None
+
+                # Handle conditional values based on radio button selection
                 if existing_instance.single_radio:
-                    existing_instance.analog_zero = data.get('analogZero')
-                    existing_instance.reference_value = data.get('referenceValue')
-                    existing_instance.high_mv = None
-                    existing_instance.low_mv = None
+                    analog_zero = get_valid_number(data.get('analogZero', ''))
+                    reference_value = get_valid_number(data.get('referenceValue', ''))
                 elif existing_instance.double_radio:
-                    existing_instance.high_mv = data.get('highMV')
-                    existing_instance.low_mv = data.get('lowMV')
-                    existing_instance.analog_zero = None
-                    existing_instance.reference_value = None
+                    high_mv = get_valid_number(data.get('highMV', ''))
+                    low_mv = get_valid_number(data.get('lowMV', ''))
 
-                existing_instance.probe_no = data.get('probeNo')
-                existing_instance.measurement_mode = data.get('measurementMode')
-                existing_instance.nominal = data.get('nominal')
-                existing_instance.usl = data.get('usl')
-                existing_instance.lsl = data.get('lsl')
-                existing_instance.mastering = data.get('mastering')
-                existing_instance.step_no = data.get('stepNo')
-                existing_instance.hide_checkbox = data.get('hideCheckbox')
-                existing_instance.attribute = data.get('attribute')
-                existing_instance.utl = data.get('utl')
-                existing_instance.ltl = data.get('ltl')
-                existing_instance.digits = data.get('digits')
-                existing_instance.job_dia = data.get('job_dia')
+                existing_instance.analog_zero = analog_zero
+                existing_instance.reference_value = reference_value
+                existing_instance.high_mv = high_mv
+                existing_instance.low_mv = low_mv
+
+                # Handle other fields
+                existing_instance.probe_no = data.get('probeNo', '')
+                existing_instance.measurement_mode = data.get('measurementMode', '')
+                existing_instance.nominal = get_valid_number(data.get('nominal', ''))
+                existing_instance.usl = get_valid_number(data.get('usl', ''))
+                existing_instance.lsl = get_valid_number(data.get('lsl', ''))
+                existing_instance.mastering = get_valid_number(data.get('mastering', ''))
+                existing_instance.step_no = get_valid_number(data.get('stepNo', ''))
+                existing_instance.hide_checkbox = data.get('hideCheckbox', False)
+                existing_instance.attribute = data.get('attribute', False)
+                existing_instance.utl = get_valid_number(data.get('utl', ''))
+                existing_instance.ltl = get_valid_number(data.get('ltl', ''))
+                existing_instance.digits = get_valid_integer(data.get('digits', ''))
+                existing_instance.job_dia = data.get('job_dia', '')
 
                 existing_instance.save()
 
                 return JsonResponse({'success': True, 'message': 'Parameter updated successfully.'})
 
-            else:    
-                # Handle radio button values and create new instance
-                single_radio = data.get('singleRadio')
-                double_radio = data.get('doubleRadio')
+            else:
+                # Create a new instance with the received values
+                single_radio = data.get('singleRadio', False)
+                double_radio = data.get('doubleRadio', False)
+
+                # Initialize variables
+                analog_zero = None
+                reference_value = None
+                high_mv = None
+                low_mv = None
+
                 if single_radio:
-                    analog_zero = data.get('analogZero')
-                    reference_value = data.get('referenceValue')
-                    high_mv = None
-                    low_mv = None
+                    analog_zero = get_valid_number(data.get('analogZero', ''))
+                    reference_value = get_valid_number(data.get('referenceValue', ''))
                 elif double_radio:
-                    high_mv = data.get('highMV')
-                    low_mv = data.get('lowMV')
-                    analog_zero = None
-                    reference_value = None
+                    high_mv = get_valid_number(data.get('highMV', ''))
+                    low_mv = get_valid_number(data.get('lowMV', ''))
 
                 const_value_instance = parameter_settings.objects.create(
                     model_id=model_id,
                     parameter_name=parameter_value,
-                    sr_no=sr_no, 
+                    sr_no=sr_no,
                     single_radio=single_radio,
                     double_radio=double_radio,
                     analog_zero=analog_zero,
                     reference_value=reference_value,
                     high_mv=high_mv,
                     low_mv=low_mv,
-                    probe_no=data.get('probeNo'),
-                    measurement_mode=data.get('measurementMode'),
-                    nominal=data.get('nominal'),
-                    usl=data.get('usl'),
-                    lsl=data.get('lsl'),
-                    mastering=data.get('mastering'),
-                    step_no=data.get('stepNo'),
-                    hide_checkbox=data.get('hideCheckbox'),
-                    attribute=data.get('attribute'),
-                    utl=data.get('utl'),
-                    ltl=data.get('ltl'),
-                    digits=data.get('digits'),
-                    job_dia=data.get('job_dia')
+                    probe_no=data.get('probeNo', ''),
+                    measurement_mode=data.get('measurementMode', ''),
+                    nominal=get_valid_number(data.get('nominal', '')),
+                    usl=get_valid_number(data.get('usl', '')),
+                    lsl=get_valid_number(data.get('lsl', '')),
+                    mastering=get_valid_number(data.get('mastering', '')),
+                    step_no=get_valid_number(data.get('stepNo', '')),
+                    hide_checkbox=data.get('hideCheckbox', False),
+                    attribute=data.get('attribute', False),
+                    utl=get_valid_number(data.get('utl', '')),
+                    ltl=get_valid_number(data.get('ltl', '')),
+                    digits=get_valid_integer(data.get('digits', '')),
+                    job_dia=data.get('job_dia', '')
                 )
-                
+
                 return JsonResponse({'success': True, 'message': 'Parameter created successfully.'})
-                
+
         except Exception as e:
             return JsonResponse({'success': False, 'message': str(e)})
+
+
+
             
     elif request.method == 'DELETE':
         try:

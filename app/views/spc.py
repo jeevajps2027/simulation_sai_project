@@ -1,58 +1,189 @@
 
-import pandas as pd
-import matplotlib.pyplot as plt
-import io
-import base64
-import urllib.parse
+import json
+from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render
+from django.views.decorators.csrf import csrf_exempt 
+from openpyxl import Workbook
 
 
+
+@csrf_exempt
 def spc(request):
-    from  app.models import MeasurementData
-    # Fetch data from the database
-    measurements = MeasurementData.objects.all()
+    from app.models import MeasurementData, TableFiveData,parameter_settings,TableOneData,TableThreeData,TableTwoData,TableFourData
+    from app.models import consolidate_with_srno,consolidate_without_srno,parameterwise_report,jobwise_report,ShiftSettings
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            print("data:",data)
+            part_model = data.get('partModel')
+            print(part_model)
+            form_id = data.get('itemId')
+            print("form_id:",form_id)
+            if form_id == 'consolidate_with_srno':
+                partModel = data.get('partModel')
+                parameterName = data.get('parameter_name')
+                operator = data.get('operator')
+                formatted_from_date = data.get('from_date')
+                formatted_to_date = data.get('to_date')
+                machine = data.get('machine')
+                vendor_code = data.get('vendor_code')
+                job_no = data.get('job_no')
+                shift = data.get('shift')
+                current_date_time = data.get('currentDateTime')
+
+                # Get or create consolidate_with_srno instance with id=1
+                instance, created = consolidate_with_srno.objects.get_or_create(id=1)
+
+                # Update the instance with the new data
+                instance.part_model = partModel
+                instance.parameter_name = parameterName
+                instance.operator = operator
+                instance.formatted_from_date = formatted_from_date
+                instance.formatted_to_date = formatted_to_date
+                instance.machine = machine
+                instance.vendor_code = vendor_code
+                instance.job_no = job_no
+                instance.shift = shift
+                instance.current_date_time = current_date_time
+
+                # Save the instance
+                instance.save()
+            elif form_id == 'consolidate_without_srno':
+                partModel = data.get('partModel')
+                parameterName = data.get('parameter_name')
+                operator = data.get('operator')
+                formatted_from_date = data.get('from_date')
+                formatted_to_date = data.get('to_date')
+                machine = data.get('machine')
+                vendor_code = data.get('vendor_code')
+                shift = data.get('shift')
+                current_date_time = data.get('currentDateTime')
+
+                 # Get or create consolidate_with_srno instance with id=1
+                instance, created = consolidate_without_srno.objects.get_or_create(id=1)
+
+                # Update the instance with the new data
+                instance.part_model = partModel
+                instance.parameter_name = parameterName
+                instance.operator = operator
+                instance.formatted_from_date = formatted_from_date
+                instance.formatted_to_date = formatted_to_date
+                instance.machine = machine
+                instance.vendor_code = vendor_code
+                instance.shift = shift
+                instance.current_date_time = current_date_time
+
+                # Save the instance
+                instance.save()
+            elif form_id == 'parameterwise_report':
+                partModel = data.get('partModel')
+                parameterName = data.get('parameter_name')
+                operator = data.get('operator')
+                formatted_from_date = data.get('from_date')
+                formatted_to_date = data.get('to_date')
+                machine = data.get('machine')
+                vendor_code = data.get('vendor_code')
+                job_no = data.get('job_no')
+                shift = data.get('shift')
+                current_date_time = data.get('currentDateTime')
+
+                # Get or create consolidate_with_srno instance with id=1
+                instance, created = parameterwise_report.objects.get_or_create(id=1)
+
+                # Update the instance with the new data
+                instance.part_model = partModel
+                instance.parameter_name = parameterName
+                instance.operator = operator
+                instance.formatted_from_date = formatted_from_date
+                instance.formatted_to_date = formatted_to_date
+                instance.machine = machine
+                instance.vendor_code = vendor_code
+                instance.job_no = job_no
+                instance.shift = shift
+                instance.current_date_time = current_date_time
+
+                # Save the instance
+                instance.save()
+            elif form_id == 'jobwise_report':
+                partModel = data.get('partModel')
+                formatted_from_date = data.get('from_date')
+                formatted_to_date = data.get('to_date')
+                job_no = data.get('job_no')
+                current_date_time = data.get('currentDateTime')
+
+                # Get or create consolidate_with_srno instance with id=1
+                instance, created = jobwise_report.objects.get_or_create(id=1)
+                instance.part_model = partModel
+                instance.formatted_from_date = formatted_from_date
+                instance.formatted_to_date = formatted_to_date
+                instance.job_no = job_no
+                instance.current_date_time = current_date_time
+
+                # Save the instance
+                instance.save()
+              
+
+                
+
+            
+
+            # Filter parameter_settings where model_id matches part_model and get distinct parameter_name
+            parameter_data = parameter_settings.objects.order_by('id').filter(model_id=part_model).values_list('parameter_name', flat=True).distinct()
+            print('Filtered parameter_name:', parameter_data)
+
+            punch_data = MeasurementData.objects.filter(part_model=part_model).values_list('comp_sr_no', flat=True).distinct()
+            print('your component_serial_number from that views:',punch_data)
+                        
+             # Prepare the response data
+            response_data = {
+                'status': 'success',
+                'message': f"Received model: {part_model}",
+                'parameter_names': list(parameter_data),
+                'component_serial_numbers': list(punch_data)
+            }
+            return JsonResponse(response_data)
+        except json.JSONDecodeError:
+            response = {'status': 'error', 'message': 'Invalid JSON'}
+            return JsonResponse(response, status=400)
+         
+    elif request.method == 'GET':
+        try:
+            model_data = TableOneData.objects.order_by('id').values_list('part_model', flat=True).distinct()
+            print('your part_model from that views:',model_data)
+            
+            machine_data = TableThreeData.objects.order_by('id').values_list('machine_name', flat=True).distinct()
+            print('your part_model from that views:',machine_data)
+            
+            shift_data = TableTwoData.objects.order_by('id').values_list('batch_no', flat=True).distinct()
+            print('your part_model from that views:',shift_data)
+            
+            operator_data = TableFourData.objects.order_by('id').values_list('operator_name', flat=True).distinct()
+            print('your part_model from that views:',operator_data)
+            
+           
+            vendor_data = TableFiveData.objects.order_by('id').values_list('vendor_code', flat=True).distinct()
+            print('your vendor from that views:',vendor_data)
+
+            shift_values = ShiftSettings.objects.order_by('id').values_list('shift', 'shift_time').distinct()
     
-    # Convert to DataFrame and filter out non-numeric values
-    data = pd.DataFrame(list(measurements.values('date', 'comp_sr_no')))
-    data['comp_sr_no'] = pd.to_numeric(data['comp_sr_no'], errors='coerce')  # Convert to numeric, coerce errors to NaN
-    
-    # Drop rows with NaN (if any)
-    data = data.dropna()
+            # Convert the QuerySet to a list of lists
+            shift_values_list = list(shift_values)
+            
+            # Serialize the list to JSON
+            shift_values_json = json.dumps(shift_values_list)
+            print("shift_values_json",shift_values_json)
+            
+            # Create a context dictionary to pass the data to the template
+            context = {
+                'model_data' : model_data,
+                'machine_data' : machine_data,
+                'shift_data' : shift_data,
+                'operator_data' : operator_data,
+                'vendor_data' : vendor_data,
+                'shift_values': shift_values_json,
 
-    # Convert date string to datetime object
-    data['date'] = pd.to_datetime(data['date'], format='%Y-%m-%d', errors='coerce')  # Adjust format as per your actual date format
-    
-    # Drop rows with NaN dates (if any)
-    data = data.dropna(subset=['date'])
-
-    # Calculate control limits
-    if not data.empty:
-        mean = data['comp_sr_no'].mean()
-        std = data['comp_sr_no'].std()
-        ucl = mean + 3 * std
-        lcl = mean - 3 * std
-    else:
-        mean = std = ucl = lcl = 0  # Handle case when there is no valid data
-    
-    # Create the control chart
-    plt.figure(figsize=(10, 6))
-    plt.plot(data['date'], data['comp_sr_no'], marker='o', linestyle='-', color='b', label='Measurement')
-    plt.axhline(mean, color='g', linestyle='--', label='Mean')
-    plt.axhline(ucl, color='r', linestyle='--', label='UCL (Upper Control Limit)')
-    plt.axhline(lcl, color='r', linestyle='--', label='LCL (Lower Control Limit)')
-    plt.fill_between(data['date'], lcl, ucl, color='r', alpha=0.1)
-
-    plt.title('Control Chart')
-    plt.xlabel('Date')
-    plt.ylabel('Component Serial Number')
-    plt.legend()
-    plt.grid(True)
-
-    # Save the plot to a BytesIO object
-    buf = io.BytesIO()
-    plt.savefig(buf, format='png')
-    buf.seek(0)
-    string = base64.b64encode(buf.read())
-    uri = urllib.parse.quote(string)
-
-    return render(request, 'app/spc.html', {'chart': uri})
+            }
+        except json.JSONDecodeError as e:
+            return JsonResponse({'error': 'Invalid JSON format in the request body'}, status=400)    
+    # Render the template with the context
+    return render(request, 'app/spc.html', context)
