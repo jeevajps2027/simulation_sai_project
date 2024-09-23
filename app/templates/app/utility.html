@@ -362,61 +362,70 @@ Utility
             <button type="button" id="cancel-btn"><b>Cancel</b></button>
         </a>
         <button type="button" id="save-btn-2"><b>Save</b></button>  
-   
+    
+        <script>
+           $(document).ready(function() {
+               $('#save-btn-2').click(function() {
+                   // Get the value of the time input
+                   const rawTime = $('#shift_time').val();
+                   const shiftValue = $('#shift').val();
+    
+                   // Check if the shift value starts with "SHIFT-" and contains a number after it
+                   const shiftPattern = /^SHIFT-\d+$/;
+    
+                   if (!shiftPattern.test(shiftValue)) {
+                       alert('Please enter a valid shift value like SHIFT-1, SHIFT-2, etc.');
+                       return;  // Stop further execution if validation fails
+                   }
+    
+                   // Parse the time into a Date object
+                   const parsedTime = new Date('1970-01-01T' + rawTime);
+    
+                   // Format the time into HH:MM:SS AM/PM format
+                   const formattedTime = parsedTime.toLocaleTimeString([], { hour12: true });
+    
+                   // Construct the data object to be sent
+                   const data = {
+                       id: 'shift_settings',
+                       shift: shiftValue,
+                       shift_time: formattedTime
+                   };
+    
+                   console.log('Data to be sent:', data);  // Debugging information
+    
+                   $.ajax({
+                       type: 'POST',
+                       url: '/utility/',  // Replace with your actual backend endpoint
+                       data: JSON.stringify(data),
+                       contentType: 'application/json; charset=utf-8',
+                       dataType: 'json',
+                       success: function(response) {
+                           console.log('Response:', response);  // Debugging information
+                           alert('Shift settings saved successfully!');
+                           window.location.reload();  // Reload the page
+                           sessionStorage.setItem('selectedItem', 'shift_settings');
+                       },
+                       error: function(error) {
+                           console.log('Error:', error);  // Debugging information
+                           alert('An error occurred while saving shift settings.');
+                       }
+                   });
+               });
+    
+               // Check if an item should be selected after page reload
+               const selectedItem = sessionStorage.getItem('selectedItem');
+               if (selectedItem === 'shift_settings') {
+                   enlargeItem(2);
+                   showItem('item-2');
+                   sessionStorage.removeItem('selectedItem');
+               }
+           });
+        </script>
+    </div>
 
-    <script>
-       $(document).ready(function() {
-    $('#save-btn-2').click(function() {
-        // Get the value of the time input
-        const rawTime = $('#shift_time').val();
+    
 
-        // Parse the time into a Date object
-        const parsedTime = new Date('1970-01-01T' + rawTime);
-
-        // Format the time into HH:MM:SS AM/PM format
-        const formattedTime = parsedTime.toLocaleTimeString([], { hour12: true });
-
-        // Construct the data object to be sent
-        const data = {
-            id: 'shift_settings',
-            shift: $('#shift').val(),
-            shift_time: formattedTime
-        };
-
-        console.log('Data to be sent:', data);  // Debugging information
-
-        $.ajax({
-            type: 'POST',
-            url: '/utility/',  // Replace with your actual backend endpoint
-            data: JSON.stringify(data),
-            contentType: 'application/json; charset=utf-8',
-            dataType: 'json',
-            success: function(response) {
-                console.log('Response:', response);  // Debugging information
-                alert('Shift settings saved successfully!');
-                window.location.reload();  // Reload the page
-                // Select the Shift Settings item after reload
-                sessionStorage.setItem('selectedItem', 'shift_settings');
-                
-            },
-            error: function(error) {
-                console.log('Error:', error);  // Debugging information
-                alert('An error occurred while saving shift settings.');
-            }
-        });
-    });
-
-    // Check if an item should be selected after page reload
-    const selectedItem = sessionStorage.getItem('selectedItem');
-        if (selectedItem === 'shift_settings') {
-            enlargeItem(2);
-            showItem('item-2');
-            sessionStorage.removeItem('selectedItem');
-        }
-});
-
-</script>
-</div>
+    
 <div class="item item-3" id="customer_details">
     <center style="color: purple; text-shadow: 2px 2px 4px rgb(240, 118, 240);">
         <h2><b>Customer Details</b></h2>

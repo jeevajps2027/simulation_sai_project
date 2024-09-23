@@ -162,8 +162,13 @@ SPC REPORTS
         </select><br>
 
 
-        <label for="job_no">JOB NO:</label>
-        <select class="job_no" name="job_no"></select>
+        <label for="sample_size">SAMPLE SIZE:</label>
+        <select class="sample_size" name="sample_size">
+            <option value="2">2</option>
+            <option value="3">3</option>
+            <option value="4">4</option>
+            <option value="5">5</option>
+        </select>
         
         <label for="shift">SHIFT:</label>
         <select class="shift" name="shift">
@@ -234,7 +239,14 @@ SPC REPORTS
             {% endfor %}
         </select><br>
 
-        
+        <label for="sample_size">SAMPLE SIZE:</label>
+        <select class="sample_size" name="sample_size">
+            <option value="2">2</option>
+            <option value="3">3</option>
+            <option value="4">4</option>
+            <option value="5">5</option>
+        </select>
+
         <label for="shift">SHIFT:</label>
         <select class="shift" name="shift">
             <option>ALL</option> 
@@ -303,8 +315,13 @@ SPC REPORTS
         </select><br>
 
 
-        <label for="job_no">JOB NO:</label>
-        <select class="job_no" name="job_no"></select>
+       <label for="sample_size">SAMPLE SIZE:</label>
+        <select class="sample_size" name="sample_size">
+            <option value="2">2</option>
+            <option value="3">3</option>
+            <option value="4">4</option>
+            <option value="5">5</option>
+        </select>
         
         <label for="shift">SHIFT:</label>
         <select class="shift" name="shift">
@@ -375,8 +392,13 @@ SPC REPORTS
         </select><br>
 
          
-        <label for="job_no">JOB NO:</label>
-        <select class="job_no" name="job_no"></select>
+        <label for="sample_size">SAMPLE SIZE:</label>
+        <select class="sample_size" name="sample_size">
+            <option value="2">2</option>
+            <option value="3">3</option>
+            <option value="4">4</option>
+            <option value="5">5</option>
+        </select>
         
         <label for="shift">SHIFT:</label>
         <select class="shift" name="shift">
@@ -449,8 +471,13 @@ SPC REPORTS
         </select><br>
 
          
-        <label for="job_no">JOB NO:</label>
-        <select class="job_no" name="job_no"></select>
+        <label for="sample_size">SAMPLE SIZE:</label>
+        <select class="sample_size" name="sample_size">
+            <option value="2">2</option>
+            <option value="3">3</option>
+            <option value="4">4</option>
+            <option value="5">5</option>
+        </select>
         
         <label for="shift">SHIFT:</label>
         <select class="shift" name="shift">
@@ -763,7 +790,7 @@ $(document).ready(function() {
 
 
             // Clear existing options (if any) and add "ALL" option
-            selectElement.empty().append('<option value="ALL">ALL</option>');
+            selectElement.empty();
 
 
             // Populate options based on response.parameter_names
@@ -773,23 +800,6 @@ $(document).ready(function() {
 
             // Optionally, trigger a change event if needed
             selectElement.trigger('change');
-
-///////////////////////////////////////////////////////////////////////////////
-
-            // Select the <select> element for job numbers
-            var selectElement = $('.job_no');
-
-            // Clear existing options (if any) and add "ALL" option
-            selectElement.empty().append('<option value="ALL">ALL</option>');
-
-            // Populate options based on response.component_serial_numbers
-            $.each(response.component_serial_numbers, function(index, serialNumber) {
-                selectElement.append($('<option></option>').text(serialNumber));
-            });
-
-            // Optionally, trigger a change event if needed
-            selectElement.trigger('change');
-
 
             },
             error: function(error) {

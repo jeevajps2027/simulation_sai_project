@@ -84,7 +84,10 @@ def master(request):
            # Filtering logic based on selected_value and selected_mastering
             filtered_data = parameter_settings.objects.filter(
                 model_id=selected_value,
-                hide_checkbox=False
+                hide_checkbox=False,
+                attribute=False
+            ).exclude(
+                measurement_mode__in=["TIR", "TAP"]  # Exclude records with "TIR" or "TAP" in measurement_mode
             ).values().order_by('id')
 
             # Fetching data from Master_settings

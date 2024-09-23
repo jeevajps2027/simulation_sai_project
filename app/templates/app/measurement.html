@@ -119,11 +119,11 @@ Measurement Page
         .notification-container {
         position: absolute;
         top: 60%;
-        left: 30%;
+        left: 40%;
         transform: translate(-50%, -50%);
         background-color:orange;
-        height: 150px;
-        width: 1000px;
+        height: 120px;
+        width: 900px;
         z-index: 1000; 
         border: 2px solid black;
     }
@@ -131,8 +131,8 @@ Measurement Page
     #punch_textarea{
         margin-top: 5px;
         margin-left: 10px;
-        width: 900px;
-        height: 70px;
+        width: 800px;
+        height: 50px;
         font-weight: bold;    /* Makes the text bold */
         font-size: 30px;      /* Increases the font size */
     }
@@ -515,7 +515,7 @@ input[type=checkbox] {
 <div class="box-3" id="box3">
     <center id="attribute" ><b>ATTRIBUTE PARAMETER</b></center>
     <label for="attributeParameter" style="width: 200px;">Parameter Name:</label><br>
-    <input type="text" id="attributeParameter" ><br><br>
+    <input type="text" id="attributeParameter" style="font-weight: bold;" readonly><br><br>
 
     <button type="button" id="attributeReject">REJECT</button><br>
     <button type="button" id="attributeAccept">ACCEPT</button>
@@ -879,7 +879,10 @@ $(document).ready(function() {
                     var customerName = response.customer_name_values;
                     document.getElementById("customer_name").value = customerName;
 
-                   
+                    var attribute_name = response.parameter_attribute;
+                    document.getElementById("attributeParameter").value = attribute_name;
+
+                    
 
                     console.log("Parameter Name:", response.parameterNameValues[i]);
                     console.log("Nominal Value:", response.nominalValues[i]);
@@ -894,6 +897,7 @@ $(document).ready(function() {
                     console.log("Probe Value:", response.probe_values[i]);
                     console.log("Step No Value:", response.step_no_values[i]);
                     console.log("customer_name_values:", response.customer_name_values);
+                    console.log("parameter_attribute:", response.parameter_attribute);
                    
                     
                     displaySerialData(
@@ -1118,7 +1122,23 @@ document.getElementById("back-btn").addEventListener("click", function() {
 });
 
 
+document.getElementById('attributeReject').addEventListener('click', function() {
+        var attributeStatus = document.getElementById('attributeStatus');
+        attributeStatus.value = "REJECT";
+        attributeStatus.style.backgroundColor = "red";
+        attributeStatus.style.fontWeight = "bold";
+        attributeStatus.style.fontSize = "25px"
+        attributeStatus.style.color = "white"; // Optional: change text color for better visibility
+    });
 
+    document.getElementById('attributeAccept').addEventListener('click', function() {
+        var attributeStatus = document.getElementById('attributeStatus');
+        attributeStatus.value = "ACCEPT";
+         attributeStatus.style.fontWeight = "bold";
+        attributeStatus.style.fontSize = "25px"
+        attributeStatus.style.backgroundColor = '#00ff00';
+        attributeStatus.style.color = "black"; // Optional: change text color for better visibility
+    });
 
 
 
@@ -1275,7 +1295,7 @@ usl, ltl, utl,indicatorBox,indicatorBox1,statusCell) {
 
 
 
-                        if (displayOutput > e_value) {
+if (displayOutput > e_value) {
     var indicatorBoxElement = document.getElementById(indicatorBox.id);
     var indicatorBox1Element = document.getElementById(indicatorBox1.id);
     
@@ -1295,10 +1315,10 @@ usl, ltl, utl,indicatorBox,indicatorBox1,statusCell) {
     indicatorBoxElement.style.background = `linear-gradient(to left, ${color} ${coloredWidth}%, white ${coloredWidth}% ${defaultWidth}%, white 100%)`;
 }
 
-                    }
-                }
             }
         }
+    }
+}
 
         // Attach an event listener to the textarea for changes
         textarea.addEventListener('input', updateDisplayOutput);

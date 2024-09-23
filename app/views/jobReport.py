@@ -94,10 +94,7 @@ def jobReport(request):
             'part_status_values':part_status_values
         }
 
-        request.session['data_dict'] = data_dict  # Save data_dict to the session for POST request
-        request.session['operators_values'] = operators_values
-        request.session['shifts_values'] = shifts_values
-        request.session['part_status_values'] = part_status_values
+        
 
         return render(request, 'app/reports/jobReport.html', context)
     

@@ -14,3 +14,6 @@ from .srno import srno
 from .withoutsrno import withoutsrno
 from .paraReport import paraReport
 from .jobReport import jobReport
+from .xBar import xBar
+from .xBarRchart import xBarRchart
+from .xBarSchart import xBarSchart

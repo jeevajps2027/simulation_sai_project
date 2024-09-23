@@ -90,10 +90,34 @@ def measurement(request):
 
             part_model = data.get('partModel')
             customer_name_values = TableOneData.objects.filter(part_model=part_model).values_list('customer_name', flat=True).first()
+            print("customer_name_values",customer_name_values)
 
            
-            parameter_settings_qs = parameter_settings.objects.filter(model_id=part_model, hide_checkbox=False).order_by('id')
+            parameter_settings_qs = parameter_settings.objects.filter(model_id=part_model, hide_checkbox=False,attribute=False).values_list('parameter_name', flat=True).order_by('id')
+            print("parameter_settings_qs",parameter_settings_qs)
+
+            parameter_attribute = parameter_settings.objects.filter(model_id=part_model, attribute=True).values_list('parameter_name', flat=True).first()
+            print("parameter_attribute",parameter_attribute)
+
             last_stored_parameter = {item['parameter_name']: item for item in Master_settings.objects.filter(selected_value=part_model, parameter_name__in=parameter_settings_qs.values_list('parameter_name', flat=True)).values()}
+            print("last_stored_parameter",last_stored_parameter)
+            
+            # Prepare lists to hold the values
+            o1_values = []
+            d_values = []
+            e_values = []
+
+            # Loop over all the parameter names in parameter_settings_qs and match with last_stored_parameter
+            for parameter_name in parameter_settings_qs:
+                if parameter_name in last_stored_parameter:
+                    o1_values.append(last_stored_parameter[parameter_name].get('o1', 0))  # Default to 0 if 'o1' is not found
+                    d_values.append(last_stored_parameter[parameter_name].get('d', 0))    # Default to 0 if 'd' is not found
+                    e_values.append(last_stored_parameter[parameter_name].get('e', 0))    # Default to 0 if 'e' is not found
+                else:
+                    # If the parameter name is not found in last_stored_parameter, append 0
+                    o1_values.append(0)
+                    d_values.append(0)
+                    e_values.append(0)
 
 
             response_data = {
@@ -106,12 +130,14 @@ def measurement(request):
                 'utlValues': list(parameter_settings_qs.values_list('utl', flat=True)),
                 'nominalValues': list(parameter_settings_qs.values_list('nominal', flat=True)),
                 'measurementModeValues': list(parameter_settings_qs.values_list('measurement_mode', flat=True)),
-                'o1_values': [item['o1'] for item in last_stored_parameter.values()],
-                'd_values': [item['d'] for item in last_stored_parameter.values()],
-                'e_values': [item['e'] for item in last_stored_parameter.values()],
-                'probe_values': [item['probe_no'] for item in last_stored_parameter.values()],
+                'o1_values': o1_values,
+                'd_values': d_values,
+                'e_values': e_values,
+                'probe_values': list(parameter_settings_qs.values_list('probe_no', flat=True)),
                 'step_no_values': list(parameter_settings_qs.values_list('step_no', flat=True)),
                 'customer_name_values': customer_name_values,
+                'parameter_attribute':parameter_attribute,
+               
             }
 
             return JsonResponse(response_data)

@@ -2,7 +2,7 @@ from django.conf import settings
 from django.urls import path,include
 from django.conf.urls.static import static
 from .views import home,index,comport,probe,trace,parameter,master,measurebox,measurement
-from .views import utility,report,spc,srno,withoutsrno,paraReport,jobReport
+from .views import utility,report,spc,srno,withoutsrno,paraReport,jobReport,xBar,xBarRchart,xBarSchart
 
 urlpatterns = [
     path('',home,name="home"),
@@ -21,8 +21,9 @@ urlpatterns = [
     path('withoutsrno/',withoutsrno,name="withoutsrno"),
     path('paraReport/',paraReport,name="paraReport"),
     path('jobReport/',jobReport,name="jobReport"),
-   
-
+    path('xBar/',xBar,name="xBar"),
+    path('xBarRchart/',xBarRchart,name="xBarRchart"),
+    path('xBarSchart/',xBarSchart,name="xBarSchart"),
     ]
 
 if settings.DEBUG:
