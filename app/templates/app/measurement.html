@@ -512,15 +512,15 @@ input[type=checkbox] {
 <div id="customAlert" ></div>
 
 
-<div class="box-3" id="box3">
-    <center id="attribute" ><b>ATTRIBUTE PARAMETER</b></center>
+<div class="box-3" id="box3" style="filter: blur(5px); pointer-events: none; opacity: 0.5;">
+    <center id="attribute"><b>ATTRIBUTE PARAMETER</b></center>
     <label for="attributeParameter" style="width: 200px;">Parameter Name:</label><br>
     <input type="text" id="attributeParameter" style="font-weight: bold;" readonly><br><br>
-
+    
     <button type="button" id="attributeReject">REJECT</button><br>
     <button type="button" id="attributeAccept">ACCEPT</button>
-
-    <input type="text" id="attributeStatus" ><br><br>
+  
+    <input type="text" id="attributeStatus"><br><br>
   </div><br>
   
 
@@ -564,7 +564,7 @@ function handleLogin() {
 
         };
 
-        console.clear();
+        
         console.log("Data to be sent:");
         console.log(data);
         const csrftoken = getCookie('csrftoken');
@@ -675,7 +675,7 @@ function stopAction() {
 
 $(document).ready(function(){
     $("#save-btn").click(function(){
-        console.clear();
+        
         // Get form data
         // Loop through each table row
         var formDataArray = [];
@@ -722,7 +722,7 @@ $(document).ready(function(){
         var tableData = {
             formDataArray: formDataArray
         };
-console.clear();
+
         console.log('Table data to be sent:', tableData);
 
         // Send data to the server
@@ -882,6 +882,27 @@ $(document).ready(function() {
                     var attribute_name = response.parameter_attribute;
                     document.getElementById("attributeParameter").value = attribute_name;
 
+
+                     // Check if parameter_attribute exists
+    if (attribute_name) {
+        // Blur Box 2 and make Box 3 interactive
+        box2.style.filter = "blur(3px)";
+        box2.style.pointerEvents = "none";
+        box3.style.filter = "none";
+        box3.style.pointerEvents = "auto";
+        box3.style.opacity = "1";
+
+        // Set the attribute parameter value in the input field
+        document.getElementById("attributeParameter").value = attribute_name;
+    } else {
+        // Reset Box 2 and keep Box 3 non-interactive if no attribute_name
+        box2.style.filter = "none";
+        box2.style.pointerEvents = "auto";
+        box3.style.filter = "blur(5px)";
+        box3.style.pointerEvents = "none";
+        box3.style.opacity = "0.5";
+    }
+
                     
 
                     console.log("Parameter Name:", response.parameterNameValues[i]);
@@ -901,6 +922,7 @@ $(document).ready(function() {
                    
                     
                     displaySerialData(
+                        response.parameterNameValues[i],
                         response.probe_values[i], 
                         response.e_values[i], 
                         response.d_values[i], 
@@ -968,7 +990,9 @@ document.getElementById("stop-btn").addEventListener("click", function() {
     setTimeout(function() {
         var statusCells = document.querySelectorAll('.status_cell');
         var partStatusInput = document.getElementById("part_status");
-        console.clear();
+        var attributeStatus = document.getElementById("attributeStatus"); // New: Attribute status input
+        var attributeColor = attributeStatus.style.backgroundColor; // New: Get background color of attributeStatus
+        
         console.log("partStatusInput", partStatusInput);
 
         if (currentStep === totalSteps) {
@@ -976,6 +1000,7 @@ document.getElementById("stop-btn").addEventListener("click", function() {
             var hasYellow = false;
             var hasGreen = false;
 
+            // Check status cells
             statusCells.forEach(function(statusCell) {
                 var color = statusCell.style.backgroundColor;
                 if (color === 'red') {
@@ -988,8 +1013,18 @@ document.getElementById("stop-btn").addEventListener("click", function() {
                 console.log("statusCell:", statusCell, "color:", color);
             });
 
+            // Check attributeStatus if it has any value or color
+            if (attributeColor === 'red') {
+                hasRed = true;
+            } else if (attributeColor === 'yellow') {
+                hasYellow = true;
+            } else if (attributeColor === 'rgb(0, 255, 0)' || attributeColor === '#00ff00') { // Ensure green color is handled correctly
+                hasGreen = true;
+            }
+
             console.log("hasRed:", hasRed, "hasYellow:", hasYellow, "hasGreen:", hasGreen);
 
+            // Determine final part status based on the flags
             if (hasRed) {
                 partStatusInput.style.backgroundColor = 'red';
                 partStatusInput.value = "REJECT";
@@ -1122,26 +1157,39 @@ document.getElementById("back-btn").addEventListener("click", function() {
 });
 
 
+// Event listener for REJECT button in Box 3
 document.getElementById('attributeReject').addEventListener('click', function() {
-        var attributeStatus = document.getElementById('attributeStatus');
-        attributeStatus.value = "REJECT";
-        attributeStatus.style.backgroundColor = "red";
-        attributeStatus.style.fontWeight = "bold";
-        attributeStatus.style.fontSize = "25px"
-        attributeStatus.style.color = "white"; // Optional: change text color for better visibility
-    });
+    var attributeStatus = document.getElementById('attributeStatus');
+    
+    // Update attribute status
+    attributeStatus.value = "REJECT";
+    attributeStatus.style.backgroundColor = "red";
+    attributeStatus.style.fontWeight = "bold";
+    attributeStatus.style.fontSize = "25px";
+    attributeStatus.style.color = "white";
+    
+    // Restore Box 2 to normal after button click
+    document.getElementById("box2").style.filter = "none";
+    document.getElementById("box2").style.pointerEvents = "auto";
+   
+});
 
-    document.getElementById('attributeAccept').addEventListener('click', function() {
-        var attributeStatus = document.getElementById('attributeStatus');
-        attributeStatus.value = "ACCEPT";
-         attributeStatus.style.fontWeight = "bold";
-        attributeStatus.style.fontSize = "25px"
-        attributeStatus.style.backgroundColor = '#00ff00';
-        attributeStatus.style.color = "black"; // Optional: change text color for better visibility
-    });
-
-
-
+// Event listener for ACCEPT button in Box 3
+document.getElementById('attributeAccept').addEventListener('click', function() {
+    var attributeStatus = document.getElementById('attributeStatus');
+    
+    // Update attribute status
+    attributeStatus.value = "ACCEPT";
+    attributeStatus.style.backgroundColor = "#00ff00";
+    attributeStatus.style.fontWeight = "bold";
+    attributeStatus.style.fontSize = "25px";
+    attributeStatus.style.color = "black";
+    
+    // Restore Box 2 to normal after button click
+    document.getElementById("box2").style.filter = "none";
+    document.getElementById("box2").style.pointerEvents = "auto";
+  
+});
 
 
 
@@ -1153,7 +1201,7 @@ function moveToNextStep() {
         
         return;
     }
-    console.clear();
+    
     console.log("Moving to step:", currentStep);
     var statusCells = document.querySelectorAll(".status_cell");
     statusCells.forEach(function(cell) {
@@ -1166,12 +1214,16 @@ function moveToNextStep() {
 
 }
 
-function displaySerialData(probe_value, e_value, d_value, o1_value, readingsInput, measurementMode, step_no, lsl, 
+function displaySerialData(parameterNameValues,probe_value, e_value, d_value, o1_value, readingsInput, measurementMode, step_no, lsl, 
 usl, ltl, utl,indicatorBox,indicatorBox1,statusCell) {
 
-
+    console.log("parameterNameValues",parameterNameValues);
     console.log("step_no:", step_no);
     console.log("indicatorBox,indicatorBox1:",indicatorBox,indicatorBox1,readingsInput);
+//////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////
     // Retrieve textarea ID based on probeValue
     var textareaId = mapProbeToTextareaId(probe_value);
     var textarea = document.getElementById(textareaId);
@@ -1182,11 +1234,8 @@ usl, ltl, utl,indicatorBox,indicatorBox1,statusCell) {
         function updateDisplayOutput() {
             const newSerialData = parseFloat(textarea.value);
             // Log the new serial data to the console
-            console.log("Serial Data for Probe Value " + probe_value + ":", newSerialData);
-
             // Calculate displayOutput separately for each input
             const displayOutput = e_value + (newSerialData * d_value + o1_value);
-            console.log("displayOutput values are:", displayOutput);
 
             // Update the readings input only when the continuous update is active and step_no matches
             if (continuousUpdateInterval && step_no === currentStep) {
@@ -1199,24 +1248,8 @@ usl, ltl, utl,indicatorBox,indicatorBox1,statusCell) {
                         (measurementMode === "CUR" || measurementMode === "TIR")) {
                         readingsInput.value = displayOutput.toFixed(4);
                         if (measurementMode === "TIR") {
-            // Update max and min values
-            if (isNaN(maxValue) || displayOutput > maxValue) {
-                maxValue = displayOutput;
-                console.log("maxValue",maxValue);
-            }
-            else if (isNaN(minValue) || displayOutput < minValue) {
-                minValue = displayOutput;
-                console.log("minValue",minValue);
-            }
-
-            // Calculate TIR value
-            var tirValue = (maxValue - minValue) / 2;
-            // Log values to console
-            console.log("Max Value:", maxValue);
-            console.log("Min Value:", minValue);
-            console.log("TIR Value:", tirValue);
-            readingsInput.value = tirValue.toFixed(4);
-        }
+                            readingsInput.value = tirValue.toFixed(4);
+                        }
 
                         // Calculate total length and colored portion length
                         var totalLength, coloredPortionLength, coloredPortion, uncoloredPortion;
@@ -1263,7 +1296,7 @@ usl, ltl, utl,indicatorBox,indicatorBox1,statusCell) {
 
 
 
-                        document.getElementById('stop-btn').addEventListener('click', function() {
+document.getElementById('stop-btn').addEventListener('click', function() {
     var indices = [];
     // Assuming step_no_values and currentStep are defined somewhere
     for (var i = 0; i < step_no_values.length; i++) {
@@ -1628,6 +1661,211 @@ step_no_values = step_no_values.map(Number);
 // Find the maximum value among the step_no_values
 var totalSteps = Math.max(...step_no_values);
 
+var probe_values_str = "{{ probe_values|safe }}";
+var probe_values_cleaned = probe_values_str.replace(/[\[\]']+/g, '');
+var probe_values = probe_values_cleaned.split(',');
+
+
+var measurement_mode_str = "{{ measurement_mode|safe }}";
+var measurement_mode_cleaned = measurement_mode_str.replace(/[\[\]']+/g, '');
+var measurement_mode = measurement_mode_cleaned.split(',');
+console.log('your measurement mode valeus are:',measurement_mode);
+
+var usl_values_str = "{{ usl_values|safe }}";
+var usl_values_cleaned = usl_values_str.replace(/[\[\]']+/g, '');
+var usl_values = usl_values_cleaned.split(',');
+console.log('your measurement mode valeus are:',usl_values);
+
+var lsl_values_str = "{{ lsl_values|safe }}";
+var lsl_values_cleaned = lsl_values_str.replace(/[\[\]']+/g, '');
+var lsl_values = lsl_values_cleaned.split(',');
+console.log('your measurement mode valeus are:',lsl_values);
+
+var utl_values_str = "{{ utl_values|safe }}";
+var utl_values_cleaned = utl_values_str.replace(/[\[\]']+/g, '');
+var utl_values = utl_values_cleaned.split(',');
+console.log('your measurement mode valeus are:',utl_values);
+
+var ltl_values_str = "{{ usl_values|safe }}";
+var ltl_values_cleaned = ltl_values_str.replace(/[\[\]']+/g, '');
+var ltl_values = ltl_values_cleaned.split(',');
+console.log('your measurement mode valeus are:',ltl_values);
+
+
+/////////////////////////////////////////////
+let currentIndex = -1; // Start with an invalid index to track the current index
+
+// Function to find the first valid index where the value starts with 'p' and contains '-'
+function findFirstValidIndex() {
+    for (let i = 0; i < probe_values.length; i++) {
+        let value = probe_values[i].trim();
+        if (value.startsWith('P') && value.includes('-')) {
+            return i; // Return the first valid index
+        }
+    }
+    return -1; // Return -1 if no valid index is found
+}
+
+// Find the first index before any button click
+currentIndex = findFirstValidIndex();
+
+
+
+
+document.getElementById('stop-btn').addEventListener('click', function() {
+    console.clear();
+
+    // Parse e_values from your Django template
+    var e_values_str = "{{ e_values|safe }}";
+    var e_values_cleaned = e_values_str.replace(/[\[\]']+/g, '');
+    var e_values = e_values_cleaned.split(',').map(Number); // Convert to numbers
+
+    // Iterate over all probe values
+    for (let i = 0; i < probe_values.length; i++) {
+        let value = probe_values[i];
+
+        // Check if the value is a string before using trim
+        if (typeof value === 'string') {
+            value = value.trim(); // Get and trim the value for the current index
+
+            // Check if the current value is a probe calculation (starts with 'p' and contains '-')
+            if (value.startsWith('P') && value.includes('-')) {
+                var step_no = step_no_values[i];
+
+                // Log the current step and step number
+                console.log(`Index: ${i}, Value: ${value}, Step No: ${step_no}, Measurement Mode: ${measurement_mode[i]}`);
+
+                // Check if the current step matches the step number for this index
+                if (currentStep === step_no) {
+                    // Extract the two probe numbers (e.g., 'p1', 'p2') for calculation
+                    var [probe1, probe2] = value.split('-').map(v => v.trim());
+
+                    // Map probes to their respective reading input indices
+                    var readingIndex1 = mapProbeToReadingInput(probe1);
+                    var readingIndex2 = mapProbeToReadingInput(probe2);
+
+                    if (readingIndex1 !== undefined && readingIndex2 !== undefined) {
+                        // Get the input values directly from the page for the respective indices
+                        var readingInput1 = document.getElementById(`readings-input-${readingIndex1}`).value;
+                        var readingInput2 = document.getElementById(`readings-input-${readingIndex2}`).value;
+
+                        // Convert the input values to numbers
+                        var value1 = parseFloat(readingInput1) || 0;
+                        var value2 = parseFloat(readingInput2) || 0;
+
+                        // Perform the calculation (probe1 - probe2)
+                        var result = value1 - value2;
+
+                        // Log the calculation
+                        console.log(`Calculation for ${probe1} - ${probe2}: ${value1} - ${value2} = ${result}`);
+
+                        // Now, display the calculated result in the correct index (i.e., the received index) without modifying probe_values
+                        var resultElement = document.getElementById(`readings-input-${i}`);
+                        if (resultElement) {
+                            resultElement.value = result.toFixed(4); // Display the result in the input field at the same index
+                        } else {
+                            console.log(`Error: No element found for index ${i} to display the result.`);
+                        }
+
+                        // Get the USL, LSL, UTL, and LTL for the current index
+                        var usl = parseFloat(usl_values[i]) || 0;
+                        var lsl = parseFloat(lsl_values[i]) || 0;
+                        var utl = parseFloat(utl_values[i]) || 0;
+                        var ltl = parseFloat(ltl_values[i]) || 0;
+
+                        // Determine the color based on the result and limits
+                        var statusCell = document.getElementById(`status_cell-${i}`); // Assuming 'status_cell' is the ID pattern for your status cells
+                        let color;
+                        if (result >= lsl && result <= usl) {
+                            color = '#00ff00'; // Green
+                        } else if ((result > usl && result <= utl) || (result >= ltl && result < lsl)) {
+                            color = 'yellow'; // Yellow
+                        } else {
+                            color = 'red'; // Red
+                        }
+
+                        // Apply the color to the status cell
+                        statusCell.style.backgroundColor = color;
+
+                        // Update the status text based on the color
+                        if (color === '#00ff00') {
+                            statusCell.textContent = "ACCEPT";
+                        } else if (color === 'red') {
+                            statusCell.textContent = "REJECT";
+                        } else if (color === 'yellow') {
+                            statusCell.textContent = "REWORK";
+                        }
+
+                        // Optional: Apply color to the readings input as well
+                        resultElement.style.color = color;
+
+                        // Add indicator color coding
+                        var e_value = e_values[i] || 0; // Get the e_value for the current index
+                        var indicatorBoxElement = document.getElementById(`indicator-box-${i}`); // Adjust ID as necessary
+                        var indicatorBox1Element = document.getElementById(`indicator-box1-${i}`); // Adjust ID as necessary
+                        var coloredWidth = 50; // Example value for colored width
+                        var defaultWidth = 100 - coloredWidth; // Calculate default width
+
+                        if (result > e_value) {
+                            // Set indicatorBoxElement to default color
+                            indicatorBoxElement.style.background = 'white';
+
+                            // Set indicatorBox1Element to colored gradient
+                            indicatorBox1Element.style.background = `linear-gradient(to right, ${color} ${coloredWidth}%, white ${coloredWidth}% ${defaultWidth}%, white 100%)`;
+                        } else {
+                            // Set indicatorBox1Element to default color
+                            indicatorBox1Element.style.background = 'white';
+
+                            // Set indicatorBoxElement to colored gradient
+                            indicatorBoxElement.style.background = `linear-gradient(to left, ${color} ${coloredWidth}%, white ${coloredWidth}% ${defaultWidth}%, white 100%)`;
+                        }
+
+                    } else {
+                        console.log(`Error: Could not find one or both of the probes (${probe1}, ${probe2}) in the map.`);
+                    }
+                } else {
+                    console.log(`Skipping calculation for Index: ${i}. Current Step: ${currentStep}, Step No: ${step_no}`);
+                }
+            }
+        } else {
+            console.log(`Skipping index ${i} due to invalid value type: ${value}`);
+        }
+    }
+
+    // Log the updated probe_values array after calculations
+    console.log('Updated probe_values:', probe_values); // probe_values remain unchanged
+    
+    // Check if we've processed all calculations
+    if (currentStep > Math.max(...step_no_values)) {
+        console.log("All calculations are complete.");
+        // Optionally reset currentStep to 1 to start over
+        // currentStep = 1;
+    }
+});
+
+
+
+
+
+
+
+
+
+/////////////////////////////////////////////////////////////////////////////////
+
+function mapProbeToReadingInput(probeNumber) {
+    const probeMap = {};
+
+    // Loop to automatically map 'p1' to 'p40' with corresponding indices 0 to 39
+    for (let i = 1; i <= 40; i++) {
+        probeMap[`P${i}`] = i - 1;
+    }
+
+    return probeMap[probeNumber];
+}
+
+
+
 
 var operator_values_str = "{{ operator_values|safe }}";
     var operator_values_cleaned = operator_values_str.match(/'([^']*)'/)[1];
@@ -1752,8 +1990,6 @@ console.log("step_no_values:",step_no_values);
 
 
 
-/////////////////////////////////////////////////////////////////////////////////
-
 
 function mapProbeToTextareaId(probeNumber) {
     const probeMap = {
@@ -1768,6 +2004,7 @@ function mapProbeToTextareaId(probeNumber) {
         '9': 'probe-I',
         '10': 'probe-J',
         '11': 'probe-K',
+        
 
     };
    

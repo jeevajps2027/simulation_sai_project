@@ -137,7 +137,6 @@ def measurement(request):
                 'step_no_values': list(parameter_settings_qs.values_list('step_no', flat=True)),
                 'customer_name_values': customer_name_values,
                 'parameter_attribute':parameter_attribute,
-               
             }
 
             return JsonResponse(response_data)
@@ -193,6 +192,33 @@ def measurement(request):
         step_no_values = list(step_no_values_queryset)
         print('your step_no values are:',step_no_values)
 
+        usl_values_queryset = parameter_settings.objects.filter(model_id=part_model).values_list('usl', flat=True).order_by('id')
+        usl_values = list(usl_values_queryset)
+        print('your usl values are:',usl_values)
+
+        lsl_values_queryset = parameter_settings.objects.filter(model_id=part_model).values_list('lsl', flat=True).order_by('id')
+        lsl_values = list(lsl_values_queryset)
+        print('your lsl values are:',lsl_values)
+
+        utl_values_queryset = parameter_settings.objects.filter(model_id=part_model).values_list('utl', flat=True).order_by('id')
+        utl_values = list(utl_values_queryset)
+        print('your utl values are:',utl_values)
+
+        ltl_values_queryset = parameter_settings.objects.filter(model_id=part_model).values_list('ltl', flat=True).order_by('id')
+        ltl_values = list(ltl_values_queryset)
+        print('your utl values are:',ltl_values)
+
+        probe_values_queryset = parameter_settings.objects.filter(model_id=part_model).values_list('probe_no', flat=True).order_by('id')
+        probe_values = list(probe_values_queryset)
+        print('your step_no values are:',probe_values)
+
+        e_values_queryset = parameter_settings.objects.filter(model_id=part_model).values_list('nominal', flat=True).order_by('id')
+        e_values = list(e_values_queryset)
+        print('your step_no values are:',e_values)
+
+        measurement_mode_queryset = parameter_settings.objects.filter(model_id=part_model).values_list('measurement_mode', flat=True).order_by('id')
+        measurement_mode = list(measurement_mode_queryset)
+        print('your step_no values are:',measurement_mode)
 
         if part_model:
             hide = TableOneData.objects.filter(part_model = part_model).values_list('hide', flat=True).distinct()
@@ -331,6 +357,13 @@ def measurement(request):
             'part_model': part_model,
             'part_model_values': part_model_values,
             'step_no_values' : step_no_values,
+            'probe_values': probe_values,
+            'e_values': e_values,
+            'measurement_mode': measurement_mode,
+            'ltl_values': ltl_values,
+            'utl_values': utl_values,
+            'usl_values': usl_values,
+            'lsl_values': lsl_values,
             'interval_settings_json':interval_settings_json,
             'last_stored_dates':last_stored_dates,
             'machine_values' : machine_values,

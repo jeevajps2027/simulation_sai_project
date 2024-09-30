@@ -1,9 +1,16 @@
 from datetime import datetime
+import re
 import pandas as pd
 from django.shortcuts import render
 from django.utils import timezone  # Import Django's timezone utility
-from app.models import MeasurementData, parameter_settings, parameterwise_report  # Adjust import based on your project structure
-
+from app.models import MeasurementData,CustomerDetails, parameter_settings, parameterwise_report  # Adjust import based on your project structure
+import os
+import smtplib
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
+from email.mime.base import MIMEBase
+from email import encoders
+from django.http import JsonResponse
 
 
 from django.http import HttpResponse
@@ -13,11 +20,32 @@ from weasyprint import HTML,CSS
 import pandas as pd
 from io import BytesIO
 
+
+
+# Function to remove HTML tags
+def strip_html_tags(text):
+    # Check if text is a string, then remove HTML tags
+    if isinstance(text, str):
+        return re.sub(r'<.*?>', '', text)
+    return text
+
+# Function to replace <br> with \n for multi-line headers
+def replace_br_with_newline(text):
+    if isinstance(text, str):
+        return text.replace('<br>', '\n')
+    return text
+
 def paraReport(request):
     if request.method == 'GET':
         parameterwise_values = parameterwise_report.objects.all()
         part_model = parameterwise_report.objects.values_list('part_model', flat=True).distinct().get()
         print("part_model:", part_model)
+
+        email_1 = CustomerDetails.objects.values_list('primary_email',flat=True).get()
+        print('your primary mail id from server to front end now :',email_1)
+
+        email_2 = CustomerDetails.objects.values_list('secondary_email',flat=True).get()
+        print('your primary mail id from server to front end now :',email_2)
 
         fromDateStr = parameterwise_report.objects.values_list('formatted_from_date', flat=True).get()
         toDateStr = parameterwise_report.objects.values_list('formatted_to_date', flat=True).get()
@@ -94,7 +122,7 @@ def paraReport(request):
         }
 
         # Query distinct values for 'parameter_name', 'usl', and 'lsl' from parameter_settings model
-        parameter_data = parameter_settings.objects.filter(model_id=part_model).values('parameter_name', 'usl', 'lsl')
+        parameter_data = parameter_settings.objects.filter(model_id=part_model).values('parameter_name', 'usl', 'lsl').order_by('id')
 
         # Loop through each parameter_name and add usl, lsl to dictionary
         for param in parameter_data:
@@ -106,6 +134,11 @@ def paraReport(request):
             key = f"{param_name} <br>{usl} <br>{lsl}"
             # Initialize empty list for the key
             data_dict[key] = []
+
+
+        # Now add 20 empty lists after all parameters
+        for i in range(1, 21):
+            data_dict[str(i)] = []    
 
         for comp_sr_no in distinct_comp_sr_nos:
             print(f"Processing comp_sr_no: {comp_sr_no}")
@@ -174,7 +207,8 @@ def paraReport(request):
         context = {
             'table_html': table_html,
             'parameterwise_values': parameterwise_values,
-            
+            'email_1': email_1,
+            'email_2': email_2
         }
 
         request.session['data_dict'] = data_dict  # Save data_dict to the session for POST request
@@ -183,6 +217,7 @@ def paraReport(request):
     
     elif request.method == 'POST':
         export_type = request.POST.get('export_type')
+        recipient_email = request.POST.get('recipient_email')
         data_dict = request.session.get('data_dict')  # Retrieve data_dict from session
         if data_dict is None:
             return HttpResponse("No data available for export", status=400)
@@ -190,9 +225,8 @@ def paraReport(request):
         df = pd.DataFrame(data_dict)
         df.index = df.index + 1
 
-       
 
-        if export_type == 'pdf':
+        if export_type == 'pdf' or export_type == 'send_mail':
             template = get_template('app/reports/parameterReport.html')
             context = {
                 'table_html': df.to_html(index=True, escape=False, classes='table table-striped table_data'),
@@ -231,19 +265,145 @@ def paraReport(request):
             ''')
 
 
-            # Inside your if block where export_type == 'pdf'
-            pdf_filename = f"ParameterwiseReport{datetime.now().strftime('%Y/%m/%d_%H/%M/%S')}.pdf"
-
-
             pdf = HTML(string=html_string).write_pdf(stylesheets=[css])
-            response = HttpResponse(pdf, content_type='application/pdf')
-            response['Content-Disposition'] = f'attachment; filename="{pdf_filename}"'
-            return response
 
-        else:
-            return HttpResponse("Invalid export type", status=400)
+            # Get the Downloads folder path
+            downloads_folder = os.path.join(os.path.expanduser('~'), 'Downloads')
+            pdf_filename = f"parameterReport_{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.pdf"
+            pdf_file_path = os.path.join(downloads_folder, pdf_filename)
 
-    return HttpResponse("Unsupported request method", status=405)
+            # Save the PDF file in the Downloads folder
+            with open(pdf_file_path, 'wb') as pdf_file:
+                pdf_file.write(pdf)
+
+            # Return the PDF file for download
+            if export_type == 'pdf':
+                response = HttpResponse(pdf, content_type='application/pdf')
+                response['Content-Disposition'] = f'attachment; filename="{pdf_filename}"'
+                  # Pass success message to the context to show on the front end
+                success_message = "PDF generated successfully!"
+                context['success_message'] = success_message
+                return render(request, 'app/reports/parameterReport.html', context)
+
+            elif export_type == 'send_mail':
+                # Send the PDF as an email attachment
+                send_mail_with_pdf(pdf, recipient_email)
+                success_message = "PDF generated and email sent successfully!"
+                return render(request, 'app/reports/parameterReport.html', {'success_message': success_message, **context})
+        
+        elif request.method == 'POST' and export_type == 'excel':
+            template = get_template('app/reports/parameterReport.html')
+            context = {
+                'table_html': df.to_html(index=True, escape=False, classes='table table-striped table_data'),
+                'parameterwise_values': parameterwise_report.objects.all(),
+            }
+            # Remove HTML tags from the DataFrame before exporting
+            df = df.applymap(strip_html_tags)
+
+            # Replace <br> with newline in column headers to make them multi-line in Excel
+            df.columns = [replace_br_with_newline(col) for col in df.columns]
+
+            # Create a new DataFrame for parameterwise_values
+            parameterwise_values = parameterwise_report.objects.all()
+            parameterwise_data = []
+
+            for data in parameterwise_values:
+                parameterwise_data.append({
+                    'PARTMODEL': data.part_model,
+                    'PARAMETER NAME': data.parameter_name,
+                    'OPERATOR': data.operator,
+                    'FROM DATE': data.formatted_from_date,
+                    'TO DATE': data.formatted_to_date,
+                    'MACHINE': data.machine,
+                    'VENDOR CODE': data.vendor_code,
+                    'JOB NO': data.job_no,
+                    'SHIFT': data.shift,
+                    'CURRENT DATE': data.current_date_time,
+                })
+
+            parameterwise_df = pd.DataFrame(parameterwise_data)
+
+            # Create an Excel writer object using BytesIO as a file-like object
+            excel_buffer = BytesIO()
+            with pd.ExcelWriter(excel_buffer, engine='xlsxwriter') as writer:
+                # Write parameterwise_df to the Excel sheet first
+                parameterwise_df.to_excel(writer, sheet_name='ParameterReport', index=False, startrow=0)
+
+                # Write the original DataFrame to the same sheet below the parameterwise data
+                df.to_excel(writer, sheet_name='ParameterReport', index=True, startrow=len(parameterwise_df) + 2)
+
+                # Get access to the workbook and worksheet objects
+                workbook = writer.book
+                worksheet = writer.sheets['ParameterReport']
+
+                # Format for multi-line header
+                header_format = workbook.add_format({
+                    'text_wrap': True,  # Enable text wrap
+                    'valign': 'top',    # Align to top
+                    'align': 'center',  # Center align the text
+                    'bold': True        # Make the headers bold
+                })
+
+                # Apply formatting to the headers of the parameterwise data
+                for col_num, value in enumerate(parameterwise_df.columns.values):
+                    worksheet.write(0, col_num, value, header_format)
+
+                # Apply formatting to the headers of the main DataFrame (startrow=len(parameterwise_df)+2)
+                for col_num, value in enumerate(df.columns.values):
+                    worksheet.write(len(parameterwise_df) + 2, col_num + 1, value, header_format)
+
+            # Get the Downloads folder path
+            downloads_folder = os.path.join(os.path.expanduser('~'), 'Downloads')
+            excel_filename = f"parameterReport_{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.xlsx"
+            excel_file_path = os.path.join(downloads_folder, excel_filename)
+
+            # Save the Excel file in the Downloads folder
+            with open(excel_file_path, 'wb') as excel_file:
+                excel_file.write(excel_buffer.getvalue())
+
+            # Return the Excel file for download
+            response = HttpResponse(excel_buffer.getvalue(), content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+            response['Content-Disposition'] = f'attachment; filename="{excel_filename}"'
+            
+            success_message = "Excel file generated successfully!"
+            
+            # Render success message in the frontend
+            return render(request, 'app/reports/parameterReport.html', {'success_message': success_message ,**context})
+
+        return HttpResponse("Unsupported request method", status=405)
+
+
+
+def send_mail_with_pdf(pdf_content, recipient_email):
+    sender_email = "itzprem1203@gmail.com"
+    sender_password = "dxnb lcho buxy yang"
+    subject = "Consolidate Report PDF"
+    body = "Please find the attached PDF report."
+
+    # Setup email parameters
+    msg = MIMEMultipart()
+    msg['From'] = sender_email
+    msg['To'] = recipient_email
+    msg['Subject'] = subject
+
+    # Attach the email body
+    msg.attach(MIMEText(body, 'plain'))
+
+    # Attach the PDF file
+    attachment = MIMEBase('application', 'octet-stream')
+    attachment.set_payload(pdf_content)
+    encoders.encode_base64(attachment)
+    attachment.add_header('Content-Disposition', f'attachment; filename="parameterReport_report.pdf"')
+    msg.attach(attachment)
+
+    # Send the email using SMTP
+    try:
+        with smtplib.SMTP('smtp.gmail.com', 587) as server:
+            server.starttls()
+            server.login(sender_email, sender_password)
+            server.sendmail(sender_email, recipient_email, msg.as_string())
+    except Exception as e:
+        print(f"Error sending email: {e}")
 
 
 

@@ -200,7 +200,7 @@ Parameter Settings
     <input type="text" id="nominal" style="width: 10%;margin-left: -35px;" value="{{ value.nominal }}" oninput="validateInteger(this)" required><br>
 
     <label for="probe_no">PROBE NO:</label>
-    <input type="text" id="probe_no" name="probe_no"  value="{{ value.probe_no }}" required>
+    <input type="text" id="probe_no" name="probe_no"  value="{{ value.probe_no }}" required oninput="this.value=this.value.toUpperCase()">
 
     <label for="usl" style="margin-left: 75px;">USL:</label>
     <input type="text" id="usl" style="width: 10%;margin-left: -55px;" value="{{ value.usl }}" oninput="validateInteger(this)" required>
@@ -325,7 +325,7 @@ function handleAttributeChange() {
     var isAttributeChecked = document.getElementById('attribute').checked;
     var fieldsToDisable = [
         'analog_zero', 'high_mv', 'reference_value', 'low_mv', 
-        'measurement_mode', 'job_dia', 'nominal', 'probe_no', 
+        'measurement_mode', 'step_no','job_dia', 'nominal', 'probe_no', 
         'usl', 'lsl', 'mastering', 'utl', 'ltl', 'digits', 'hide'
     ];
 
@@ -340,7 +340,7 @@ function handleAttributeChange() {
     });
 
     // Ensure the fields that should remain enabled are not affected
-    ['sr_no', 'partModel', 'parameter_name', 'step_no'].forEach(function(fieldId) {
+    ['sr_no', 'partModel', 'parameter_name'].forEach(function(fieldId) {
         var field = document.getElementById(fieldId);
         if (field) {
             field.disabled = false;

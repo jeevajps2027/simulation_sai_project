@@ -215,7 +215,12 @@ document.getElementById('prevButton').addEventListener('click', function() {
 
 function exportToExcel(event) {
     fetch("{% url 'srno' %}")
-    .then(response => response.blob())
+    
+    .then(response => {
+        // Log the raw response object before converting it to a blob
+        console.log("Response object:", response);
+        return response.blob();  // Continue with converting the response to a blob
+    })
     .then(blob => {
         const url = window.URL.createObjectURL(new Blob([blob]));
         

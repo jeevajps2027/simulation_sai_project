@@ -691,6 +691,14 @@ function processContainers(type, response) {
                         // Store a and a1 in the container for later use
                         container.dataset.a = a;
                         container.dataset.a1 = a1;
+                        var inputBox2 = container.querySelector('.input2-box');
+                        if (inputBox2) {
+                            inputBox2.value = a.toFixed(digits); // Update inputBox2 with the 'a' value
+                            console.log("inputBox2 updated with low value:", a);
+
+                            // Optionally, change the background color or add more logic as needed
+                            inputBox2.style.backgroundColor = '#00ff00'; // Example: Set background color to green for demonstration
+                        }
                     } else if (type === 'high') {
                         // Retrieve 'a' and 'a1' from the container's dataset
                         a = parseFloat(container.dataset.a);
