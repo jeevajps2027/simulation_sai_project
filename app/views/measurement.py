@@ -8,7 +8,7 @@ import pytz
 from django.utils import timezone  
 from django.db.models import Q
 
-from app.models import MasterIntervalSettings, MeasurementData, ResetCount, TableOneData, Master_settings, measure_data, parameter_settings
+from app.models import MasterIntervalSettings, MeasurementData, ResetCount, ShiftSettings, TableOneData, Master_settings, measure_data, parameter_settings
 
 
 def process_row(row):
@@ -352,7 +352,17 @@ def measurement(request):
 
         # Serialize the list to JSON
         interval_settings_json = json.dumps(interval_settings_list)
-        # Do something with the retrieved values, such as passing them to the template
+
+
+        shift_values = ShiftSettings.objects.order_by('id').values_list('shift', 'shift_time').distinct()
+    
+        # Convert the QuerySet to a list of lists
+        shift_values_list = list(shift_values)
+        
+        # Serialize the list to JSON
+        shift_values_json = json.dumps(shift_values_list)
+        print("shift_values_json",shift_values_json)
+
         context = {
             'part_model': part_model,
             'part_model_values': part_model_values,
@@ -375,6 +385,7 @@ def measurement(request):
             'overall_accept_count': overall_status_counts['ACCEPT'],
             'overall_reject_count': overall_status_counts['REJECT'],
             'overall_rework_count': overall_status_counts['REWORK'],
+            'shift_values_json': shift_values_json
         }
        
         return render(request, 'app/measurement.html', context)

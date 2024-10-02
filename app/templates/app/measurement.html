@@ -473,7 +473,7 @@ input[type=checkbox] {
 </div>
 
 <div class="notification-container1" id="notification-container1" style="display:none;">
-    <div class="exit-symbol-container" onclick="closeNotification()">
+    <div class="exit-symbol-container" onclick="closeNotification1()">
         <span class="exit-symbol">❌</span>
     </div>
     <center style="color: white;">
@@ -535,7 +535,10 @@ input[type=checkbox] {
     <textarea id="probe-I"></textarea>
     <textarea id="probe-J"></textarea>
     <textarea id="probe-K"></textarea>
-    
+
+
+
+
 
 <script>
   
@@ -552,6 +555,67 @@ window.addEventListener('DOMContentLoaded', (event) => {
             });
         });
 /////////////////////////////////////////////
+
+  // Shift values passed from Django as a JSON string
+  var shiftValues = JSON.parse('{{ shift_values_json|escapejs }}');
+    console.log("shiftValues", shiftValues);
+
+    // Array to keep track of shifts that have been notified
+    let notifiedShifts = [];
+
+    // Function to convert time strings to Date objects
+    function convertToTimeObject(timeStr) {
+        const [time, period] = timeStr.trim().split(' ');
+        const [hours, minutes, seconds] = time.split(':');
+        let hours24 = parseInt(hours);
+
+        if (period === 'PM' && hours24 !== 12) {
+            hours24 += 12;
+        } else if (period === 'AM' && hours24 === 12) {
+            hours24 = 0;
+        }
+
+        const now = new Date();
+        return new Date(now.getFullYear(), now.getMonth(), now.getDate(), hours24, minutes, seconds);
+    }
+
+    // Function to check the current time against shift times
+    function checkShiftTimes() {
+        const now = new Date();
+
+        shiftValues.forEach(shift => {
+            const shiftName = shift[0];
+            const shiftTime = convertToTimeObject(shift[1]);
+
+            // Only check if this shift hasn't already triggered
+            if (!notifiedShifts.includes(shiftName)) {
+                // If the current time matches the shift time, show notification
+                if (now.getHours() === shiftTime.getHours() &&
+                    now.getMinutes() === shiftTime.getMinutes() &&
+                    now.getSeconds() === shiftTime.getSeconds()) {
+
+                    // Display the notification once
+                    document.getElementById('notification-container1').style.display = 'block';
+                    document.getElementById('notificationMessage').innerText = `It's time for ${shift[0]}!`;
+
+                    // Add the shift to the notified list so it doesn't trigger again
+                    notifiedShifts.push(shiftName);
+                }
+            }
+        });
+    }
+
+    // Close the notification
+    function closeNotification1() {
+        document.getElementById('notification-container1').style.display = 'none';
+    }
+
+    // Set an interval to check every second to ensure precision
+    setInterval(checkShiftTimes, 1000);  // Check every second
+
+
+
+
 function handleLogin() {
     var username = document.getElementById('userid').value;
     var password = document.getElementById('password').value;
@@ -783,9 +847,7 @@ document.getElementById("reset-button").addEventListener("click", function() {
   document.getElementById("notification-container1").style.display = "block";
 });
 
-function closeNotification() {
-        document.getElementById("notification-container1").style.display = "none";
-    }
+
 
     function handleOk() {
         document.getElementById("notificationDiv").style.display = "none";
@@ -1606,7 +1668,6 @@ function punchOverwriteCancel() {
         function closeNotification() {
             // Disable the notification container
             document.getElementById('notification-container').style.display = 'none';
-            document.getElementById('notification-container1').style.display = 'none';
             document.getElementById('punch_overwrite').style.display = 'none';
         }
     

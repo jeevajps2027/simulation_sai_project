@@ -347,7 +347,7 @@ Utility
             <label for="shift" style="margin-top: 30px;">SHIFT:</label>
             <input type="text" id="shift" name="shift" style="width: 200px;" value="SHIFT-"><br> 
             <label for="shift_time" style="margin-top: 30px;">START TIME:</label>
-            <input type="time" id="shift_time" name="shift_time" step="1" style="width: 200px;"><br><br>
+            <input type="time" id="shift_time" name="shift_time" step="1" style="width: 200px;" ><br><br>
             <textarea readonly>
                 {% if shift_settings %}
                     {% for data in shift_settings %}
@@ -364,30 +364,7 @@ Utility
         <button type="button" id="save-btn-2"><b>Save</b></button>  
     
         <script>
-            // Set the default placeholder-like value in 12-hour format
-    var shiftTimeInput = document.getElementById('shift_time');
-
-// Function to set placeholder value in 12-hour format
-function setPlaceholderTime() {
-    var hours = 1;
-    var minutes = '00';
-    var seconds = '00';
-    var ampm = 'AM';
-    var formattedTime = (hours < 10 ? '0' : '') + hours + ':' + minutes + ':' + seconds + ' ' + ampm;
-    
-    // Set value as a string in the format you want
-    shiftTimeInput.value = '01:00:00:AM';
-}
-
-// Initialize placeholder-like value
-setPlaceholderTime();
-
-// Reset to placeholder if the user clears the input
-shiftTimeInput.addEventListener('blur', function() {
-    if (shiftTimeInput.value === '') {
-        setPlaceholderTime();
-    }
-});
+           
            $(document).ready(function() {
                $('#save-btn-2').click(function() {
                    // Get the value of the time input
