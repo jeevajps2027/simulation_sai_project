@@ -436,7 +436,7 @@ input[type=checkbox] {
   <div><button type="button" id="master-btn"><b>Master<br>[F1]</b></button></div>
   <div><button type="button" id="start-btn"><b> Start<br>[F4]</b></button></div>
   <div><button type="button" id="stop-btn"><b>Stop<br>[F5]</b></button></div>
-  <div><button type="button" id="save-btn"><b> Save<br></b></button></div>
+  <div><button type="button" id="save-btn" disabled style="filter: blur(2px);"><b> Save<br></b></button></div>
   <div><button type="button" id="back-btn"><b>Back<br>[F7]</b></button></div>
   
 
@@ -454,6 +454,8 @@ input[type=checkbox] {
             <th style="width: 25%;" id="indicator">Indicator</th>
             <th style="width: 10%;" id="usl">USL</th>
             <th style="width: 15%;" id="status">Status</th>
+            <th style="display: none;" id="utl">utl</th>
+            <th style="display: none;" id="ltl">ltl</th>
           </tr>
         </thead>
         <tbody id="table-body">
@@ -750,6 +752,8 @@ $(document).ready(function(){
             var lsl = $(this).find("td:nth-child(5)").text();
             var usl = $(this).find("td:nth-child(7)").text();
             var statusCell = $(this).find("td:nth-child(8)").text();
+            var utl = $(this).find("td:nth-child(9)").text();
+            var ltl = $(this).find("td:nth-child(10)").text();
             var date = $("#date").val();
             var operator = $("#operator").val();
             var shift = $("#shift").val();
@@ -758,6 +762,8 @@ $(document).ready(function(){
             var partStatus = $("#part_status").val();
             var customerName = $("#customer_name").val();
             var compSrNo = $("#comp_srno").val();
+            var attribte = $("#attributeParameter").val();
+            var attribute_status = $("#attributeStatus").val();
 
             // Create an object with the data from each row
             var rowFormData = {
@@ -766,6 +772,8 @@ $(document).ready(function(){
                 nominal: nominal,
                 lsl: lsl,
                 usl: usl,
+                utl:utl,
+                ltl:ltl,
                 statusCell: statusCell,
                 date: date,
                 operator: operator,
@@ -775,6 +783,8 @@ $(document).ready(function(){
                 partStatus: partStatus,
                 customerName: customerName,
                 compSrNo: compSrNo,
+                attribte: attribte,
+                attribute_status : attribute_status,
 
             };
 
@@ -935,6 +945,18 @@ $(document).ready(function() {
                     statusCell.className = "status_cell";
                     statusCell.id = 'status_cell-' + i;
                     row.appendChild(statusCell);
+
+
+
+                    var utlCell = document.createElement("td");
+                    utlCell.textContent = response.utlValues[i];
+                    utlCell.style.display = "none";
+                    row.appendChild(utlCell)
+
+                    var ltlCell = document.createElement("td");
+                    ltlCell.textContent = response.ltlValues[i];
+                    ltlCell.style.display = "none";
+                    row.appendChild(ltlCell)
 
                     $('#table-body').append(row);
 
@@ -1103,10 +1125,15 @@ document.getElementById("stop-btn").addEventListener("click", function() {
 
             // Display notification to the client
             showNotification("You have completed the measurement for this job.");
+
+            const saveButton = document.getElementById("save-btn");
+            saveButton.disabled = false;        // Enable the button
+            saveButton.style.filter = "none";   // Remove the blur effect
         }
 
         // Stop calculation for the current step
         stopContinuousUpdate();
+        
         // Move to the next step
         moveToNextStep();
     }, 500);
@@ -1121,6 +1148,9 @@ document.getElementById("save-btn").addEventListener("click", function() {
             var acceptInput = document.getElementById("accept");
             var rejectInput = document.getElementById("reject");
             var reworkInput = document.getElementById("rework");
+            var attributeStatus = document.getElementById("attributeStatus"); // New: Attribute status input
+            var attributeColor = attributeStatus.style.backgroundColor; // New: Get background color of attributeStatus
+
 
             if (partStatus === "ACCEPT") {
                 acceptInput.value = parseInt(acceptInput.value) + 1;
@@ -1143,6 +1173,9 @@ document.getElementById("save-btn").addEventListener("click", function() {
             partStatusInput.value = "";
             partStatusInput.style.backgroundColor = "";
 
+            attributeStatus.value = "";
+            attributeStatus.style.backgroundColor = "";
+
             var compSrNo = document.getElementById("comp_srno");
             compSrNo.value = "";
 
@@ -1163,6 +1196,10 @@ document.getElementById("save-btn").addEventListener("click", function() {
             document.getElementById('punch_textarea').focus();
         }
         currentStep = 1;
+
+        const saveButton = document.getElementById("save-btn");
+            saveButton.disabled = true;        // Enable the button
+            saveButton.style.filter = "blur(2px)";   // Remove the blur effect
         
         });
 

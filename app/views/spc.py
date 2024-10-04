@@ -10,7 +10,7 @@ from openpyxl import Workbook
 @csrf_exempt
 def spc(request):
     from app.models import MeasurementData, TableFiveData,parameter_settings,TableOneData,TableThreeData,TableTwoData,TableFourData
-    from app.models import consolidate_with_srno,consolidate_without_srno,parameterwise_report,jobwise_report,ShiftSettings
+    from app.models import X_Bar_Chart,X_Bar_R_Chart,X_Bar_S_Chart,Histogram_Chart,Pie_Chart,ShiftSettings
     if request.method == 'POST':
         try:
             data = json.loads(request.body)
@@ -19,7 +19,7 @@ def spc(request):
             print(part_model)
             form_id = data.get('itemId')
             print("form_id:",form_id)
-            if form_id == 'consolidate_with_srno':
+            if form_id == 'x_bar_chart':
                 partModel = data.get('partModel')
                 parameterName = data.get('parameter_name')
                 operator = data.get('operator')
@@ -27,12 +27,11 @@ def spc(request):
                 formatted_to_date = data.get('to_date')
                 machine = data.get('machine')
                 vendor_code = data.get('vendor_code')
-                job_no = data.get('job_no')
                 shift = data.get('shift')
                 current_date_time = data.get('currentDateTime')
 
                 # Get or create consolidate_with_srno instance with id=1
-                instance, created = consolidate_with_srno.objects.get_or_create(id=1)
+                instance, created = X_Bar_Chart.objects.get_or_create(id=1)
 
                 # Update the instance with the new data
                 instance.part_model = partModel
@@ -42,13 +41,12 @@ def spc(request):
                 instance.formatted_to_date = formatted_to_date
                 instance.machine = machine
                 instance.vendor_code = vendor_code
-                instance.job_no = job_no
                 instance.shift = shift
                 instance.current_date_time = current_date_time
 
                 # Save the instance
                 instance.save()
-            elif form_id == 'consolidate_without_srno':
+            elif form_id == 'x_bar_r_chart':
                 partModel = data.get('partModel')
                 parameterName = data.get('parameter_name')
                 operator = data.get('operator')
@@ -56,11 +54,12 @@ def spc(request):
                 formatted_to_date = data.get('to_date')
                 machine = data.get('machine')
                 vendor_code = data.get('vendor_code')
+                sample_size = data.get('sample_size')
                 shift = data.get('shift')
                 current_date_time = data.get('currentDateTime')
 
                  # Get or create consolidate_with_srno instance with id=1
-                instance, created = consolidate_without_srno.objects.get_or_create(id=1)
+                instance, created = X_Bar_R_Chart.objects.get_or_create(id=1)
 
                 # Update the instance with the new data
                 instance.part_model = partModel
@@ -70,12 +69,13 @@ def spc(request):
                 instance.formatted_to_date = formatted_to_date
                 instance.machine = machine
                 instance.vendor_code = vendor_code
+                instance.sample_size = sample_size
                 instance.shift = shift
                 instance.current_date_time = current_date_time
 
                 # Save the instance
                 instance.save()
-            elif form_id == 'parameterwise_report':
+            elif form_id == 'x_bar_s_chart':
                 partModel = data.get('partModel')
                 parameterName = data.get('parameter_name')
                 operator = data.get('operator')
@@ -83,12 +83,12 @@ def spc(request):
                 formatted_to_date = data.get('to_date')
                 machine = data.get('machine')
                 vendor_code = data.get('vendor_code')
-                job_no = data.get('job_no')
+                sample_size = data.get('sample_size')
                 shift = data.get('shift')
                 current_date_time = data.get('currentDateTime')
 
                 # Get or create consolidate_with_srno instance with id=1
-                instance, created = parameterwise_report.objects.get_or_create(id=1)
+                instance, created = X_Bar_S_Chart.objects.get_or_create(id=1)
 
                 # Update the instance with the new data
                 instance.part_model = partModel
@@ -98,30 +98,71 @@ def spc(request):
                 instance.formatted_to_date = formatted_to_date
                 instance.machine = machine
                 instance.vendor_code = vendor_code
-                instance.job_no = job_no
+                instance.sample_size = sample_size
                 instance.shift = shift
                 instance.current_date_time = current_date_time
 
                 # Save the instance
                 instance.save()
-            elif form_id == 'jobwise_report':
+            elif form_id == 'histogram':
                 partModel = data.get('partModel')
+                parameterName = data.get('parameter_name')
+                operator = data.get('operator')
                 formatted_from_date = data.get('from_date')
                 formatted_to_date = data.get('to_date')
-                job_no = data.get('job_no')
+                machine = data.get('machine')
+                vendor_code = data.get('vendor_code')
+                sample_size = data.get('sample_size')
+                shift = data.get('shift')
                 current_date_time = data.get('currentDateTime')
 
                 # Get or create consolidate_with_srno instance with id=1
-                instance, created = jobwise_report.objects.get_or_create(id=1)
+                instance, created = Histogram_Chart.objects.get_or_create(id=1)
+
+                # Update the instance with the new data
                 instance.part_model = partModel
+                instance.parameter_name = parameterName
+                instance.operator = operator
                 instance.formatted_from_date = formatted_from_date
                 instance.formatted_to_date = formatted_to_date
-                instance.job_no = job_no
+                instance.machine = machine
+                instance.vendor_code = vendor_code
+                instance.sample_size = sample_size
+                instance.shift = shift
                 instance.current_date_time = current_date_time
 
                 # Save the instance
                 instance.save()
-              
+            
+            elif form_id == 'pie_chart':
+                partModel = data.get('partModel')
+                parameterName = data.get('parameter_name')
+                operator = data.get('operator')
+                formatted_from_date = data.get('from_date')
+                formatted_to_date = data.get('to_date')
+                machine = data.get('machine')
+                vendor_code = data.get('vendor_code')
+                sample_size = data.get('sample_size')
+                shift = data.get('shift')
+                current_date_time = data.get('currentDateTime')
+
+                # Get or create consolidate_with_srno instance with id=1
+                instance, created = Pie_Chart.objects.get_or_create(id=1)
+
+                # Update the instance with the new data
+                instance.part_model = partModel
+                instance.parameter_name = parameterName
+                instance.operator = operator
+                instance.formatted_from_date = formatted_from_date
+                instance.formatted_to_date = formatted_to_date
+                instance.machine = machine
+                instance.vendor_code = vendor_code
+                instance.sample_size = sample_size
+                instance.shift = shift
+                instance.current_date_time = current_date_time
+
+                # Save the instance
+                instance.save()
 
                 
 

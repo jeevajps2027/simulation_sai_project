@@ -105,7 +105,7 @@ SPC REPORTS
 </div>
 
 <div class="box" id="boxContent"style="overflow-x: auto;overflow-y:auto;">
-    <div class="item item-1" id="consolidate_with_srno">
+    <div class="item item-1" id="x_bar_chart">
 
       <center style="color: purple; text-shadow: 2px 2px 4px rgb(240, 118, 240);">
         <h2><b>X-BAR CHART</b></h4></center>
@@ -161,14 +161,6 @@ SPC REPORTS
             {% endfor %}
         </select><br>
 
-
-        <label for="sample_size">SAMPLE SIZE:</label>
-        <select class="sample_size" name="sample_size">
-            <option value="2">2</option>
-            <option value="3">3</option>
-            <option value="4">4</option>
-            <option value="5">5</option>
-        </select>
         
         <label for="shift">SHIFT:</label>
         <select class="shift" name="shift">
@@ -185,7 +177,7 @@ SPC REPORTS
      
     </div>
 
-    <div class="item item-2" id="consolidate_without_srno">
+    <div class="item item-2" id="x_bar_r_chart">
       <center style="color: purple; text-shadow: 2px 2px 4px rgb(240, 118, 240);">
         <h2><b>X-BAR R-CHART</b></h4></center>
 
@@ -261,7 +253,7 @@ SPC REPORTS
         <button type="button" class="report-btn" id="report_btn_2"><b>View Report</b></button>    
     </div>
 
-    <div class="item item-3" id="parameterwise_report">
+    <div class="item item-3" id="x_bar_s_chart">
       <center style="color: purple; text-shadow: 2px 2px 4px rgb(240, 118, 240);">
         <h2><b>X-BAR S-CHART</b></h2></center>
 
@@ -337,7 +329,7 @@ SPC REPORTS
         <button type="button" class="report-btn" id="report_btn_3"><b>View Report</b></button>    
     </div>
 
-    <div class="item item-4" id="jobwise_report">
+    <div class="item item-4" id="histogram">
       <center style="color: purple; text-shadow: 2px 2px 4px rgb(240, 118, 240);">
         <h2><b>HISTOGRAM</b></h2></center>
 
@@ -416,7 +408,7 @@ SPC REPORTS
 
     </div>
 
-    <div class="item item-6" id="master_report">
+    <div class="item item-6" id="pie_chart">
       <center style="color: purple; text-shadow: 2px 2px 4px rgb(240, 118, 240);">
         <h2><b>PIE CHART</b></h2></center>
 
@@ -850,9 +842,15 @@ document.addEventListener("DOMContentLoaded", function() {
     var reportBtn = document.getElementById("report_btn_1");
 
     // Add click event listener to the button
-    reportBtn.addEventListener("click", function() {
-        // Redirect to the desired URL
-        window.location.href = '//';
+    reportBtn.addEventListener("click", function(event) {
+
+        event.preventDefault();
+
+        setTimeout(function(){
+             // Redirect to the desired URL
+            window.location.href = '/xBar/';
+        },2000);
+       
     });
 });
 

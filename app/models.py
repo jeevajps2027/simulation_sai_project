@@ -125,7 +125,10 @@ class MeasurementData(models.Model):
     part_status = models.CharField(max_length=100)
     customer_name = models.CharField(max_length=100)
     comp_sr_no = models.CharField(max_length=100)
-
+    attribte = models.CharField(max_length=100,null=True, blank=True)
+    attribute_status = models.CharField(max_length=100,null=True, blank=True)
+    ltl = models.FloatField(null=True, blank=True)
+    utl = models.FloatField(null=True, blank=True)
     
 
 class MasterIntervalSettings(models.Model):
@@ -230,3 +233,63 @@ class jobwise_report(models.Model):
 class ResetCount(models.Model):
     part_model = models.CharField(max_length=100)
     date = models.CharField(max_length=100)    
+
+class X_Bar_Chart(models.Model):
+    part_model = models.CharField(max_length=100)
+    parameter_name = models.CharField(max_length=100)
+    operator = models.CharField(max_length=100)
+    formatted_from_date = models.CharField(max_length=100)
+    formatted_to_date = models.CharField(max_length=100)
+    machine = models.CharField(max_length=100)
+    vendor_code = models.CharField(max_length=100)
+    shift = models.CharField(max_length=100)
+    current_date_time = models.CharField(max_length=100)
+
+
+class X_Bar_R_Chart(models.Model):
+    part_model = models.CharField(max_length=100)
+    parameter_name = models.CharField(max_length=100)
+    operator = models.CharField(max_length=100)
+    formatted_from_date = models.CharField(max_length=100)
+    formatted_to_date = models.CharField(max_length=100)
+    machine = models.CharField(max_length=100)
+    vendor_code = models.CharField(max_length=100)
+    sample_size = models.CharField(max_length=100)
+    shift = models.CharField(max_length=100)
+    current_date_time = models.CharField(max_length=100)
+
+class X_Bar_S_Chart(models.Model):
+    part_model = models.CharField(max_length=100)
+    parameter_name = models.CharField(max_length=100)
+    operator = models.CharField(max_length=100)
+    formatted_from_date = models.CharField(max_length=100)
+    formatted_to_date = models.CharField(max_length=100)
+    machine = models.CharField(max_length=100)
+    vendor_code = models.CharField(max_length=100)
+    sample_size = models.CharField(max_length=100)
+    shift = models.CharField(max_length=100)
+    current_date_time = models.CharField(max_length=100)
+
+class Histogram_Chart(models.Model):
+    part_model = models.CharField(max_length=100)
+    parameter_name = models.CharField(max_length=100)
+    operator = models.CharField(max_length=100)
+    formatted_from_date = models.CharField(max_length=100)
+    formatted_to_date = models.CharField(max_length=100)
+    machine = models.CharField(max_length=100)
+    vendor_code = models.CharField(max_length=100)
+    sample_size = models.CharField(max_length=100)
+    shift = models.CharField(max_length=100)
+    current_date_time = models.CharField(max_length=100)
+
+class Pie_Chart(models.Model):
+    part_model = models.CharField(max_length=100)
+    parameter_name = models.CharField(max_length=100)
+    operator = models.CharField(max_length=100)
+    formatted_from_date = models.CharField(max_length=100)
+    formatted_to_date = models.CharField(max_length=100)
+    machine = models.CharField(max_length=100)
+    vendor_code = models.CharField(max_length=100)
+    sample_size = models.CharField(max_length=100)
+    shift = models.CharField(max_length=100)
+    current_date_time = models.CharField(max_length=100)

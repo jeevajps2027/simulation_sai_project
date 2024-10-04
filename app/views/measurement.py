@@ -35,6 +35,8 @@ def process_row(row):
             nominal=row.get('nominal'),
             lsl=row.get('lsl'),
             usl=row.get('usl'),
+            ltl=row.get('ltl'),
+            utl=row.get('utl'),
             status_cell=row.get('statusCell'),
             date=date_obj_naive,
             operator=row.get('operator'),
@@ -43,7 +45,9 @@ def process_row(row):
             part_model=row.get('partModel'),
             part_status=row.get('partStatus'),
             customer_name=row.get('customerName'),
-            comp_sr_no=row.get('compSrNo')
+            comp_sr_no=row.get('compSrNo'),
+            attribte = row.get('attribte'),
+            attribute_status = row.get('attribute_status')
         )
         return None
     except Exception as e:

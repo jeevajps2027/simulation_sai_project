@@ -4,11 +4,67 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>X-bar Control Chart</title>
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script> <!-- Include Plotly JS -->
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: auto;
+        }
+
+        h1, h2 {
+            text-align: center;
+        }
+
+        .details {
+            display: flex;
+            justify-content: space-around;
+            margin-bottom: 20px;
+        }
+
+        .chart-container {
+            margin-top: 30px;
+        }
+
+        .error-message {
+            text-align: center;
+            color: red;
+        }
+    </style>
 </head>
 <body>
-    <h1>X-bar Control Chart</h1>
-    <div>
-        <img src="data:image/png;base64,{{ chart }}" alt="X-bar Chart" />
+    <div class="container">
+        <h1>X-bar Control Chart</h1>
+        <div class="details">
+            <div>
+                <strong>Part Model:</strong> {{ part_model }}
+            </div>
+            <div>
+                <strong>Parameter Name:</strong> {{ parameter_name }}
+            </div>
+            <div>
+                <strong>Operator:</strong> {{ operator }}
+            </div>
+            <div>
+                <strong>Machine:</strong> {{ machine }}
+            </div>
+            <div>
+                <strong>Shift:</strong> {{ shift }}
+            </div>
+        </div>
+
+        {% if error %}
+            <div class="error-message">{{ error }}</div>
+        {% else %}
+            <div class="chart-container">
+                <!-- Plotly chart will be rendered here -->
+                {{ chart|safe }}
+            </div>
+        {% endif %}
     </div>
 </body>
 </html>
