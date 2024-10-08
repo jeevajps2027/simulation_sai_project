@@ -112,10 +112,10 @@ def __str__(self):
 
 class MeasurementData(models.Model):
     parameter_name = models.CharField(max_length=100)
-    readings = models.FloatField()
-    nominal = models.FloatField()
-    lsl = models.FloatField()
-    usl = models.FloatField()
+    readings = models.FloatField(null=True, blank=True)
+    nominal = models.FloatField(null=True, blank=True)
+    lsl = models.FloatField(null=True, blank=True)
+    usl = models.FloatField(null=True, blank=True)
     status_cell = models.CharField(max_length=100)
     date = models.DateTimeField()
     operator = models.CharField(max_length=100)
@@ -125,8 +125,6 @@ class MeasurementData(models.Model):
     part_status = models.CharField(max_length=100)
     customer_name = models.CharField(max_length=100)
     comp_sr_no = models.CharField(max_length=100)
-    attribte = models.CharField(max_length=100,null=True, blank=True)
-    attribute_status = models.CharField(max_length=100,null=True, blank=True)
     ltl = models.FloatField(null=True, blank=True)
     utl = models.FloatField(null=True, blank=True)
     

@@ -13,30 +13,40 @@ from app.models import MasterIntervalSettings, MeasurementData, ResetCount, Shif
 
 def process_row(row):
     try:
+        print("Processing row:", row)  # Add logging here
+        # Ensure default values for optional fields
+        readings = row.get('readings') if row.get('readings') != 'N/A' else None
+        nominal = row.get('nominal') if row.get('nominal') != 'N/A' else None
+        lsl = row.get('lsl') if row.get('lsl') != 'N/A' else None
+        usl = row.get('usl') if row.get('usl') != 'N/A' else None
+        ltl = row.get('ltl') if row.get('ltl') != 'N/A' else None
+        utl = row.get('utl') if row.get('utl') != 'N/A' else None
+        
         date_str = row.get('date')
         print("date_str", date_str)
-        
+
         # Convert date string to datetime object
         date_obj = datetime.strptime(date_str, '%d/%m/%Y %I:%M:%S %p')
-        print("date_obj", date_obj)
-        
+
         # Make the datetime object timezone-aware
         timezone = pytz.timezone('Asia/Kolkata')  # Replace with your timezone
         date_obj_aware = timezone.localize(date_obj)
-        print("date_obj_aware", date_obj_aware)
-        
+
         # Remove timezone information before storing
         date_obj_naive = date_obj_aware.replace(tzinfo=None)
-        print("date_obj_naive", date_obj_naive)
-        
+
+        parameterName = row.get('parameterName')
+        print("parameterName", parameterName)
+
+        # Create the MeasurementData entry
         MeasurementData.objects.create(
             parameter_name=row.get('parameterName'),
-            readings=row.get('readings'),
-            nominal=row.get('nominal'),
-            lsl=row.get('lsl'),
-            usl=row.get('usl'),
-            ltl=row.get('ltl'),
-            utl=row.get('utl'),
+            readings=readings,
+            nominal=nominal,
+            lsl=lsl,
+            usl=usl,
+            ltl=ltl,
+            utl=utl,
             status_cell=row.get('statusCell'),
             date=date_obj_naive,
             operator=row.get('operator'),
@@ -46,8 +56,6 @@ def process_row(row):
             part_status=row.get('partStatus'),
             customer_name=row.get('customerName'),
             comp_sr_no=row.get('compSrNo'),
-            attribte = row.get('attribte'),
-            attribute_status = row.get('attribute_status')
         )
         return None
     except Exception as e:
@@ -100,7 +108,7 @@ def measurement(request):
             parameter_settings_qs = parameter_settings.objects.filter(model_id=part_model, hide_checkbox=False,attribute=False).values_list('parameter_name', flat=True).order_by('id')
             print("parameter_settings_qs",parameter_settings_qs)
 
-            parameter_attribute = parameter_settings.objects.filter(model_id=part_model, attribute=True).values_list('parameter_name', flat=True).first()
+            parameter_attribute = parameter_settings.objects.filter(model_id=part_model, attribute=True).values_list('parameter_name', flat=True)
             print("parameter_attribute",parameter_attribute)
 
             last_stored_parameter = {item['parameter_name']: item for item in Master_settings.objects.filter(selected_value=part_model, parameter_name__in=parameter_settings_qs.values_list('parameter_name', flat=True)).values()}
@@ -140,7 +148,7 @@ def measurement(request):
                 'probe_values': list(parameter_settings_qs.values_list('probe_no', flat=True)),
                 'step_no_values': list(parameter_settings_qs.values_list('step_no', flat=True)),
                 'customer_name_values': customer_name_values,
-                'parameter_attribute':parameter_attribute,
+                'parameter_attribute':list(parameter_attribute),
             }
 
             return JsonResponse(response_data)
@@ -358,10 +366,10 @@ def measurement(request):
         interval_settings_json = json.dumps(interval_settings_list)
 
 
-        shift_values = ShiftSettings.objects.order_by('id').values_list('shift', 'shift_time').distinct()
+        shift_values1 = ShiftSettings.objects.order_by('id').values_list('shift', 'shift_time').distinct()
     
         # Convert the QuerySet to a list of lists
-        shift_values_list = list(shift_values)
+        shift_values_list = list(shift_values1)
         
         # Serialize the list to JSON
         shift_values_json = json.dumps(shift_values_list)

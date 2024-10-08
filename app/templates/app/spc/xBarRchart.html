@@ -3,12 +3,31 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>X-bar R-Chart</title>
+    <title>X-bar and R Chart</title>
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: auto;
+        }
+
+        h1, h2 {
+            text-align: center;
+        }
+</style>
 </head>
 <body>
-    <h1>X-bar R-Chart</h1>
-    <div>
-        <img src="data:image/png;base64,{{ chart }}" alt="X-bar Chart" />
+    <div class="container">
+    <h1>X-bar and R Chart</h1>
+
+    <div id="xbar-chart">{{ xbar_chart|safe }}</div>
+    <div id="r-chart">{{ r_chart|safe }}</div>
     </div>
 </body>
 </html>

@@ -34,28 +34,102 @@
             text-align: center;
             color: red;
         }
+
+        .first-table {
+            background-color: #fff;
+            border: 1px solid #ccc;
+            text-align: center;
+        }
+        .first-table td{
+            width: 230px;
+        }
+        .label {
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 10px;
+        }
+        .value {
+            font-weight: bold;
+            font-size: 13px;
+        }
+        
+        th, td {
+            border: 1px solid #ccc;
+            text-align: center;
+            font-weight: bold;
+            width: 100px;
+            font-size: 15px;
+            border: 1px solid black; /* Add borders to table cells */
+            padding: 4px; /* Add padding to table cells */
+        }
+        table {
+            width: auto; /* Allow the table to size based on content */
+            table-layout: auto; /* Allow the table to adjust its layout based on content */
+            border-collapse: collapse; /* Collapse table borders */
+        }
     </style>
 </head>
 <body>
+
+   
+    
+
     <div class="container">
         <h1>X-bar Control Chart</h1>
-        <div class="details">
-            <div>
-                <strong>Part Model:</strong> {{ part_model }}
-            </div>
-            <div>
-                <strong>Parameter Name:</strong> {{ parameter_name }}
-            </div>
-            <div>
-                <strong>Operator:</strong> {{ operator }}
-            </div>
-            <div>
-                <strong>Machine:</strong> {{ machine }}
-            </div>
-            <div>
-                <strong>Shift:</strong> {{ shift }}
-            </div>
-        </div>
+        <table class="first-table">
+            {% for data in x_bar_values %}
+            <tr>
+                <td>
+                    <span class="label">PARTMODEL:</span>
+                    <span class="value">{{ data.part_model }}</span>
+                </td>
+                <td>
+                    <span class="label">PARAMETER NAME:</span>
+                    <span class="value">{{ data.parameter_name }}</span>
+                </td>
+                <td>
+                    <span class="label">OPERATOR:</span>
+                    <span class="value">{{ data.operator }}</span>
+                </td>
+
+                <td>
+                    <span class="label">SHIFT:</span>
+                    <span class="value">{{ data.shift }}</span>
+                </td>
+                <td>
+                    <span class="label">CURRENT DATE:</span>
+                    <span class="value">{{ data.current_date_time }}</span>
+                </td>
+                
+            </tr>
+            <tr>
+                <td>
+                    <span class="label">MACHINE:</span>
+                    <span class="value">{{ data.machine }}</span>
+                </td>
+                <td>
+                    <span class="label">VENDOR CODE:</span>
+                    <span class="value">{{ data.vendor_code }}</span>
+                </td>
+                
+
+                <td>
+                    <span class="label">FROM DATE:</span>
+                    <span class="value">{{ data.formatted_from_date }}</span>
+                </td>
+
+                <td>
+                    <span class="label">TO DATE:</span>
+                    <span class="value">{{ data.formatted_to_date }}</span>
+                </td>
+
+                <td >
+                    <span class="label">TOTAL:</span>
+                    <span class="value" id="total-count">{{ total_count }}</span>
+                </td>
+            </tr>
+           
+            {% endfor %}
+        </table>
 
         {% if error %}
             <div class="error-message">{{ error }}</div>

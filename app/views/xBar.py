@@ -53,6 +53,9 @@ def xBar(request):
 
         filtered_readings = MeasurementData.objects.filter(**filter_kwargs).values_list('readings', flat=True).order_by('id')
 
+        total_count = len(filtered_readings)
+        print("total_count",total_count)
+
         # Extract data for plotting
         readings = [float(r) for r in filtered_readings]  # Convert readings to floats
 
@@ -148,7 +151,8 @@ def xBar(request):
                 'parameter_name': parameter_name,
                 'operator': operator,
                 'machine': machine,
-                'shift': shift
+                'shift': shift,
+                'total_count':total_count,
             }
 
             return render(request, 'app/spc/xBar.html', context)

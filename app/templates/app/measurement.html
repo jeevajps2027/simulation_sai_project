@@ -311,6 +311,7 @@ input[type=checkbox] {
     width: 500px;
     height: 100px;
     left: 50%;
+    top: 40%;
     text-align: center;
     font-weight: bold;
     transform: translateX(-50%);
@@ -334,33 +335,6 @@ input[type=checkbox] {
     height: 40px;
 }
 
-#attributeParameter{
-    width: 180px;
-    margin-left: 10px;
-    height: 40px;
-}
-#attributeAccept{
-    background-color: #23e909;
-    width: 120px;
-    margin-left: 10px;
-    height: 35px;
-    margin-top: 10px;
-    font-weight: bold;
-}
-#attributeReject{
-    background-color: red;
-    width: 120px;
-    margin-left: 10px;
-    height: 35px;
-    font-weight: bold;
-}
-#attributeStatus{
-    width: 180px;
-    margin-left: 10px;
-    height: 70px;
-    margin-top: 30px;
-    text-align: center;
-}
 
 </style>
 
@@ -467,9 +441,6 @@ input[type=checkbox] {
 
 
 <div class="notification-container" id="notification-container">
-    <div class="exit-symbol-container" onclick="closeNotification()">
-        <span class="exit-symbol">❌</span>
-    </div>
     <pre style="margin-top: 10px; font-size: large; font-weight: bold;">Enter Your Punch Number here:</pre>
     <textarea id="punch_textarea" onkeydown="handleEnterKeyPress(event)"></textarea>
 </div>
@@ -514,16 +485,22 @@ input[type=checkbox] {
 <div id="customAlert" ></div>
 
 
-<div class="box-3" id="box3" style="filter: blur(5px); pointer-events: none; opacity: 0.5;">
-    <center id="attribute"><b>ATTRIBUTE PARAMETER</b></center>
-    <label for="attributeParameter" style="width: 200px;">Parameter Name:</label><br>
-    <input type="text" id="attributeParameter" style="font-weight: bold;" readonly><br><br>
+<!-- <div class="box-3" id="box3" style="filter: blur(5px); pointer-events: none; opacity: 0.5;"> -->
+    <div class="box-3" id="box3" style="overflow-y: auto;filter: blur(5px); pointer-events: none; opacity: 0.5;">
+        <center id="attribute"><b>ATTRIBUTE PARAMETER</b></center>
+        <label for="attributeParameter" style="width: 200px;margin-top: 0px;">Parameter Name:</label><br>
     
-    <button type="button" id="attributeReject">REJECT</button><br>
-    <button type="button" id="attributeAccept">ACCEPT</button>
-  
-    <input type="text" id="attributeStatus"><br><br>
-  </div><br>
+        <div class="attribute_input_box" style="display: none;">
+        <input type="text" id="attributeParameter" style="font-weight: bold; margin-top: 0px;" readonly><br>
+    
+        <div class="buttonAR" style="margin-top: 5px;">
+        <button type="button" id="attributeReject">REJECT</button>
+        <button type="button" id="attributeAccept">ACCEPT</button>
+        </div>
+    
+        <input type="text" id="attributeStatus"><br>
+        </div>
+      </div><br>
   
 
 <textarea id="probe-A"></textarea>
@@ -741,10 +718,9 @@ function stopAction() {
 
 $(document).ready(function(){
     $("#save-btn").click(function(){
-        
         // Get form data
-        // Loop through each table row
         var formDataArray = [];
+        var allStatusValid = true;
         $("table tbody tr").each(function(index) {
             var parameterName = $(this).find("td:nth-child(2)").text();
             var readings = $(this).find(".readingInputs").val();
@@ -762,18 +738,20 @@ $(document).ready(function(){
             var partStatus = $("#part_status").val();
             var customerName = $("#customer_name").val();
             var compSrNo = $("#comp_srno").val();
-            var attribte = $("#attributeParameter").val();
-            var attribute_status = $("#attributeStatus").val();
 
-            // Create an object with the data from each row
+            if(!statusCell){
+                allStatusValid=false;
+                return false;
+            }
+
             var rowFormData = {
                 parameterName: parameterName,
                 readings: readings,
                 nominal: nominal,
                 lsl: lsl,
                 usl: usl,
-                utl:utl,
-                ltl:ltl,
+                utl: utl,
+                ltl: ltl,
                 statusCell: statusCell,
                 date: date,
                 operator: operator,
@@ -783,19 +761,60 @@ $(document).ready(function(){
                 partStatus: partStatus,
                 customerName: customerName,
                 compSrNo: compSrNo,
-                attribte: attribte,
-                attribute_status : attribute_status,
-
             };
 
-            // Add the object to the array
             formDataArray.push(rowFormData);
         });
 
-        // Prepare data to be sent for the table
-        var tableData = {
-            formDataArray: formDataArray
+        if(!allStatusValid){
+            showCustomAlert("YOU ARE NOT PROPERLY CALCULATED.DO CORRECT CALCLATION AND THEN SAVE")
+            return;
+        }
+
+       // Collect additional attributes and statuses
+var parameterAttributes = [];
+var attributeStatuses = [];
+
+// Iterate over dynamically generated attribute fields
+$(".attribute_input_box").each(function(index) {
+    var attributeParam = $(this).find("input[type='text']").eq(0).val();
+    var attributeStatus = $(this).find("input[type='text']").eq(1).val();
+
+    // Check if the attributeParam and attributeStatus are not empty before adding them
+    if (attributeParam && attributeStatus) {
+        parameterAttributes.push(attributeParam);
+        attributeStatuses.push(attributeStatus);
+    }
+});
+
+// Check if parameterAttributes and attributeStatuses have entries before adding to formDataArray
+if (parameterAttributes.length > 0 && attributeStatuses.length > 0) {
+    for (let i = 0; i < parameterAttributes.length; i++) {
+        var extraRowData = {
+            parameterName: parameterAttributes[i],
+            readings: 'N/A',
+            nominal: 'N/A',
+            lsl: 'N/A',
+            usl: 'N/A',
+            utl: 'N/A',
+            ltl: 'N/A',
+            statusCell: attributeStatuses[i],
+            date: $("#date").val(),
+            operator: $("#operator").val(),
+            shift: $("#shift").val(),
+            machine: $("#machine").val(),
+            partModel: $("#partModel").val(),
+            partStatus: $("#part_status").val(),
+            customerName: $("#customer_name").val(),
+            compSrNo: $("#comp_srno").val()
         };
+
+        formDataArray.push(extraRowData);
+    }
+}
+
+
+        var tableData = { formDataArray: formDataArray };
 
         console.log('Table data to be sent:', tableData);
 
@@ -805,27 +824,23 @@ $(document).ready(function(){
             url: "/measurement/", // Update with your actual endpoint URL
             contentType: "application/json",
             dataType: "json",
-            data: JSON.stringify({
-                tableData: tableData
-            }),
+            data: JSON.stringify({ tableData: tableData }),
             beforeSend: function(xhr, settings) {
                 xhr.setRequestHeader("X-CSRFToken", "{{ csrf_token }}");
             },
             success: function(response){
-                // Handle success response
                 console.log("Data saved successfully: ", response);
                 showCustomAlert('Data sent successfully: ' + response.message); 
             },
             error: function(xhr, status, error){
-                // Handle error
                 console.error("Error occurred while saving data: ", error);
-                console.log('Response text:', xhr.responseText); // Log the response text
-                showCustomAlert('Error sending data: ' + xhr.responseText); // Show error alert
-
+                console.log('Response text:', xhr.responseText);
+                showCustomAlert('Error sending data: ' + xhr.responseText); 
             }
         });
     });
 });
+
 
 function showCustomAlert(message) {
     const customAlert = document.getElementById('customAlert');
@@ -863,9 +878,10 @@ document.getElementById("reset-button").addEventListener("click", function() {
         document.getElementById("notificationDiv").style.display = "none";
         document.getElementById("notificationDiv1").style.display = "block";
     }
-    
+       
 // Function to display serial data
 $(document).ready(function() {
+    let lastResponse; // Variable to store the last response
     // Function to display serial data
     function fetchData(selectedModel) {
         var data = {
@@ -887,8 +903,10 @@ $(document).ready(function() {
                     console.error('Invalid response format:', response);
                     return;
                 }
-
+                
+                // Store the response for later use
                 $('#table-body').empty();
+                
 
                 for (var i = 0; i < response.parameterNameValues.length; i++) {
                     var row = document.createElement("tr");
@@ -962,30 +980,9 @@ $(document).ready(function() {
 
                     var customerName = response.customer_name_values;
                     document.getElementById("customer_name").value = customerName;
+                    
 
-                    var attribute_name = response.parameter_attribute;
-                    document.getElementById("attributeParameter").value = attribute_name;
-
-
-                     // Check if parameter_attribute exists
-    if (attribute_name) {
-        // Blur Box 2 and make Box 3 interactive
-        box2.style.filter = "blur(3px)";
-        box2.style.pointerEvents = "none";
-        box3.style.filter = "none";
-        box3.style.pointerEvents = "auto";
-        box3.style.opacity = "1";
-
-        // Set the attribute parameter value in the input field
-        document.getElementById("attributeParameter").value = attribute_name;
-    } else {
-        // Reset Box 2 and keep Box 3 non-interactive if no attribute_name
-        box2.style.filter = "none";
-        box2.style.pointerEvents = "auto";
-        box3.style.filter = "blur(5px)";
-        box3.style.pointerEvents = "none";
-        box3.style.opacity = "0.5";
-    }
+                   
 
                     
 
@@ -1002,7 +999,6 @@ $(document).ready(function() {
                     console.log("Probe Value:", response.probe_values[i]);
                     console.log("Step No Value:", response.step_no_values[i]);
                     console.log("customer_name_values:", response.customer_name_values);
-                    console.log("parameter_attribute:", response.parameter_attribute);
                    
                     
                     displaySerialData(
@@ -1023,6 +1019,13 @@ $(document).ready(function() {
                         statusCell
                     );
                 }
+                
+                console.log("parameter_attribute :", response.parameter_attribute);
+                lastResponse = response;
+                
+                createAttributeInputs(response.parameter_attribute);
+                
+                
             },
             error: function(xhr, status, error) {
                 console.error('Error:', error);
@@ -1030,6 +1033,17 @@ $(document).ready(function() {
         });
     }
 
+    function saveButtonHandler() {
+        console.log()
+        // Use the last response stored in the outer scope
+        if (lastResponse && lastResponse.parameter_attribute) {
+            createAttributeInputs(lastResponse.parameter_attribute); // Call the function with the attribute data
+        } else {
+            console.error("Response is not defined or parameter_attribute is missing.");
+        }
+    }
+
+   
     // Call fetchData initially on page load with the selected value
     fetchData($('#partModel').val());
 
@@ -1038,11 +1052,119 @@ $(document).ready(function() {
         var selectedModel = $(this).val();
         fetchData(selectedModel);
     });
+
+    $('#save-btn').click(saveButtonHandler); // Ensure to replace '#saveButton' with the actual button ID or selector
 });
 
 
+
+// Function to create attribute input boxes
+function createAttributeInputs(parameterAttributes) {
+    let processedCount = 0; // Variable to keep track of accepted/rejected attributes
+
+    // Assume box2 and box3 are already selected using their IDs
+    const box2 = document.getElementById("box2");
+    const box3 = document.getElementById("box3");
+
+    // Clear previous inputs before creating new ones
+    $('#box3').empty();
+
+    // Loop through the parameter_attribute values and create new input boxes
+    for (let i = 0; i < parameterAttributes.length; i++) {
+        var attributeBox = $('<div class="attribute_input_box"></div>');
+
+        // Create input for parameter attribute
+        var inputField = $('<input>', {
+            type: 'text',
+            id: 'attributeParameter' + i,
+            style: 'font-weight: bold; margin-top: 5px;width:100%;text-align: center;',
+            readonly: true,
+            value: parameterAttributes[i] // Set the value to the attribute
+        });
+
+        // Create status input
+        var statusField = $('<input>', {
+            type: 'text',
+            id: 'attributeStatus' + i,
+            style: 'font-weight: bold; margin-top: 5px;width:100%;text-align: center;height:40px;',
+            readonly: true // Make it readonly to prevent manual editing
+        });
+
+        // Create buttons
+        var buttonAR = $('<div class="buttonAR" style="margin-top: 5px;"></div>');
+        var rejectButton = $('<button>', {
+            type: 'button',
+            id: 'attributeReject' + i,
+            text: 'REJECT',
+            style: 'background-color: coral;margin-left: 10px; '
+        });
+        var acceptButton = $('<button>', {
+            type: 'button',
+            id: 'attributeAccept' + i,
+            text: 'ACCEPT',
+            style: 'background-color: lightgreen;margin-left: 10px; '
+        });
+
+        // Add a double line as a separator
+        var separator1 = document.createElement("hr");  // First horizontal line
+        separator1.style.border = "2px solid black";  // Customize thickness and color
+        separator1.style.marginBottom = "2px";  // Customize thickness and color
+        separator1.style.marginTop = "5px"; 
+
+        // Append elements to the attribute box
+        buttonAR.append(rejectButton).append(acceptButton);
+        attributeBox.append(inputField).append(buttonAR).append(statusField).append(separator1);
+        
+        // Append the attribute box to the main container
+        $('#box3').append(attributeBox);
+
+        // Add event listeners for the buttons
+        (function(index) {
+            acceptButton.on('click', function() {
+                console.log('ACCEPT button clicked for attribute:', parameterAttributes[index]); // Log which button was clicked
+                $('#attributeStatus' + index).val('ACCEPT').css('background-color', '#00ff00'); // Set value and background color
+                checkAllProcessed();
+            });
+
+            rejectButton.on('click', function() {
+                console.log('REJECT button clicked for attribute:', parameterAttributes[index]); // Log which button was clicked
+                $('#attributeStatus' + index).val('REJECT').css('background-color', 'red'); // Set value and background color
+                checkAllProcessed();
+            });
+        })(i); // Immediately invoke with the current index
+    }
+
+    // Function to check if all attributes have been processed
+    function checkAllProcessed() {
+        processedCount++; // Increment the count when an attribute is accepted or rejected
+        if (processedCount === parameterAttributes.length) {
+            // All attributes have been processed, reset box2 to its original state
+            box2.style.filter = "none";
+            box2.style.pointerEvents = "auto";
+        }
+    }
+
+    if (parameterAttributes && parameterAttributes.length > 0) {
+        // Blur Box 2 and make Box 3 interactive if attributes are present
+        box2.style.filter = "blur(3px)";
+        box2.style.pointerEvents = "none";
+        box3.style.filter = "none";
+        box3.style.pointerEvents = "auto";
+        box3.style.opacity = "1";
+    } else {
+        // Reset Box 2 and make Box 3 non-interactive if no attributes are present
+        box2.style.filter = "none";
+        box2.style.pointerEvents = "auto";
+        box3.style.filter = "blur(5px)";
+        box3.style.pointerEvents = "none";
+        box3.style.opacity = "0.5";
+    }
+}
+
 /////////////////////////////////////////////////////////////////////////////
 
+var updateDisplayOutput;
+var tirValue;
 var continuousUpdateInterval; // Variable to store the interval ID for continuous update
 var maxValue;
 var minValue;
@@ -1074,8 +1196,7 @@ document.getElementById("stop-btn").addEventListener("click", function() {
     setTimeout(function() {
         var statusCells = document.querySelectorAll('.status_cell');
         var partStatusInput = document.getElementById("part_status");
-        var attributeStatus = document.getElementById("attributeStatus"); // New: Attribute status input
-        var attributeColor = attributeStatus.style.backgroundColor; // New: Get background color of attributeStatus
+        var attributeStatuses = document.querySelectorAll("[id^='attributeStatus']"); // Select all attribute status elements
         
         console.log("partStatusInput", partStatusInput);
 
@@ -1097,7 +1218,9 @@ document.getElementById("stop-btn").addEventListener("click", function() {
                 console.log("statusCell:", statusCell, "color:", color);
             });
 
-            // Check attributeStatus if it has any value or color
+            // Check all attribute statuses
+        attributeStatuses.forEach(function(attributeStatus) {
+            var attributeColor = attributeStatus.style.backgroundColor;
             if (attributeColor === 'red') {
                 hasRed = true;
             } else if (attributeColor === 'yellow') {
@@ -1105,6 +1228,8 @@ document.getElementById("stop-btn").addEventListener("click", function() {
             } else if (attributeColor === 'rgb(0, 255, 0)' || attributeColor === '#00ff00') { // Ensure green color is handled correctly
                 hasGreen = true;
             }
+        });
+
 
             console.log("hasRed:", hasRed, "hasYellow:", hasYellow, "hasGreen:", hasGreen);
 
@@ -1148,8 +1273,9 @@ document.getElementById("save-btn").addEventListener("click", function() {
             var acceptInput = document.getElementById("accept");
             var rejectInput = document.getElementById("reject");
             var reworkInput = document.getElementById("rework");
-            var attributeStatus = document.getElementById("attributeStatus"); // New: Attribute status input
-            var attributeColor = attributeStatus.style.backgroundColor; // New: Get background color of attributeStatus
+            var attributeStatuses = document.querySelectorAll("[id^='attributeStatus']"); // Select all attribute status elements
+           
+           
 
 
             if (partStatus === "ACCEPT") {
@@ -1168,13 +1294,18 @@ document.getElementById("save-btn").addEventListener("click", function() {
             var readingInputs = document.querySelectorAll('.readingInputs');
             readingInputs.forEach(function(readingInput) {
                 readingInput.value = ""; // Clear the value of the input
+                readingInput.color = "";
             });
 
             partStatusInput.value = "";
             partStatusInput.style.backgroundColor = "";
 
-            attributeStatus.value = "";
-            attributeStatus.style.backgroundColor = "";
+            
+             // Clear attribute statuses
+        attributeStatuses.forEach(function(attributeStatus) {
+            attributeStatus.value = ""; // Clear input value
+            attributeStatus.style.backgroundColor = ""; // Clear background color
+        });
 
             var compSrNo = document.getElementById("comp_srno");
             compSrNo.value = "";
@@ -1189,11 +1320,16 @@ document.getElementById("save-btn").addEventListener("click", function() {
         }
 
         setTimeout(clearValues, 1000); // Execute clearValues function after 1 second (1000 milliseconds)
-           
+         
+        var buttons = document.querySelectorAll('#master-btn, #start-btn, #stop-btn, #save-btn, #back-btn');
         if (hide === 'True') {
             document.getElementById('notification-container').style.display = 'block';
             document.getElementById('punch_textarea').style.display = 'block';
             document.getElementById('punch_textarea').focus();
+            buttons.forEach(function(button) {
+                button.disabled = true;
+            
+            });
         }
         currentStep = 1;
 
@@ -1204,7 +1340,7 @@ document.getElementById("save-btn").addEventListener("click", function() {
         });
 
 
- 
+   
 
         
 document.getElementById("back-btn").addEventListener("click", function() {
@@ -1226,6 +1362,7 @@ document.getElementById("back-btn").addEventListener("click", function() {
             var readingInput = document.getElementById('readings-input-' + index);
             if (readingInput) {
                 readingInput.value = "";
+                
                 
             }
 
@@ -1256,39 +1393,6 @@ document.getElementById("back-btn").addEventListener("click", function() {
 });
 
 
-// Event listener for REJECT button in Box 3
-document.getElementById('attributeReject').addEventListener('click', function() {
-    var attributeStatus = document.getElementById('attributeStatus');
-    
-    // Update attribute status
-    attributeStatus.value = "REJECT";
-    attributeStatus.style.backgroundColor = "red";
-    attributeStatus.style.fontWeight = "bold";
-    attributeStatus.style.fontSize = "25px";
-    attributeStatus.style.color = "white";
-    
-    // Restore Box 2 to normal after button click
-    document.getElementById("box2").style.filter = "none";
-    document.getElementById("box2").style.pointerEvents = "auto";
-   
-});
-
-// Event listener for ACCEPT button in Box 3
-document.getElementById('attributeAccept').addEventListener('click', function() {
-    var attributeStatus = document.getElementById('attributeStatus');
-    
-    // Update attribute status
-    attributeStatus.value = "ACCEPT";
-    attributeStatus.style.backgroundColor = "#00ff00";
-    attributeStatus.style.fontWeight = "bold";
-    attributeStatus.style.fontSize = "25px";
-    attributeStatus.style.color = "black";
-    
-    // Restore Box 2 to normal after button click
-    document.getElementById("box2").style.filter = "none";
-    document.getElementById("box2").style.pointerEvents = "auto";
-  
-});
 
 
 
@@ -1309,7 +1413,7 @@ function moveToNextStep() {
     if (currentStep < step_no_values.length + 1) {
         showNotification(`Step ${currentStep - 1} completed. Please proceed to step ${currentStep}.`);
     }   // Start calculation for the next step
-    startContinuousUpdate();
+    // startContinuousUpdate();
 
 }
 
@@ -1334,7 +1438,14 @@ usl, ltl, utl,indicatorBox,indicatorBox1,statusCell) {
             const newSerialData = parseFloat(textarea.value);
             // Log the new serial data to the console
             // Calculate displayOutput separately for each input
-            const displayOutput = e_value + (newSerialData * d_value + o1_value);
+            let displayOutput = e_value + (newSerialData * d_value + o1_value);
+
+            if (isNaN(displayOutput)) {
+            displayOutput = 0;
+        }
+
+
+            console.log("displayOutput",displayOutput)
 
             // Update the readings input only when the continuous update is active and step_no matches
             if (continuousUpdateInterval && step_no === currentStep) {
@@ -1521,11 +1632,15 @@ function getCookie(name) {
 
 
 
+
+
 document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('punch_textarea').focus();
 });
 
 function handleEnterKeyPress(event) {
+    var buttons = document.querySelectorAll('#master-btn, #start-btn, #stop-btn, #save-btn, #back-btn');
+
     if (event.key === 'Enter') {
         var punchValue = $('#punch_textarea').val();
         var partModelValue = $('#partModel').val();
@@ -1557,6 +1672,10 @@ function handleEnterKeyPress(event) {
 
         $('#comp_srno').val(punchValue);
         $('#notification-container').hide();
+        buttons.forEach(function(button) {
+            button.disabled = false;
+        
+        });
 
         // Get CSRF token from cookies (assuming you have `{% csrf_token %}` in your template)
         var csrftoken = getCookie('csrftoken');
@@ -1734,21 +1853,28 @@ function punchOverwriteCancel() {
         setInterval(updateDateTime, 1000);
     
     
-       
-    
         // Log the is_selected_values to the console
         var hide = "{{ hide }}"; // Assuming this is how you pass the value from Django template
         console.log("hide:", hide);
+         // Initially disable buttons and set box-2 to a stable state
+        var buttons = document.querySelectorAll('#master-btn, #start-btn, #stop-btn, #save-btn, #back-btn');
+        console.log("buttons from the html page",buttons)
     
     
         // Conditionally display the notification container and textarea based on is_selected_values
         if (hide === 'True') {
             document.getElementById('notification-container').style.display = 'block';
             document.getElementById('punch_textarea').style.display = 'block';
+             // Disable all buttons initially
+            buttons.forEach(function(button) {
+                button.disabled = true;
+            
+            });
         } else {
             document.getElementById('notification-container').style.display = 'none';
             document.getElementById('punch_textarea').style.display = 'none';
         }
+    
     
  
 var step_no_values_str = "{{ step_no_values|safe }}";
@@ -1847,9 +1973,21 @@ document.getElementById('stop-btn').addEventListener('click', function() {
                         var readingInput1 = document.getElementById(`readings-input-${readingIndex1}`).value;
                         var readingInput2 = document.getElementById(`readings-input-${readingIndex2}`).value;
 
+                         // Check if the input values are not empty
+                         if (readingInput1.trim() === "" || readingInput2.trim() === "") {
+                            console.log(`Error: Empty input for probe ${probe1} or ${probe2}. Skipping calculation.`);
+                            return; // Stop execution if any input is empty
+                        }
+
                         // Convert the input values to numbers
                         var value1 = parseFloat(readingInput1) || 0;
                         var value2 = parseFloat(readingInput2) || 0;
+
+                        // Check if the parsed values are valid numbers
+                        if (isNaN(value1) || isNaN(value2)) {
+                            console.log(`Error: Invalid number for probe ${probe1} or ${probe2}. Skipping calculation.`);
+                            return; // Stop execution if any value is NaN
+                        }
 
                         // Perform the calculation (probe1 - probe2)
                         var result = value1 - value2;
@@ -1974,6 +2112,7 @@ var operator_values_str = "{{ operator_values|safe }}";
 
 
     var shift_values_str = "{{ shift_values|safe }}";
+    console.log("shift_values_str",shift_values_str)
     var shift_values_cleaned = shift_values_str.match(/'([^']*)'/)[1];
     var shift_values = shift_values_cleaned.split(',');
     var shiftInput = document.getElementById("shift");
@@ -1982,6 +2121,7 @@ var operator_values_str = "{{ operator_values|safe }}";
 
 
     var machine_values_str = "{{ machine_values|safe }}";
+    console.log("machine_values_str",machine_values_str)
     // Extract the value between single quotes
     var machine_value = machine_values_str.match(/'([^']*)'/)[1];
     console.log('your machine value is:', machine_value);
