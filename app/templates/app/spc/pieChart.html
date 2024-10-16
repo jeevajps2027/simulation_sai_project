@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pie Chart</title>
+</head>
+<style>
+      .container {
+            max-width: 1150px;
+            height: 700px;
+            margin: auto;
+            border: 2px solid black;
+            margin-top: 0px;
+        }
+        #heading{
+            color:red;
+            margin-left: 20%;
+           
+        }
+        #value_list {
+    background-color: rgb(229, 125, 125);
+    height: auto; /* Let the height adjust based on the content */
+    width: 500px;
+    margin-left: 600px;
+    margin-top: -650px;
+    display: grid; /* Use grid layout */
+    grid-template-columns: repeat(2, 1fr); /* Two equal columns */
+    grid-auto-rows: minmax(40px, auto); /* Set minimum row height */
+    gap: 10px; /* Add a small gap between items */
+}
+
+.item {
+    display: flex; /* Center content */
+    align-items: center; /* Vertically center */
+    justify-content: center; /* Horizontally center */
+    background-color: white; /* Change background for items */
+    border: 1px solid #000; /* Optional border for better visibility */
+    font-size: 10px;
+    font-weight: bold;
+}
+
+</style>
+<body>
+    <div class="container">
+    <h1 id="heading">PIE CHART</h1>
+    <img src="data:image/png;base64,{{ pie_chart }}" alt="Pie Chart">
+    <!-- <div>
+        <h3>Status Counts:</h3>
+        <ul>
+            <li>Accept: {{ status_counts.ACCEPT }}</li>
+            <li>Reject: {{ status_counts.REJECT }}</li>
+            <li>Rework: {{ status_counts.REWORK }}</li>
+        </ul>
+    </div> -->
+
+    <div id="value_list">
+        
+        <div class="item">Part Model:{{ data.part_model }}</div>
+        <div class="item">Current date:{{ data.current_date_time }}</div>
+        <div class="item">Parameter Name:{{ data.parameter_name }}</div>
+        <div class="item">Shift:{{ data.shift }}</div>
+        <div class="item">Machine:{{ data.machine }}</div>
+        <div class="item">Vendor Code:{{ data.vendor_code }}</div>
+        <div class="item">Operator:{{ data.operator }}</div>
+        <div class="item">From date:{{ data.formatted_from_date }}</div>
+        <div class="item">To date:{{ data.formatted_to_date }}</div>
+        <div class="item">Sample size:{{ data.sample_size }}</div>
+      
+        <div class="item">Sub Group:{{subgroups_length}} </div>
+        <div class="item">UCLr:{{UCLr|floatformat:5}}</div>
+        <div class="item">LCLr:{{LCLr|floatformat:5}}</div>
+        <div class="item">UCLx:{{UCLx|floatformat:5}} </div>
+        <div class="item">LCLx:{{LCLx|floatformat:5}}</div>
+        <div class="item">XBAR: {{ x_bar|floatformat:5 }} </div>
+        <div class="item">RBAR:{{ r_bar|floatformat:5 }}</div>
+        <div class="item">Cp:</div>
+        <div class="item">Cpk:</div>
+        <!-- <div class="item">Item 10</div> -->
+    </div>
+    </div>
+</body>
+</html>

@@ -465,7 +465,16 @@ Utility
         </div><br>
 
         <label for="dept" style="margin-left: -400px;">DEPARTMENT:</label>
-        <input type="text" id="dept" name="dept" value="{{ customer.dept|default_if_none:'' }}" required><br>
+        <div class="dropdown">
+            <div class="dropdown-button" id="dept_btn" onclick="toggleDropdown('dept')">Enter the Dept:</div>
+            <div id="dropdown-content-dept" class="dropdown-content">
+                <input type="tel" id="primary_dept" placeholder="Primary Dept" value="{{ customer.primary_dept|default_if_none:'' }}" required>
+                <input type="tel" id="secondary_dept" placeholder="Secondary Dept" value="{{ customer.secondary_dept|default_if_none:'' }}" required>
+            </div>
+        </div><br>
+
+        <!-- <label for="dept" style="margin-left: -400px;">DEPARTMENT:</label>
+        <input type="text" id="dept" name="dept" value="{{ customer.dept|default_if_none:'' }}" required><br> -->
 
         <label for="mac_address" style="margin-left: -10px;">MAC ADDRESS:</label>
         <input type="text" id="mac_address" name="mac_address" value="{{ mac_address }}" disabled>
@@ -512,7 +521,13 @@ Utility
         </div><br>
 
         <label for="dept" style="margin-left: -400px;">DEPARTMENT:</label>
-        <input type="text" id="dept" name="dept" value="" required><br>
+        <div class="dropdown">
+            <div class="dropdown-button" id="dept_btn" onclick="toggleDropdown('dept')">Enter the Dept:</div>
+            <div id="dropdown-content-dept" class="dropdown-content">
+                <input type="tel" id="primary_dept" placeholder="Primary Dept" required>
+                <input type="tel" id="secondary_dept" placeholder="Secondary Dept" required>
+            </div>
+        </div><br>
 
         <label for="mac_address" style="margin-left: -10px;">MAC ADDRESS:</label>
         <input type="text" id="mac_address" name="mac_address" value="{{ mac_address }}" disabled>
@@ -598,7 +613,8 @@ Utility
                 $('#secondary_email').val('');
                 $('#primary_phone_no').val(''); // Clear phone number fields
                 $('#secondary_phone_no').val('');
-                $('#dept').val('');
+                $('#primary_dept').val(''); // Clear phone number fields
+                $('#secondary_dept').val('');
                 $('#mac_address').val(''); // Clear MAC address
                 $('#ip_address').val(''); // Clear IP address
                 $('#address').val(''); // Clear address textarea
@@ -614,7 +630,8 @@ Utility
                     secondary_email: $('#secondary_email').val(),
                     primary_phone_no: $('#primary_phone_no').val(),
                     secondary_phone_no: $('#secondary_phone_no').val(),
-                    dept: $('#dept').val(),
+                    primary_dept: $('#primary_dept').val(),
+                    secondary_dept: $('#secondary_dept').val(),
                     mac_address: $('#mac_address').val(),
                     ip_address: $('#ip_address').val(),
                     address: $('#address').val(),

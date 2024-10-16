@@ -142,7 +142,6 @@ def spc(request):
                 formatted_to_date = data.get('to_date')
                 machine = data.get('machine')
                 vendor_code = data.get('vendor_code')
-                sample_size = data.get('sample_size')
                 shift = data.get('shift')
                 current_date_time = data.get('currentDateTime')
 
@@ -157,7 +156,6 @@ def spc(request):
                 instance.formatted_to_date = formatted_to_date
                 instance.machine = machine
                 instance.vendor_code = vendor_code
-                instance.sample_size = sample_size
                 instance.shift = shift
                 instance.current_date_time = current_date_time
 

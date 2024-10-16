@@ -2,6 +2,7 @@ import plotly.graph_objs as go
 import plotly.offline as pyo
 from django.shortcuts import render
 import numpy as np
+import pandas as pd
 from app.models import MeasurementData, X_Bar_R_Chart
 from django.utils import timezone
 from datetime import datetime
@@ -36,11 +37,18 @@ def calculate_control_limits(x_bars, ranges, sample_size):
 
     return x_bar, r_bar, UCLx, LCLx, UCLr, LCLr
 
-
+def calculate_cp_cpk(x_bars, usl, lsl):
+    x_bar = np.mean(x_bars)
+    sigma = np.std(x_bars, ddof=1)  # Standard deviation of the sample
+    
+    cp = (usl - lsl) / (6 * sigma)
+    cpk = min((usl - x_bar) / (3 * sigma), (x_bar - lsl) / (3 * sigma))
+    
+    return cp, cpk
 def xBarRchart(request): 
     if request.method == 'GET':
         # Fetch the x_bar_values and other fields
-        x_bar_values = X_Bar_R_Chart.objects.all()
+        x_bar_R_values = X_Bar_R_Chart.objects.all()
         part_model = X_Bar_R_Chart.objects.values_list('part_model', flat=True).distinct().get()
 
         fromDateStr = X_Bar_R_Chart.objects.values_list('formatted_from_date', flat=True).get()
@@ -82,24 +90,108 @@ def xBarRchart(request):
 
         # Fetch filtered data
         filtered_readings = list(MeasurementData.objects.filter(**filter_kwargs).values_list('readings', flat=True).order_by('id'))
+        print("filtered_readings",filtered_readings)
 
         total_count = len(filtered_readings)
         print("Total readings count:", total_count)
 
+          # Retrieve distinct usl and lsl values from MeasurementData
+        usl_values = MeasurementData.objects.filter(**filter_kwargs).values_list('usl', flat=True).distinct()
+        lsl_values = MeasurementData.objects.filter(**filter_kwargs).values_list('lsl', flat=True).distinct()
+
+        # Convert the querysets to single values
+        usl = usl_values.first() if usl_values else None
+        lsl = lsl_values.first() if lsl_values else None
+
+        print("usl",usl)
+        print("lsl",lsl)
+
         # Divide readings into subgroups based on sample_size (converted to integer)
+        subgroups = [filtered_readings[i:i + sample_size] for i in range(0, len(filtered_readings), sample_size)]
+        subgroups_length = len(subgroups)
+        print("sub group length:",subgroups_length)
+
+        # Calculate X-bar and Range (R) for each subgroup
+        x_bars = [np.mean(group) for group in subgroups]
+        print("x_bars",x_bars)
+        ranges = [max(group) - min(group) for group in subgroups]
+
+        # Calculate control limits
+        x_bar, r_bar, UCLx, LCLx, UCLr, LCLr = calculate_control_limits(x_bars, ranges, sample_size)
+        cp, cpk = calculate_cp_cpk(x_bars, usl, lsl)
+
+        # Print the calculated values in the terminal
+        print(f"X-bar: {x_bar:.5f}, R-bar: {r_bar:.5f}")
+        print(f"UCLx: {UCLx:.5f}, LCLx: {LCLx:.5f}")
+        print(f"UCLr: {UCLr:.5f}, LCLr: {LCLr:.5f}")
+        print(f"cp: {cp}, cpk: {cpk}")
+
+      # Divide readings into subgroups based on sample_size (converted to integer)
         subgroups = [filtered_readings[i:i + sample_size] for i in range(0, len(filtered_readings), sample_size)]
 
         # Calculate X-bar and Range (R) for each subgroup
         x_bars = [np.mean(group) for group in subgroups]
         ranges = [max(group) - min(group) for group in subgroups]
 
-        # Calculate control limits
-        x_bar, r_bar, UCLx, LCLx, UCLr, LCLr = calculate_control_limits(x_bars, ranges, sample_size)
 
-        # Print the calculated values in the terminal
-        print(f"X-bar: {x_bar}, R-bar: {r_bar}")
-        print(f"UCLx: {UCLx}, LCLx: {LCLx}")
-        print(f"UCLr: {UCLr}, LCLr: {LCLr}")
+
+
+
+        # Create a DataFrame for the readings
+        df = pd.DataFrame(subgroups).transpose()  # Transpose to have rows for readings and columns for samples
+       # Renaming columns to X1, X2, ..., X20 (or fewer if there are fewer subgroups)
+        max_columns = 20
+        df.columns = [f'X{i+1}' for i in range(min(len(df.columns), max_columns))]
+
+        # If there are more than 20 columns, you may want to handle them appropriately
+        if len(df.columns) > max_columns:
+            print("Warning: More than 20 columns present. Additional columns will not be displayed.")
+
+
+        # Calculate Sum, Mean, and Range
+        df.loc['Sum'] = df.sum()
+
+
+        df.loc['X̄ (Mean)'] = x_bars  # Use pre-calculated means
+        df.loc['R̄ (Range)'] = ranges  # Use pre-calculated ranges
+
+        # Create row labels dynamically
+        row_labels = [f'Row {i+1}' for i in range(len(subgroups))] + ['Sum', 'X̄ (Mean)', 'R̄ (Range)']
+
+        # Set the index to the created row labels
+        if len(row_labels) == len(df.index):
+            df.index = row_labels  # Set the index if lengths match
+        else:
+            print("Mismatch in length between row labels and DataFrame index.")
+            
+
+        # Convert the DataFrame to HTML for rendering in the template
+        table_html = df.to_html(classes="table table-striped", index=True, header=True)
+
+        # Inline CSS styles for table formatting
+        style = """
+        <style>
+            table.table {
+                font-size: 10px; /* Decrease font size */
+                width: 100%; /* Set table width to fit the container */
+                max-height : 20%;
+            }
+            table.table th, table.table td {
+                padding: 2px; /* Adjust padding for smaller row height */
+                max-width: 50px; /* Set a max column width */
+                overflow: hidden;
+                text-overflow: ellipsis;
+                white-space: nowrap;
+            }
+            table.table th {
+                background-color: #f2f2f2; /* Optional: Light gray background for headers */
+            }
+        </style>
+        """
+
+        # Combine the style and table HTML
+        table_html = style + table_html
+
 
         # Create X-bar chart
         xbar_trace = go.Scatter(
@@ -112,6 +204,7 @@ def xBarRchart(request):
         # Add UCL and LCL lines to X-bar chart
         UCLx_trace = go.Scatter(x=list(range(1, len(x_bars) + 1)), y=[UCLx] * len(x_bars), mode='lines', name='UCLx', line=dict(color='red', dash='dash'))
         LCLx_trace = go.Scatter(x=list(range(1, len(x_bars) + 1)), y=[LCLx] * len(x_bars), mode='lines', name='LCLx', line=dict(color='red', dash='dash'))
+        x_bar_trace = go.Scatter(x=list(range(1, len(x_bars) + 1)), y=[x_bar] * len(x_bars), mode='lines', name='X-bar Line', line=dict(color='green', width=2))
 
         # Create R chart
         r_trace = go.Scatter(
@@ -124,23 +217,61 @@ def xBarRchart(request):
         # Add UCL and LCL lines to R chart
         UCLr_trace = go.Scatter(x=list(range(1, len(ranges) + 1)), y=[UCLr] * len(ranges), mode='lines', name='UCLr', line=dict(color='blue', dash='dash'))
         LCLr_trace = go.Scatter(x=list(range(1, len(ranges) + 1)), y=[LCLr] * len(ranges), mode='lines', name='LCLr', line=dict(color='blue', dash='dash'))
+        r_bar_trace = go.Scatter(x=list(range(1, len(ranges) + 1)), y=[r_bar] * len(ranges), mode='lines', name='R-bar Line', line=dict(color='purple', width=2))
 
-        # Layout for X-bar and R charts
-        layout = go.Layout(title='X-bar and R Chart', xaxis=dict(title='Subgroup'), yaxis=dict(title='Value'))
+        # Layout for X-bar chart with reduced height and minimal margins
+        xbar_layout = go.Layout(
+            title='X-bar Chart',
+            xaxis=dict(title='Subgroup'),
+            yaxis=dict(title='Value'),
+            height=250,  # Set height to 250px to fit within 500px total
+            margin=dict(l=40, r=20, t=40, b=40),  # Reduce margins to minimize white space
+        )
 
-        # Combine traces for both charts
-        xbar_chart = go.Figure(data=[xbar_trace, UCLx_trace, LCLx_trace], layout=layout)
-        r_chart = go.Figure(data=[r_trace, UCLr_trace, LCLr_trace], layout=layout)
+        # Layout for R chart with reduced height and minimal margins
+        r_layout = go.Layout(
+            title='R Chart',
+            xaxis=dict(title='Subgroup'),
+            yaxis=dict(title='Value'),
+            height=250,  # Set height to 250px to fit within 500px total
+            margin=dict(l=40, r=20, t=40, b=40),  # Reduce margins to minimize white space
+        )
+
+
+        # Create the figures with the respective layouts and traces
+        xbar_chart = go.Figure(data=[xbar_trace, UCLx_trace, LCLx_trace, x_bar_trace], layout=xbar_layout)
+        r_chart = go.Figure(data=[r_trace, UCLr_trace, LCLr_trace, r_bar_trace], layout=r_layout)
 
         # Convert the charts to HTML
         xbar_chart_html = pyo.plot(xbar_chart, include_plotlyjs=False, output_type='div')
         r_chart_html = pyo.plot(r_chart, include_plotlyjs=False, output_type='div')
 
-        # Pass the chart HTML to the template
+        # Pass the chart HTML and table HTML to the template
         context = {
             'xbar_chart': xbar_chart_html,
-            'r_chart': r_chart_html
+            'r_chart': r_chart_html,
+            'table_html': table_html,  # Pass the Pandas table HTML
+            'x_bar_R_values':x_bar_R_values,
+            'subgroups_length': subgroups_length,
+            'x_bar':x_bar,
+            'r_bar':r_bar,
+            'UCLx':UCLx,
+            'LCLx':LCLx,
+             'UCLr':UCLr,
+            'LCLr':LCLr,
         }
 
     return render(request, 'app/spc/xBarRchart.html', context)
 
+
+"""
+1.df = pd.DataFrame(subgroups).transpose()  # Transpose to have rows for readings and columns for samples
+
+        pd.DataFrame(subgroups): This creates a DataFrame from the list of subgroups. Each subgroup corresponds to a set of readings (e.g., a sample of data points).
+        .transpose(): This method transposes the DataFrame, switching rows and columns. After this step, each row represents a sample (or reading) while each column represents a specific subgroup (e.g., X1, X2, ...).
+
+
+2.df.columns = [f'X{i+1}' for i in range(len(df.columns))]  # Renaming columns to X1, X2, ...
+        This line dynamically creates new column names for the DataFrame, assigning them labels like X1, X2, etc. This is useful for easily identifying each subgroup's data in the DataFrame.
+
+"""

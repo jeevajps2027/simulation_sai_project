@@ -54,17 +54,21 @@ def xBar(request):
         filtered_readings = MeasurementData.objects.filter(**filter_kwargs).values_list('readings', flat=True).order_by('id')
 
         total_count = len(filtered_readings)
-        print("total_count",total_count)
+        print("total_count in xbar",total_count)
 
         # Extract data for plotting
         readings = [float(r) for r in filtered_readings]  # Convert readings to floats
+        print("the values of readings",readings)
 
         # Extract limits and nominal values
         usl = filtered_data[0][1] if filtered_data else None  # Upper Spec Limit
+        
         lsl = filtered_data[0][2] if filtered_data else None  # Lower Spec Limit
         nominal = filtered_data[0][3] if filtered_data else None  # Nominal value
         ltl = filtered_data[0][4] if filtered_data else None  # Lower Tolerance Limit
         utl = filtered_data[0][5] if filtered_data else None  # Upper Tolerance Limit
+
+        print("the values are",usl,lsl,nominal,ltl,utl)
 
         if readings and usl and lsl and nominal and ltl and utl:
             # Calculate X-bar (mean)
@@ -147,11 +151,6 @@ def xBar(request):
             context = {
                 'chart': chart_html,
                 'x_bar_values': x_bar_values,
-                'part_model': part_model,
-                'parameter_name': parameter_name,
-                'operator': operator,
-                'machine': machine,
-                'shift': shift,
                 'total_count':total_count,
             }
 

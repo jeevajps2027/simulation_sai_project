@@ -90,13 +90,15 @@ def utility(request):
                 secondary_email = data.get('secondary_email')
                 primary_phone_no = data.get('primary_phone_no')
                 secondary_phone_no = data.get('secondary_phone_no')
-                dept = data.get('dept')
+
+                primary_dept = data.get('primary_dept')
+                secondary_dept = data.get('secondary_dept')
                 mac_address = data.get('mac_address')
                 ip_address = data.get('ip_address')
                 address = data.get('address')
 
                 print("customer_details:", customer_name, primary_contact_person, secondary_contact_person,
-                      primary_email, secondary_email, primary_phone_no, secondary_phone_no, dept, mac_address, ip_address, address)
+                      primary_email, secondary_email, primary_phone_no, secondary_phone_no, primary_dept,secondary_dept, mac_address, ip_address, address)
 
                 try:
                     customer_details = CustomerDetails.objects.get(id=1)
@@ -110,7 +112,8 @@ def utility(request):
                 customer_details.secondary_email = secondary_email
                 customer_details.primary_phone_no = primary_phone_no
                 customer_details.secondary_phone_no = secondary_phone_no
-                customer_details.dept = dept
+                customer_details.primary_dept = primary_dept
+                customer_details.secondary_dept = secondary_dept
                 customer_details.mac_address = mac_address
                 customer_details.ip_address = ip_address
                 customer_details.address = address

@@ -175,8 +175,10 @@ class CustomerDetails(models.Model):
     
     primary_phone_no = models.CharField(max_length=20)
     secondary_phone_no = models.CharField(max_length=20, blank=True, null=True)
+
+    primary_dept = models.CharField(max_length=20)
+    secondary_dept = models.CharField(max_length=20, blank=True, null=True)
     
-    dept = models.CharField(max_length=100)
     mac_address = models.CharField(max_length=50, blank=True, null=True)
     ip_address = models.CharField(max_length=50, blank=True, null=True)
     
@@ -288,6 +290,5 @@ class Pie_Chart(models.Model):
     formatted_to_date = models.CharField(max_length=100)
     machine = models.CharField(max_length=100)
     vendor_code = models.CharField(max_length=100)
-    sample_size = models.CharField(max_length=100)
     shift = models.CharField(max_length=100)
     current_date_time = models.CharField(max_length=100)
