@@ -1,3 +1,5 @@
+import base64
+import plotly.io as pio
 import plotly.graph_objs as go
 import plotly.offline as pyo
 from django.shortcuts import render
@@ -7,6 +9,9 @@ from app.models import MeasurementData, X_Bar_R_Chart
 from django.utils import timezone
 from datetime import datetime
 from django.db.models import Q
+from weasyprint import HTML, CSS
+from django.http import HttpResponse
+import os
 
 def calculate_control_limits(x_bars, ranges, sample_size):
     # Define constants for different sample sizes
@@ -37,16 +42,74 @@ def calculate_control_limits(x_bars, ranges, sample_size):
 
     return x_bar, r_bar, UCLx, LCLx, UCLr, LCLr
 
-def calculate_cp_cpk(x_bars, usl, lsl):
+def calculate_cp_cpk(x_bars,ranges, usl, lsl):
     x_bar = np.mean(x_bars)
-    sigma = np.std(x_bars, ddof=1)  # Standard deviation of the sample
+    r_bar = np.mean(ranges)
+    d2=2.325
+    # sigma = np.std(x_bars, ddof=1)  # Standard deviation of the sample
+    sigma = r_bar/d2  # Standard deviation of the sample
+    print("sigma",sigma)
     
     cp = (usl - lsl) / (6 * sigma)
+    print("the calculation of cp",cp)
+    cpu = (usl - x_bar) / (3 * sigma)
+    print ("cpu",cpu)
+    cpl = (x_bar - lsl) / (3 * sigma)
+    print("cpl",cpl)
     cpk = min((usl - x_bar) / (3 * sigma), (x_bar - lsl) / (3 * sigma))
     
     return cp, cpk
+
+
 def xBarRchart(request): 
-    if request.method == 'GET':
+    if request.method == 'POST' and request.POST.get('export_type') == 'pdf':
+        # Generate the same context as before
+        context = generate_xBarRchart_context(request, pdf=True)
+
+        # Render the HTML to a string
+        html_string = render(request, 'app/spc/xBarRchart.html', context).content.decode('utf-8')
+
+        # Define the CSS for landscape orientation
+        css = CSS(string='''
+            @page {
+                size: A4 landscape; /* Set the page size to A4 landscape */
+                margin: 1cm; /* Adjust margins as needed */
+            }
+            body {
+                transform: scale(0.8); /* Adjust scale as needed */
+                transform-origin: top left; /* Set origin for scaling */
+                width: 1200px; /* Width of the content */
+            }
+            .no-pdf {
+                display: none;
+            }
+        ''')
+
+        # Convert HTML to PDF
+        pdf_file = HTML(string=html_string).write_pdf(stylesheets=[css])
+
+        # Define the path to save the PDF (e.g., Downloads folder)
+        downloads_folder = os.path.join(os.path.expanduser('~'), 'Downloads')  # Change to your desired path
+        pdf_filename = f"XbarRchart_{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.pdf"
+        pdf_path = os.path.join(downloads_folder, pdf_filename)
+
+        # Save the PDF file to the filesystem
+        with open(pdf_path, 'wb') as pdf_output:
+            pdf_output.write(pdf_file)
+
+        # Return a response
+        response = HttpResponse(pdf_file, content_type='application/pdf')
+        response['Content-Disposition'] = f'attachment; filename="{pdf_filename}"'
+        success_message = "PDF generated successfully!"
+        context['success_message'] = success_message
+        return render(request, 'app/spc/xBarRchart.html', context)
+
+    elif request.method == 'GET':
+        # Generate the context for rendering the histogram page
+        context = generate_xBarRchart_context(request, pdf=False)
+        return render(request, 'app/spc/xBarRchart.html', context)
+
+def generate_xBarRchart_context(request, pdf=False):
         # Fetch the x_bar_values and other fields
         x_bar_R_values = X_Bar_R_Chart.objects.all()
         part_model = X_Bar_R_Chart.objects.values_list('part_model', flat=True).distinct().get()
@@ -92,6 +155,14 @@ def xBarRchart(request):
         filtered_readings = list(MeasurementData.objects.filter(**filter_kwargs).values_list('readings', flat=True).order_by('id'))
         print("filtered_readings",filtered_readings)
 
+        if not filtered_readings:
+            context = {
+                'no_results': True
+            }
+            return render(request, 'app/spc/xBarRchart.html', context)
+
+
+
         total_count = len(filtered_readings)
         print("Total readings count:", total_count)
 
@@ -118,7 +189,7 @@ def xBarRchart(request):
 
         # Calculate control limits
         x_bar, r_bar, UCLx, LCLx, UCLr, LCLr = calculate_control_limits(x_bars, ranges, sample_size)
-        cp, cpk = calculate_cp_cpk(x_bars, usl, lsl)
+        cp, cpk = calculate_cp_cpk(x_bars,ranges, usl, lsl)
 
         # Print the calculated values in the terminal
         print(f"X-bar: {x_bar:.5f}, R-bar: {r_bar:.5f}")
@@ -215,8 +286,8 @@ def xBarRchart(request):
         )
 
         # Add UCL and LCL lines to R chart
-        UCLr_trace = go.Scatter(x=list(range(1, len(ranges) + 1)), y=[UCLr] * len(ranges), mode='lines', name='UCLr', line=dict(color='blue', dash='dash'))
-        LCLr_trace = go.Scatter(x=list(range(1, len(ranges) + 1)), y=[LCLr] * len(ranges), mode='lines', name='LCLr', line=dict(color='blue', dash='dash'))
+        UCLr_trace = go.Scatter(x=list(range(1, len(ranges) + 1)), y=[UCLr] * len(ranges), mode='lines', name='UCLr', line=dict(color='red', dash='dash'))
+        LCLr_trace = go.Scatter(x=list(range(1, len(ranges) + 1)), y=[LCLr] * len(ranges), mode='lines', name='LCLr', line=dict(color='red', dash='dash'))
         r_bar_trace = go.Scatter(x=list(range(1, len(ranges) + 1)), y=[r_bar] * len(ranges), mode='lines', name='R-bar Line', line=dict(color='purple', width=2))
 
         # Layout for X-bar chart with reduced height and minimal margins
@@ -224,8 +295,8 @@ def xBarRchart(request):
             title='X-bar Chart',
             xaxis=dict(title='Subgroup'),
             yaxis=dict(title='Value'),
-            height=250,  # Set height to 250px to fit within 500px total
-            margin=dict(l=40, r=20, t=40, b=40),  # Reduce margins to minimize white space
+            height=220,  # Set height to 250px to fit within 500px total
+            margin=dict(l=10, r=20, t=40, b=20),  # Reduce margins to minimize white space
         )
 
         # Layout for R chart with reduced height and minimal margins
@@ -233,8 +304,8 @@ def xBarRchart(request):
             title='R Chart',
             xaxis=dict(title='Subgroup'),
             yaxis=dict(title='Value'),
-            height=250,  # Set height to 250px to fit within 500px total
-            margin=dict(l=40, r=20, t=40, b=40),  # Reduce margins to minimize white space
+            height=220,  # Set height to 250px to fit within 500px total
+            margin=dict(l=10, r=20, t=40, b=20),  # Reduce margins to minimize white space
         )
 
 
@@ -242,12 +313,26 @@ def xBarRchart(request):
         xbar_chart = go.Figure(data=[xbar_trace, UCLx_trace, LCLx_trace, x_bar_trace], layout=xbar_layout)
         r_chart = go.Figure(data=[r_trace, UCLr_trace, LCLr_trace, r_bar_trace], layout=r_layout)
 
-        # Convert the charts to HTML
-        xbar_chart_html = pyo.plot(xbar_chart, include_plotlyjs=False, output_type='div')
-        r_chart_html = pyo.plot(r_chart, include_plotlyjs=False, output_type='div')
 
+      # Assuming you have xbar_chart and r_chart defined
+        if pdf:
+            # Save the X-bar chart as a PNG image for the PDF
+            xbar_img_bytes = pio.to_image(xbar_chart, format='png')  # Use plotly.io to convert to image bytes
+            xbar_img_base64 = base64.b64encode(xbar_img_bytes).decode('utf-8')
+            xbar_chart_html = f'<img src="data:image/png;base64,{xbar_img_base64}" alt="X-bar Chart">'
+
+            # Save the R chart as a PNG image for the PDF
+            r_img_bytes = pio.to_image(r_chart, format='png')  # Use plotly.io to convert to image bytes
+            r_img_base64 = base64.b64encode(r_img_bytes).decode('utf-8')
+            r_chart_html = f'<img src="data:image/png;base64,{r_img_base64}" alt="R Chart">'
+        else:
+            # Render the X-bar chart as an interactive HTML component for normal requests
+            xbar_chart_html = pyo.plot(xbar_chart, include_plotlyjs=False, output_type='div')
+            
+            # Render the R chart as an interactive HTML component for normal requests
+            r_chart_html = pyo.plot(r_chart, include_plotlyjs=False, output_type='div')
         # Pass the chart HTML and table HTML to the template
-        context = {
+        return {
             'xbar_chart': xbar_chart_html,
             'r_chart': r_chart_html,
             'table_html': table_html,  # Pass the Pandas table HTML
@@ -259,9 +344,11 @@ def xBarRchart(request):
             'LCLx':LCLx,
              'UCLr':UCLr,
             'LCLr':LCLr,
+            'cp':cp,
+            'cpk':cpk
         }
 
-    return render(request, 'app/spc/xBarRchart.html', context)
+   
 
 
 """

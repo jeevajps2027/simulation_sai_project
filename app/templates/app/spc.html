@@ -853,32 +853,53 @@ document.addEventListener("DOMContentLoaded", function() {
     var reportBtn = document.getElementById("report_btn_2");
 
     // Add click event listener to the button
-    reportBtn.addEventListener("click", function() {
-        // Redirect to the desired URL
-        window.location.href = '/xBarRchart/';
+    reportBtn.addEventListener("click", function(event) {
+
+        event.preventDefault();
+
+        setTimeout(function(){
+             // Redirect to the desired URL
+            window.location.href = '/xBarRchart/';
+        },2000);
+       
     });
 });
 
 document.addEventListener("DOMContentLoaded", function() {
     // Find the button element by its ID
-    var reportBtn = document.getElementById("report_btn_3");
+    var reportBtn = document.getElementById("report_btn_4");
 
-    // Add click event listener to the button
-    reportBtn.addEventListener("click", function() {
+      // Add click event listener to the button
+      reportBtn.addEventListener("click", function(event) {
+
+    event.preventDefault();
+
+    setTimeout(function(){
         // Redirect to the desired URL
-        window.location.href = '//';
+        window.location.href = '/histogram/';
+    },2000);
+
     });
+
 });
 
 document.addEventListener("DOMContentLoaded", function() {
     // Find the button element by its ID
     var reportBtn = document.getElementById("report_btn_6");
 
-    // Add click event listener to the button
-    reportBtn.addEventListener("click", function() {
+     // Add click event listener to the button
+     reportBtn.addEventListener("click", function(event) {
+
+    event.preventDefault();
+
+    setTimeout(function(){
         // Redirect to the desired URL
         window.location.href = '/pieChart/';
+    },2000);
+
     });
+
+    
 });
       
 </script>

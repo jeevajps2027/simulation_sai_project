@@ -12,14 +12,19 @@
         }
 
         .container {
-            max-width: 900px;
+            max-width:1150px;
             margin: auto;
             border: 2px solid black;
-            height: 650px;
+            height: 700px;
+            margin-top: 0px;
         }
 
-        h1, h2 {
+        #heading{
+            margin-top: 0px;
+            color:white;
+           background-color: blue;
             text-align: center;
+           
         }
 
         .details {
@@ -30,6 +35,7 @@
 
         .chart-container {
             margin-top: 30px;
+            width: 700px;
         }
 
         .error-message {
@@ -68,6 +74,40 @@
             table-layout: auto; /* Allow the table to adjust its layout based on content */
             border-collapse: collapse; /* Collapse table borders */
         }
+        #prevButton{
+            width: 70px;
+            height: 40px;
+            background-color: red;
+            color: white;
+            font-weight: bold;
+        }
+        #pdf_btn{
+            margin-left: 85%;
+            width: 100px;
+            height: 50px;
+            background-color: red;
+            color: white;
+            font-weight: bold;
+            
+          
+        }
+        #popupMessage{
+    display: none;
+    position: fixed; 
+    top: 20px;
+    width: 300px;
+    height: 70px;
+    left: 40%;
+    text-align: center;
+    font-weight: bold;
+    font-size: 20px;
+    transform: translateX(-50%);
+    background-color: yellow; 
+    color: black; 
+    border: 1px solid black ; 
+    padding: 10px;
+    z-index: 1000;
+}
     </style>
 </head>
 <body>
@@ -76,7 +116,33 @@
     
 
     <div class="container">
-        <h1>X-bar Control Chart</h1>
+        <div>
+            <button id="prevButton" class="no-pdf">BACK</button>
+        <h1 id="heading">X-bar Control Chart</h1>
+    </div>
+       
+    <!-- Add this in your consolidateSrNo.html -->
+    <div id="popupMessage" class="no-pdf">
+    </div>
+
+    <script>
+    // Get the success message from the context if it exists
+    var successMessage = "{{ success_message|escapejs }}";  // Ensure safe rendering of message
+
+    if (successMessage) {
+    // If there is a success message, display the popup
+    var messageDiv = document.getElementById('popupMessage');
+    messageDiv.innerHTML = `<div>${successMessage}</div>`;  // Set the message content
+    messageDiv.style.display = 'block';  // Make the popup visible
+
+    // Optionally, hide the popup after 5 seconds
+    setTimeout(function() {
+    messageDiv.style.display = 'none';  // Hide the popup after 5 seconds
+    }, 3000);  // Adjust the time duration as needed
+    }
+
+</script>
+
         <table class="first-table">
             {% for data in x_bar_values %}
             <tr>
@@ -133,14 +199,34 @@
             {% endfor %}
         </table>
 
-        {% if error %}
-            <div class="error-message">{{ error }}</div>
+
+
+      
+
+        {% if no_results %}
+        <p><h1 style="color: red;">No Data Found</h1></p>
         {% else %}
             <div class="chart-container">
                 <!-- Plotly chart will be rendered here -->
                 {{ chart|safe }}
             </div>
         {% endif %}
+
+        <div class="dropdown-content" id="dropdownContent">
+            <form id="exportForm" method="post" action="{% url 'xBar' %}">
+                {% csrf_token %}
+                <button type="submit" name="export_type" value="pdf" id="pdf_btn" class="no-pdf">PDF CONVERSION</button>
+            </form>
+        </div>
     </div>
+    <script>
+        document.getElementById('prevButton').addEventListener('click', function() {
+        // Redirect to the report page
+        window.location.href = '/spc/'; // Replace 'report_page.html' with the actual URL of your report page
+    });
+    
+    
+    
+    </script>
 </body>
 </html>

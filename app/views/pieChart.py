@@ -1,3 +1,4 @@
+from django.http import HttpResponse
 from django.shortcuts import render
 from app.models import MeasurementData, Pie_Chart
 from django.utils import timezone
@@ -5,9 +6,61 @@ from datetime import datetime
 import matplotlib.pyplot as plt
 import io
 import base64
+from weasyprint import HTML, CSS
+import os
 
 def pieChart(request):
-    if request.method == 'GET':
+    if request.method == 'POST' and request.POST.get('export_type') == 'pdf':
+        # Generate the same context as before
+        context = generate_pieChart_context(request)
+        
+        # Render the HTML to a string
+        html_string = render(request, 'app/spc/pieChart.html', context).content.decode('utf-8')
+
+        # Define the CSS for landscape orientation
+        css = CSS(string='''
+            @page {
+                size: A4 landscape; /* Set the page size to A4 landscape */
+                margin: 1cm; /* Adjust margins as needed */
+            }
+            /* Scale down the content to fit within the 1100px width */
+            body {
+                transform: scale(0.9); /* Adjust scale as needed */
+                transform-origin: top left; /* Set origin for scaling */
+                width: 1200px; /* Width of the content */
+            }
+            .no-pdf {
+            display: none;
+            }
+        ''')
+
+        # Convert HTML to PDF
+        pdf_file = HTML(string=html_string).write_pdf(stylesheets=[css])
+
+        # Define the path to save the PDF (e.g., Downloads folder)
+        downloads_folder = os.path.join(os.path.expanduser('~'), 'Downloads')  # Change to your desired path
+        pdf_filename = f"PieChart_{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.pdf"
+
+        pdf_path = os.path.join(downloads_folder, pdf_filename)
+
+        # Save the PDF file to the filesystem
+        with open(pdf_path, 'wb') as pdf_output:
+            pdf_output.write(pdf_file)
+
+        # Optionally, return a response or notify the user
+        response = HttpResponse(pdf_file, content_type='application/pdf')
+        response['Content-Disposition'] = 'attachment; filename="{pdf_filename}"'
+        success_message = "PDF generated successfully!"
+        context['success_message'] = success_message
+        return render(request, 'app/spc/pieChart.html', context)
+
+    
+    elif request.method == 'GET':
+        # Generate the context for rendering the histogram page
+        context = generate_pieChart_context(request)
+        return render(request, 'app/spc/pieChart.html', context)
+
+def generate_pieChart_context(request):
         # Fetch the x_bar_values and other fields
         pie_chart_values = Pie_Chart.objects.all()
         part_model = Pie_Chart.objects.values_list('part_model', flat=True).distinct().get()
@@ -48,7 +101,18 @@ def pieChart(request):
 
         # Fetch filtered data
         filtered_readings = list(MeasurementData.objects.filter(**filter_kwargs).values_list('readings', flat=True).order_by('id'))
+
+        if not filtered_readings:
+            context = {
+                'no_results': True
+            }
+            return render(request, 'app/spc/pieChart.html', context)
+
         filtered_status = list(MeasurementData.objects.filter(**filter_kwargs).values_list('status_cell', flat=True).order_by('id'))
+        print("filtered_status",filtered_status)
+        total_count = len(filtered_readings)
+        print("Total readings count:", total_count)
+
 
         status_counts = {'ACCEPT': 0, 'REJECT': 0, 'REWORK': 0}
 
@@ -89,9 +153,16 @@ def pieChart(request):
         image_base64 = base64.b64encode(image_png).decode('utf-8')
 
         # Pass the base64 image data to the template
-        context = {
+        
+        return {
             'pie_chart': image_base64,
-            'status_counts': status_counts
+            'status_counts': status_counts,
+            'pie_chart_values':pie_chart_values,
+            'total_count':total_count,
+            'accept_count': status_counts['ACCEPT'],
+            'reject_count': status_counts['REJECT'],
+            'rework_count': status_counts['REWORK'],
+
         }
 
-        return render(request, 'app/spc/pieChart.html', context)
+        
