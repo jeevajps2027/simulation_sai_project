@@ -19,3 +19,4 @@ from .xBarRchart import xBarRchart
 from .xBarSchart import xBarSchart
 from .pieChart import pieChart
 from .histogram import histogram
+from .measure import measure

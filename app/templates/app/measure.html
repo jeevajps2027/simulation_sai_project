@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gauge Dial with Readings</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin: 0;
+            padding: 0;
+            background-color: #f5f5f5;
+        }
+
+        #container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-top: 20px;
+            position: relative; /* Enables positioning elements inside the container */
+            width: 400px;
+            height: 400px;
+            margin-left: 40%;
+        }
+
+        canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #fff;
+            border-radius: 10px;
+            box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .reading-box {
+            position: absolute;
+            bottom: 30px; /* Adjust position below the dial's center */
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: #4caf50;
+            color: white;
+            padding: 15px 20px;
+            font-size: 30px;
+            font-weight: bold;
+            border-radius: 5px;
+        }
+
+        .controls {
+            margin-top: 500px;
+        }
+
+        button {
+            margin: 5px;
+            padding: 10px 20px;
+            font-size: 16px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .calibrate { background-color: #ffcc00; color: #000; }
+        .set-master { background-color: #007bff; color: #fff; }
+        .save { background-color: #28a745; color: #fff; }
+    </style>
+</head>
+<body>
+    <div id="container">
+        <canvas id="gauge" width="400" height="400"></canvas>
+        <div class="reading-box" id="reading">
+            29.980 MM
+        </div>
+    
+    <!-- <div class="controls">
+        <button class="calibrate">Calibration</button>
+        <button class="set-master">Set Master</button>
+        <button class="save">Save</button>
+    </div> -->
+  </div>
+
+    <script>
+        const canvas = document.getElementById('gauge');
+        const ctx = canvas.getContext('2d');
+        const readingBox = document.getElementById('reading');
+
+        // Draw the gauge dial
+        function drawGauge(value = 0) {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            const centerX = canvas.width / 2;
+            const centerY = canvas.height / 2 - 30; // Adjust to move the dial to the top
+            const radius = 150;
+
+            // Draw the outer circle (3/4 circle)
+            ctx.beginPath();
+            ctx.arc(centerX, centerY, radius, 0.75 * Math.PI, 2.25 * Math.PI);
+            ctx.lineWidth = 10;
+            ctx.strokeStyle = 'white';
+            ctx.stroke();
+
+            // Draw the color zones
+            drawZone(ctx, centerX, centerY, radius, 0.75 * Math.PI, Math.PI, '#f00'); // Red
+            drawZone(ctx, centerX, centerY, radius, Math.PI, 1.5 * Math.PI, '#ffd700'); // Yellow
+            drawZone(ctx, centerX, centerY, radius, 1.5 * Math.PI, 2.25 * Math.PI, '#0f0'); // Green
+
+            // Draw ticks and numbers
+            drawTicksAndLabels(ctx, centerX, centerY, radius);
+
+            // Draw the needle
+            drawNeedle(ctx, centerX, centerY, radius, value);
+        }
+
+        function drawZone(ctx, x, y, radius, startAngle, endAngle, color) {
+            ctx.beginPath();
+            ctx.arc(x, y, radius, startAngle, endAngle);
+            ctx.lineWidth = 20;
+            ctx.strokeStyle = color;
+            ctx.stroke();
+        }
+
+        function drawTicksAndLabels(ctx, x, y, radius) {
+    ctx.font = '14px Arial';
+    ctx.fillStyle = '#000';
+    ctx.textAlign = 'center';
+
+    for (let i = -50; i <= 50; i++) {
+        const angle = 0.75 * Math.PI + ((i + 50) * 1.5 * Math.PI) / 100;
+        const tickLength = i % 10 === 0 ? 20 : i % 5 === 0 ? 15 : 10; // Large, Medium, Small
+        const tickWidth = i % 10 === 0 ? 3 : i % 5 === 0 ? 2 : 1; // Adjust width for visibility
+
+        const innerTickX = x + (radius - tickLength) * Math.cos(angle);
+        const innerTickY = y + (radius - tickLength) * Math.sin(angle);
+        const outerTickX = x + radius * Math.cos(angle);
+        const outerTickY = y + radius * Math.sin(angle);
+
+        // Draw tick
+        ctx.beginPath();
+        ctx.moveTo(outerTickX, outerTickY);
+        ctx.lineTo(innerTickX, innerTickY);
+        ctx.lineWidth = tickWidth;
+        ctx.strokeStyle = '#000';
+        ctx.stroke();
+
+        // Draw label for large ticks
+        if (i % 10 === 0) {
+            const labelX = x + (radius - 40) * Math.cos(angle);
+            const labelY = y + (radius - 40) * Math.sin(angle);
+            ctx.fillText(i, labelX, labelY);
+        }
+    }
+}
+
+
+function drawNeedle(ctx, x, y, radius, value) {
+    // Adjust this value to control the needle's length
+    const needleLength = radius - 20; // Increased length from radius - 50 to radius - 20
+
+    // Calculate the angle for the needle
+    const angle = 0.75 * Math.PI + ((value + 50) * 1.5 * Math.PI) / 100;
+
+    // Tip of the needle (increased length)
+    const tipX = x + needleLength * Math.cos(angle);
+    const tipY = y + needleLength * Math.sin(angle);
+
+    // Base of the needle
+    const baseRadius = 25; // Radius for the base shape
+    const baseAngle1 = angle - 0.2; // Left edge of the base
+    const baseAngle2 = angle + 0.2; // Right edge of the base
+    const baseX1 = x + baseRadius * Math.cos(baseAngle1);
+    const baseY1 = y + baseRadius * Math.sin(baseAngle1);
+    const baseX2 = x + baseRadius * Math.cos(baseAngle2);
+    const baseY2 = y + baseRadius * Math.sin(baseAngle2);
+
+    // Rear support for the needle (extends behind the center point slightly)
+    const rearX = x - 15 * Math.cos(angle);
+    const rearY = y - 15 * Math.sin(angle);
+
+    // Draw the needle as a sword-like shape
+    ctx.beginPath();
+    ctx.moveTo(tipX, tipY); // Start at the tip
+    ctx.lineTo(baseX1, baseY1); // Left side of the base
+    ctx.lineTo(rearX, rearY); // Rear of the needle
+    ctx.lineTo(baseX2, baseY2); // Right side of the base
+    ctx.closePath();
+
+    // Fill the needle
+    ctx.fillStyle = '#ff4500'; // Orange-red for a striking look
+    ctx.fill();
+
+    // Outline for better visibility
+    ctx.lineWidth = 2;
+    ctx.strokeStyle = '#333'; // Dark gray for contrast
+    ctx.stroke();
+
+    // Draw the pivot circle at the center
+    ctx.beginPath();
+    ctx.arc(x, y, 8, 0, 2 * Math.PI); // Center pivot point
+    ctx.fillStyle = '#222'; // Dark gray
+    ctx.fill();
+
+    // Add a decorative outer ring for the pivot
+    ctx.beginPath();
+    ctx.arc(x, y, 12, 0, 2 * Math.PI);
+    ctx.lineWidth = 3;
+    ctx.strokeStyle = '#999'; // Lighter metallic gray
+    ctx.stroke();
+}
+
+
+        // Example: Update the gauge value
+        let currentValue = 29.980;
+        drawGauge(currentValue);
+
+        setInterval(() => {
+            currentValue += Math.random() * 2 - 1; // Simulate fluctuating value
+            currentValue = Math.max(-50, Math.min(50, currentValue));
+
+            // Update gauge and reading
+            drawGauge(currentValue);
+            readingBox.textContent = `${currentValue.toFixed(3)} MM`;
+        }, 1000);
+    </script>
+</body>
+</html>

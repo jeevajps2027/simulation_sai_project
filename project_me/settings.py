@@ -108,6 +108,14 @@ WSGI_APPLICATION = 'project_me.wsgi.application'
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 
 DATABASES = {
+    'remote': { 
+        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        'NAME': 'Remote PostgreSQL Server',
+        'USER': 'postgres', 
+        'PASSWORD': 'sai@123', 
+        'HOST': '192.168.0.115',
+        'PORT': '5432', },
+         
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
         'NAME': 'postgres',

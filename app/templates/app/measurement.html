@@ -716,11 +716,13 @@ function stopAction() {
 
 ///////////////////////////////////////////////////////////
 
-$(document).ready(function(){
-    $("#save-btn").click(function(){
+$(document).ready(function() {
+    $("#save-btn").click(function() {
         // Get form data
         var formDataArray = [];
         var allStatusValid = true;
+        
+        // Iterate through table rows to validate 'statusCell'
         $("table tbody tr").each(function(index) {
             var parameterName = $(this).find("td:nth-child(2)").text();
             var readings = $(this).find(".readingInputs").val();
@@ -739,8 +741,8 @@ $(document).ready(function(){
             var customerName = $("#customer_name").val();
             var compSrNo = $("#comp_srno").val();
 
-            if(!statusCell){
-                allStatusValid=false;
+            if (!statusCell) {
+                allStatusValid = false;
                 return false;
             }
 
@@ -766,26 +768,36 @@ $(document).ready(function(){
             formDataArray.push(rowFormData);
         });
 
-        if(!allStatusValid){
-            showCustomAlert("YOU ARE NOT PROPERLY CALCULATED.DO CORRECT CALCLATION AND THEN SAVE")
+        // Collect additional attributes and statuses
+        var parameterAttributes = [];
+        var attributeStatuses = [];
+        
+        // Iterate over dynamically generated attribute fields
+        $(".attribute_input_box").each(function(index) {
+            var attributeParam = $(this).find("input[type='text']").eq(0).val();
+            var attributeStatus = $(this).find("input[type='text']").eq(1).val();
+            
+            // Check if the attributeParam and attributeStatus are not empty before adding them
+            if (attributeParam && attributeStatus) {
+                parameterAttributes.push(attributeParam);
+                attributeStatuses.push(attributeStatus);
+            }
+            
+            // Validate the attributeStatus
+            if (!attributeStatus) {
+                allStatusValid = false;
+                return false;  // Stop further processing if invalid
+            }
+        });
+
+        if (!allStatusValid) {
+            showCustomAlert("YOU ARE NOT PROPERLY CALCULATED. DO CORRECT CALCULATION AND THEN SAVE");
             return;
         }
 
-       // Collect additional attributes and statuses
-var parameterAttributes = [];
-var attributeStatuses = [];
+        // Proceed with the rest of your code after validation
+        // Submit formDataArray, parameterAttributes, and attributeStatuses to server or process further.
 
-// Iterate over dynamically generated attribute fields
-$(".attribute_input_box").each(function(index) {
-    var attributeParam = $(this).find("input[type='text']").eq(0).val();
-    var attributeStatus = $(this).find("input[type='text']").eq(1).val();
-
-    // Check if the attributeParam and attributeStatus are not empty before adding them
-    if (attributeParam && attributeStatus) {
-        parameterAttributes.push(attributeParam);
-        attributeStatuses.push(attributeStatus);
-    }
-});
 
 // Check if parameterAttributes and attributeStatuses have entries before adding to formDataArray
 if (parameterAttributes.length > 0 && attributeStatuses.length > 0) {

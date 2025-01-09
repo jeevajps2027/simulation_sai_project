@@ -464,7 +464,6 @@ function captureLowReference() {
    document.getElementById("highReferenceBtn").disabled = false;
    document.getElementById("highReferenceBtn").style.opacity = '1';
   document.getElementById("lowReferenceBtn").disabled = true;
-   document.getElementById("lowReferenceBtn").style.opacity = '0.6';
 
 
     if (currentSelectedCard) {
@@ -493,8 +492,7 @@ function captureHighReference() {
   document.getElementById('calibration-info').innerText = "HIGH Calibration completed for selected probes";
   document.getElementById("highReferenceBtn").disabled = true;
   document.getElementById("highReferenceBtn").style.opacity = '0.6';
-  document.getElementById("lowReferenceBtn").disabled = true;
-  document.getElementById("lowReferenceBtn").style.opacity = '0.6';
+  document.getElementById("lowReferenceBtn").disabled = false;
   
   if (currentSelectedCard) {
         b = [];
@@ -673,22 +671,53 @@ function getCookie(name) {
 
 
 $(document).ready(function () {
-            const ws = new WebSocket('ws://localhost:8000/ws/comport/');
+    const ws = new WebSocket('ws://localhost:8000/ws/comport/');
+
+    // Initial message to indicate the status (error case)
+    $('#messages').text('Please check the comport.').css('color', 'red');
+
+    ws.onmessage = function(event) {
+        const data = JSON.parse(event.data);
+
+        if (data.message) {
+            // Reset the error message to an empty string
+            $('#selected-probe').text('Selected Probe:').css('color', 'black');
             
-            ws.onmessage = function(event) {
-                const data = JSON.parse(event.data);
-                if (data.message) {
-                    const channels = data.message.match(/[A-K]\+[^A-K]*/g);
-                    if (channels) {
-                        channels.forEach(channel => {
-                            const channelId = channel.charAt(0);
-                            const channelData = channel.substr(2); // Get the data after '+'
-                            $(`#probe-${channelId}`).val(channelData);
-                        });
-                    }
-                }
-            };
-        });
+            // Match "+" pattern
+            const plusChannels = data.message.match(/[A-K]\+[^\+A-K]*/g);
+            if (plusChannels) {
+                plusChannels.forEach(channel => {
+                    const channelId = channel.charAt(0);
+                    const channelData = channel.substr(2); // Get the data after '+'
+                    $(`#probe-${channelId}`).val(channelData);
+                });
+            }
+            
+            // Match "-" pattern
+            const minusChannels = data.message.match(/[A-K]\-[^\-A-K]*/g);
+            if (minusChannels) {
+                minusChannels.forEach(channel => {
+                    const channelId = channel.charAt(0);
+                    const channelData = channel.substr(2); // Get the data after '-'
+                    $(`#probe-${channelId}`).val(channelData);
+                });
+            }
+
+            // Display success message in green
+            $('#messages').text('Data received successfully.').css('color', 'green');
+        }
+    };
+
+    ws.onerror = function() {
+        // Handle WebSocket errors
+        $('#messages').text(' Please check the comport.').css('color', 'red');
+    };
+
+    ws.onclose = function() {
+        // Handle WebSocket close
+        $('#messages').text('Connection closed.').css('color', 'red');
+    };
+});
 
 </script>
 
